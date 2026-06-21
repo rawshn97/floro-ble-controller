@@ -1,3 +1,9 @@
 .vercel
 .git
 *.metadata.json
+
+# APK binaries — keep text findings only
+reverse-engineering/output/work/
+*.apk
+*.zip
+!reverse-engineering/output/protocol-findings.txt
