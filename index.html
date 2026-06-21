@@ -20,8 +20,9 @@
       --neon-glow: #ff007f;
       --neon-glow-rgba: rgba(255, 0, 127, 0.25);
       --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.25);
+      --success-rgba: rgba(16, 185, 129, 0.25);
       --error: #ef4444;
+      --error-rgba: rgba(239, 68, 68, 0.25);
     }
 
     body {
@@ -130,7 +131,7 @@
     }
 
     .btn {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
       padding: 12px 20px;
@@ -138,7 +139,7 @@
       font-weight: 600;
       border-radius: 12px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       display: inline-flex;
       justify-content: center;
       align-items: center;
@@ -146,8 +147,12 @@
     }
 
     .btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
     }
 
     .btn-connect {
@@ -166,65 +171,47 @@
       border: none;
     }
 
-    /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 56px;
-      height: 30px;
+    /* Power Buttons */
+    .power-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .btn-power-on {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      box-shadow: 0 0 15px var(--success-glow);
     }
 
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(255, 255, 255, 0.1);
-      transition: .3s;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .btn-power-on:hover {
+      box-shadow: 0 0 25px var(--success-glow);
+      transform: translateY(-1px);
     }
 
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 22px;
-      width: 22px;
-      left: 3px;
-      bottom: 3px;
-      background-color: #ffffff;
-      transition: .3s;
-      border-radius: 50%;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    .btn-power-off {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      box-shadow: 0 0 15px var(--error-rgba);
     }
 
-    input:checked + .slider {
-      background-color: var(--neon-glow);
-      box-shadow: 0 0 15px var(--neon-glow-rgba);
+    .btn-power-off:hover {
+      box-shadow: 0 0 25px var(--error-rgba);
+      transform: translateY(-1px);
     }
 
-    input:checked + .slider:before {
-      transform: translateX(26px);
+    .power-status-indicator {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--success);
+      margin-top: 8px;
+      text-align: center;
+      letter-spacing: 1px;
     }
 
-    .power-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
-    }
-
-    .power-label {
-      font-size: 1.2rem;
-      font-weight: 600;
+    .power-status-indicator.off {
+      color: var(--error);
     }
 
     /* Slider Container styling */
@@ -232,7 +219,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: 15px;
     }
 
     .slider-label-row {
@@ -277,7 +263,7 @@
 
     /* Disabled styling */
     .disabled-control {
-      opacity: 0.4;
+      opacity: 0.35;
       pointer-events: none;
     }
 
@@ -345,38 +331,117 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
 
-    /* Mode Presets Grid */
-    .modes-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+    /* Animation Mode Selector Controls */
+    .animation-select-row {
+      display: flex;
       gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
     }
 
-    .mode-card {
-      background: rgba(255, 255, 255, 0.02);
+    .anim-dropdown {
+      flex-grow: 1;
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 12px;
-      text-align: center;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
       cursor: pointer;
-      transition: all 0.2s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position-x: calc(100% - 12px);
+      background-position-y: 50%;
+      padding-right: 40px;
     }
 
-    .mode-card:hover {
-      background: rgba(255, 255, 255, 0.06);
+    .anim-dropdown:focus {
       border-color: var(--neon-glow);
       box-shadow: 0 0 10px var(--neon-glow-rgba);
     }
 
-    .mode-card.selected {
-      background: rgba(255, 255, 255, 0.08);
+    .btn-step {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .favorites-section {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .fav-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-add-fav {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    .favorites-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+
+    .fav-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .fav-chip:hover {
+      background: rgba(255, 255, 255, 0.1);
       border-color: var(--neon-glow);
-      box-shadow: 0 0 15px var(--neon-glow-rgba);
+    }
+
+    .fav-chip.active {
+      background: var(--neon-glow-rgba);
+      border-color: var(--neon-glow);
+      box-shadow: 0 0 8px var(--neon-glow-rgba);
       font-weight: 600;
     }
 
-    .mode-title {
-      font-size: 0.95rem;
+    .fav-chip-remove {
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .fav-chip-remove:hover {
+      background-color: var(--error);
+      color: white;
     }
 
     /* Console Panel */
@@ -394,7 +459,7 @@
     }
 
     .console-body {
-      max-height: 150px;
+      max-height: 120px;
       overflow-y: auto;
       background-color: rgba(0, 0, 0, 0.5);
       border-radius: 12px;
@@ -441,6 +506,10 @@
       padding: 12px 16px;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -479,31 +548,40 @@
     </div>
   </div>
 
-  <!-- Main Controls Panel -->
-  <div id="controls-panel" class="glass-card active-glow disabled-control">
-    <!-- Power Toggle -->
-    <div class="power-row">
-      <span class="power-label">Sign Power</span>
-      <label class="switch">
-        <input type="checkbox" id="power-checkbox" checked>
-        <span class="slider"></span>
-      </label>
+  <!-- Dedicated Power Panel -->
+  <div id="power-panel" class="glass-card disabled-control">
+    <div class="card-title">Sign Power</div>
+    <div class="power-grid">
+      <button id="btn-power-on" class="btn btn-power-on" onclick="setPowerState(true)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+        Power ON
+      </button>
+      <button id="btn-power-off" class="btn btn-power-off" onclick="setPowerState(false)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+        Power OFF
+      </button>
     </div>
+    <div id="power-status-text" class="power-status-indicator">POWER ON</div>
+  </div>
 
-    <div id="adjustable-controls">
-      <!-- Brightness Slider -->
+  <!-- Brightness & Speed Card -->
+  <div id="controls-panel" class="glass-card disabled-control">
+    <div class="card-title">Adjustments</div>
+    
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- Brightness Slider (strictly 1 to 8, 0 is handled separately) -->
       <div class="slider-container">
         <div class="slider-label-row">
-          <span>Brightness</span>
+          <span>Brightness Level</span>
           <span class="slider-val" id="val-brightness">8 / 8</span>
         </div>
-        <input type="range" id="slider-brightness" min="0" max="8" value="8">
+        <input type="range" id="slider-brightness" min="1" max="8" value="8">
       </div>
 
       <!-- Speed Slider -->
-      <div class="slider-container" style="margin-top: 20px;">
+      <div class="slider-container">
         <div class="slider-label-row">
-          <span>Speed</span>
+          <span>Animation Speed</span>
           <span class="slider-val" id="val-speed">50%</span>
         </div>
         <input type="range" id="slider-speed" min="0" max="100" value="50">
@@ -513,10 +591,9 @@
 
   <!-- Color Control Panel -->
   <div id="color-panel" class="glass-card disabled-control">
-    <div class="card-title">Neon Color Swatches</div>
+    <div class="card-title">Neon Colors</div>
     
     <div class="color-swatches">
-      <!-- Colors configured to map Ruby Red, Green, Blue, Sunny Yellow, Hot Pink, Cyan, White, Purple -->
       <button class="swatch-btn selected" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red"></button>
       <button class="swatch-btn" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green"></button>
       <button class="swatch-btn" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue"></button>
@@ -528,39 +605,31 @@
     </div>
 
     <div class="color-picker-wrapper">
-      <span class="color-picker-label">Custom Neon Hue:</span>
+      <span class="color-picker-label">Custom Palette:</span>
       <input type="color" id="color-picker" value="#ff0000">
     </div>
   </div>
 
-  <!-- Animation Panel -->
+  <!-- Animation Panel (With full 200 mode select + Favorites list) -->
   <div id="animation-panel" class="glass-card disabled-control">
-    <div class="card-title">Animation Mode</div>
+    <div class="card-title">Built-in Animations</div>
     
-    <div class="modes-grid">
-      <div class="mode-card" data-mode="32" onclick="selectMode(this, 32)">
-        <div class="mode-title">Pattern 32</div>
+    <div class="animation-select-row">
+      <button class="btn btn-step" onclick="stepMode(-1)">−</button>
+      <select id="anim-dropdown" class="anim-dropdown">
+        <!-- Dynamically populated from 1 to 200 -->
+      </select>
+      <button class="btn btn-step" onclick="stepMode(1)">+</button>
+    </div>
+
+    <div class="favorites-section">
+      <div class="fav-header-row">
+        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">Quick Presets & Favorites</span>
+        <button class="btn btn-add-fav" onclick="addCurrentToFavorites()">+ Add Current</button>
       </div>
-      <div class="mode-card" data-mode="34" onclick="selectMode(this, 34)">
-        <div class="mode-title">Pattern 34</div>
-      </div>
-      <div class="mode-card" data-mode="35" onclick="selectMode(this, 35)">
-        <div class="mode-title">Pattern 35</div>
-      </div>
-      <div class="mode-card" data-mode="38" onclick="selectMode(this, 38)">
-        <div class="mode-title">Pattern 38</div>
-      </div>
-      <div class="mode-card" data-mode="50" onclick="selectMode(this, 50)">
-        <div class="mode-title">Pattern 50</div>
-      </div>
-      <div class="mode-card" data-mode="66" onclick="selectMode(this, 66)">
-        <div class="mode-title">Pattern 66</div>
-      </div>
-      <div class="mode-card" data-mode="102" onclick="selectMode(this, 102)">
-        <div class="mode-title">Pattern 102</div>
-      </div>
-      <div class="mode-card" data-mode="108" onclick="selectMode(this, 108)">
-        <div class="mode-title">Pattern 108</div>
+      
+      <div id="favorites-grid" class="favorites-grid">
+        <!-- Persistent favorite chips loaded here -->
       </div>
     </div>
   </div>
@@ -578,7 +647,7 @@
 </div>
 
 <script>
-  // Service Worker Registration
+  // Service Worker Registration for Offline Use
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then((reg) => {
@@ -589,7 +658,7 @@
     });
   }
 
-  // BLE Protocol Definitions
+  // BLE UUID Definitions
   const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
   const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
@@ -598,8 +667,22 @@
   let activeCharacteristic = null;
 
   // App UI State
-  let lastBrightnessVal = 8; // Default to 8 (max) when turned back ON
-  let activeColor = '#ff0000'; // Default theme color (Ruby Red)
+  let isPoweredOn = true;
+  let lastBrightnessVal = 8; // Saved brightness when ON (range 1-8)
+  let activeColor = '#ff0000'; // Theme glow color
+  let activeModeVal = 32;
+
+  // Default Favorites (preloaded)
+  const defaultFavorites = [
+    { mode: 32, label: "Pattern 32" },
+    { mode: 34, label: "Pattern 34" },
+    { mode: 35, label: "Pattern 35" },
+    { mode: 38, label: "Pattern 38" },
+    { mode: 50, label: "Pattern 50" },
+    { mode: 66, label: "Pattern 66" },
+    { mode: 102, label: "Pattern 102" },
+    { mode: 108, label: "Pattern 108" }
+  ];
 
   // DOM Elements
   const btnConnect = document.getElementById('btn-connect');
@@ -607,19 +690,31 @@
   const deviceNameEl = document.getElementById('device-name');
   const connectionStatus = document.getElementById('connection-status');
   
+  const powerPanel = document.getElementById('power-panel');
   const controlsPanel = document.getElementById('controls-panel');
   const colorPanel = document.getElementById('color-panel');
   const animationPanel = document.getElementById('animation-panel');
-  const adjustableControls = document.getElementById('adjustable-controls');
+  const powerStatusText = document.getElementById('power-status-text');
 
-  const powerCheckbox = document.getElementById('power-checkbox');
   const sliderBrightness = document.getElementById('slider-brightness');
   const valBrightness = document.getElementById('val-brightness');
   const sliderSpeed = document.getElementById('slider-speed');
   const valSpeed = document.getElementById('val-speed');
   const colorPicker = document.getElementById('color-picker');
+  const animDropdown = document.getElementById('anim-dropdown');
+  const favoritesGrid = document.getElementById('favorites-grid');
+  
   const consoleBody = document.getElementById('console-body');
   const consoleArrow = document.getElementById('console-arrow');
+
+  // Populate Dropdown with Modes 1 to 200
+  for (let i = 1; i <= 200; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Animation Mode ${i}`;
+    animDropdown.appendChild(opt);
+  }
+  animDropdown.value = activeModeVal;
 
   // Console log helpers
   function log(message, type = 'info') {
@@ -636,7 +731,7 @@
     consoleArrow.classList.toggle('collapsed');
   }
 
-  // BLE Connection handling
+  // BLE GATT Connection Handling
   async function connectDevice() {
     try {
       log('Scanning for FloRo Bluetooth sign...', 'info');
@@ -670,13 +765,16 @@
       activeCharacteristic = await service.getCharacteristic(NUS_WRITE_UUID);
       log('Sign connected and ready for control.', 'success');
 
-      // Enable panels
+      // Enable UI Panels
+      powerPanel.classList.remove('disabled-control');
       controlsPanel.classList.remove('disabled-control');
       colorPanel.classList.remove('disabled-control');
       animationPanel.classList.remove('disabled-control');
 
-      // Initial Sync
-      sendAscii(`B=${sliderBrightness.value};`, 'Initial Brightness Sync');
+      // Sync initial power and brightness state
+      isPoweredOn = true;
+      updatePowerUI(true);
+      sendBrightness(sliderBrightness.value);
 
     } catch (error) {
       log(`Connection error: ${error.message}`, 'error');
@@ -708,6 +806,7 @@
     btnConnect.classList.remove('hidden');
     btnDisconnect.classList.add('hidden');
 
+    powerPanel.classList.add('disabled-control');
     controlsPanel.classList.add('disabled-control');
     colorPanel.classList.add('disabled-control');
     animationPanel.classList.add('disabled-control');
@@ -716,7 +815,7 @@
   btnConnect.addEventListener('click', connectDevice);
   btnDisconnect.addEventListener('click', disconnectDevice);
 
-  // Write Characteristic logic
+  // BLE ASCII Write Method
   async function writeBytes(bytes) {
     if (!activeCharacteristic) {
       return false;
@@ -747,69 +846,70 @@
     writeBytes(bytes);
   }
 
-  // Dynamic Neon Theme Styling
+  // Neon Dynamic Styling
   function updateNeonThemeColor(hexColor) {
     activeColor = hexColor;
     document.documentElement.style.setProperty('--neon-glow', hexColor);
     document.documentElement.style.setProperty('--neon-glow-rgba', hexColor + '40'); // 25% opacity
     
-    // Add visual theme update confirmation
-    const panels = [controlsPanel, colorPanel, animationPanel];
+    // Apply drop shadow glow on cards
+    const panels = [powerPanel, controlsPanel, colorPanel, animationPanel];
     panels.forEach(p => {
-      p.style.boxShadow = `0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 16px 0 ${hexColor}25`;
+      p.style.boxShadow = `0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 16px 0 ${hexColor}20`;
       p.style.borderColor = `${hexColor}40`;
     });
   }
 
-  // Power and Brightness Control logic
-  function sendBrightness(val) {
-    sendAscii(`B=${val};`, `Set Brightness to ${val}`);
-  }
-
-  function updateBrightnessUI(val) {
-    sliderBrightness.value = val;
-    valBrightness.textContent = val === 0 ? 'OFF' : `${val} / 8`;
-    
-    if (val === 0) {
-      powerCheckbox.checked = false;
-      adjustableControls.classList.add('disabled-control');
-      colorPanel.classList.add('disabled-control');
-      animationPanel.classList.add('disabled-control');
-    } else {
-      powerCheckbox.checked = true;
-      adjustableControls.classList.remove('disabled-control');
-      colorPanel.classList.remove('disabled-control');
-      animationPanel.classList.remove('disabled-control');
-      lastBrightnessVal = val;
-    }
-  }
-
-  // Toggle Power Switch Click
-  powerCheckbox.addEventListener('change', () => {
-    if (powerCheckbox.checked) {
-      // Restore last non-zero brightness
-      updateBrightnessUI(lastBrightnessVal);
+  // Power State Handler
+  window.setPowerState = function(on) {
+    isPoweredOn = on;
+    updatePowerUI(on);
+    if (on) {
       sendBrightness(lastBrightnessVal);
     } else {
-      // Set to 0 (OFF)
-      updateBrightnessUI(0);
       sendBrightness(0);
     }
-  });
+  };
 
-  // Brightness Slider input
+  function updatePowerUI(on) {
+    if (on) {
+      powerStatusText.textContent = "POWER ON";
+      powerStatusText.className = "power-status-indicator";
+      controlsPanel.classList.remove('disabled-control');
+      colorPanel.classList.remove('disabled-control');
+      animationPanel.classList.remove('disabled-control');
+      sliderBrightness.value = lastBrightnessVal;
+      valBrightness.textContent = `${lastBrightnessVal} / 8`;
+    } else {
+      powerStatusText.textContent = "POWER OFF";
+      powerStatusText.className = "power-status-indicator off";
+      controlsPanel.classList.add('disabled-control');
+      colorPanel.classList.add('disabled-control');
+      animationPanel.classList.add('disabled-control');
+      valBrightness.textContent = "OFF";
+    }
+  }
+
+  // Brightness Control Logic (1 to 8 range)
+  function sendBrightness(val) {
+    sendAscii(`B=${val};`, `Brightness set to ${val}`);
+  }
+
   let bTimeout = null;
   sliderBrightness.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
-    updateBrightnessUI(val);
+    lastBrightnessVal = val;
+    valBrightness.textContent = `${val} / 8`;
     
     if (bTimeout) clearTimeout(bTimeout);
     bTimeout = setTimeout(() => {
-      sendBrightness(val);
+      if (isPoweredOn) {
+        sendBrightness(val);
+      }
     }, 120);
   });
 
-  // Speed Slider input
+  // Speed Control Logic
   let sTimeout = null;
   sliderSpeed.addEventListener('input', (e) => {
     const val = e.target.value;
@@ -817,17 +917,15 @@
     
     if (sTimeout) clearTimeout(sTimeout);
     sTimeout = setTimeout(() => {
-      sendAscii(`S=${val};`, `Set Speed to ${val}%`);
+      sendAscii(`S=${val};`, `Speed set to ${val}%`);
     }, 120);
   });
 
-  // Color selection logic (Swatches & Custom Picker)
+  // Color Selection (Green & Blue physically swapped)
   window.selectSwatch = function(btn, r, g, b) {
-    // Remove selected state from all swatches
     document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('selected'));
     btn.classList.add('selected');
     
-    // Convert RGB to HEX for the theme glow
     const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
       const hex = x.toString(16);
       return hex.length === 1 ? '0' + hex : hex;
@@ -837,35 +935,128 @@
     updateNeonThemeColor(hex);
     colorPicker.value = hex;
 
-    // Correcting physical green/blue swap: C=Red,Blue_Channel,Green_Channel;\n
-    sendAscii(`C=${r},${b},${g};`, `Color (${r}, ${g}, ${b})`);
+    // Swapping green and blue parameters for the sign's physical LED channel wiring
+    sendAscii(`C=${r},${b},${g};`, `Set Swatch (${r}, ${g}, ${b})`);
   };
 
   colorPicker.addEventListener('input', (e) => {
     const hexColor = e.target.value;
     updateNeonThemeColor(hexColor);
     
-    // Remove highlight on swatches
     document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('selected'));
 
     const r = parseInt(hexColor.substring(1, 3), 16);
     const g = parseInt(hexColor.substring(3, 5), 16);
     const b = parseInt(hexColor.substring(5, 7), 16);
     
-    // Throttle color picker values slightly
     if (window.colorTimeout) clearTimeout(window.colorTimeout);
     window.colorTimeout = setTimeout(() => {
       // Swapping green and blue channels for the physical LED wiring correction
-      sendAscii(`C=${r},${b},${g};`, `Color Picker (${r}, ${g}, ${b})`);
+      sendAscii(`C=${r},${b},${g};`, `Set Color Picker (${r}, ${g}, ${b})`);
     }, 150);
   });
 
-  // Mode Selection logic
-  window.selectMode = function(btn, mode) {
-    document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('selected'));
-    btn.classList.add('selected');
-    sendAscii(`M=${mode};`, `Pattern Mode ${mode}`);
+  // Animation Mode Logic (1 to 200 range)
+  animDropdown.addEventListener('change', (e) => {
+    const mode = parseInt(e.target.value);
+    setMode(mode);
+  });
+
+  window.stepMode = function(delta) {
+    let mode = parseInt(animDropdown.value) + delta;
+    if (mode < 1) mode = 200;
+    if (mode > 200) mode = 1;
+    animDropdown.value = mode;
+    setMode(mode);
   };
+
+  function setMode(mode) {
+    activeModeVal = mode;
+    sendAscii(`M=${mode};`, `Set Animation Mode ${mode}`);
+    highlightActiveFavorite();
+  }
+
+  // Favorites Management Logic
+  let favorites = [];
+
+  function loadFavorites() {
+    const stored = localStorage.getItem('floro_favorites');
+    if (stored) {
+      favorites = JSON.parse(stored);
+    } else {
+      favorites = [...defaultFavorites];
+      saveFavorites();
+    }
+    renderFavorites();
+  }
+
+  function saveFavorites() {
+    localStorage.setItem('floro_favorites', JSON.stringify(favorites));
+  }
+
+  function renderFavorites() {
+    favoritesGrid.innerHTML = '';
+    favorites.forEach((fav) => {
+      const chip = document.createElement('div');
+      chip.className = `fav-chip ${fav.mode === activeModeVal ? 'active' : ''}`;
+      chip.setAttribute('data-mode', fav.mode);
+      
+      const labelSpan = document.createElement('span');
+      labelSpan.textContent = fav.label;
+      labelSpan.addEventListener('click', () => {
+        animDropdown.value = fav.mode;
+        setMode(fav.mode);
+      });
+      chip.appendChild(labelSpan);
+
+      const removeBtn = document.createElement('span');
+      removeBtn.className = 'fav-chip-remove';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeFavorite(fav.mode);
+      });
+      chip.appendChild(removeBtn);
+
+      favoritesGrid.appendChild(chip);
+    });
+  }
+
+  function highlightActiveFavorite() {
+    document.querySelectorAll('.fav-chip').forEach(chip => {
+      const mode = parseInt(chip.getAttribute('data-mode'));
+      if (mode === activeModeVal) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+  }
+
+  window.addCurrentToFavorites = function() {
+    const mode = activeModeVal;
+    if (favorites.some(f => f.mode === mode)) {
+      log('Mode is already in your favorites.', 'info');
+      return;
+    }
+    const name = prompt(`Enter a name for Animation Mode ${mode}:`, `Mode ${mode}`);
+    if (name === null) return;
+    
+    favorites.push({ mode: mode, label: name.trim() || `Mode ${mode}` });
+    saveFavorites();
+    renderFavorites();
+    log(`Added Mode ${mode} to presets.`, 'success');
+  };
+
+  function removeFavorite(mode) {
+    favorites = favorites.filter(f => f.mode !== mode);
+    saveFavorites();
+    renderFavorites();
+    log(`Removed Mode ${mode} from presets.`, 'info');
+  }
+
+  // Load favorites on startup
+  loadFavorites();
 
   // PWA Install Prompt handling
   let deferredPrompt;
