@@ -708,7 +708,7 @@
       <button class="btn sensitivity-btn active" data-level="1" type="button" onclick="setSensitivity(1)">Med</button>
       <button class="btn sensitivity-btn" data-level="2" type="button" onclick="setSensitivity(2)">High</button>
     </div>
-    <p class="protocol-note">Flash/Beat/Sensitivity use candidate UART commands (F=, A=, P=). Use Raw Command below if your sign expects different syntax.</p>
+    <p class="protocol-note">Flash/Beat use APK-verified byte commands. Sensitivity uses <code>INT=n;</code> from Neon Attack. Raw Command box accepts any UART string.</p>
   </div>
 
   <!-- Scene Presets (full state) -->
@@ -777,15 +777,19 @@
   const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
   const NUS_NOTIFY_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
-  // Protocol helpers — confirmed vs candidate (verify via APK / raw console)
+  // Protocol — see docs/PROTOCOL.md and reverse-engineering/output/protocol-findings.txt
+  const SENSITIVITY_INT_MAP = { 0: 8, 1: 14, 2: 22 };
   const PROTOCOL = {
     brightness: (v) => `B=${v};`,
     speed: (v) => `S=${v};`,
     color: (r, g, b) => `C=${r},${b},${g};`,
-    mode: (m) => `M=${m};`,
-    flash: (on) => `F=${on ? 1 : 0};`,
-    beat: (on) => `A=${on ? 1 : 0};`,
-    sensitivity: (level) => `P=${level};`
+    mode: (m) => (m === 0 ? { bytes: [130, 20] } : `M=${m};`),
+    flash: (on) => ({ bytes: on ? [140, 20] : [158, 20] }),
+    beat: (on) => ({ bytes: on ? [136, 98, 26, 20] : [136, 96, 26, 20] }),
+    sensitivity: (level) => {
+      const n = SENSITIVITY_INT_MAP[level] ?? level;
+      return { ascii: `INT=${n};\r\n`, noExtraNewline: true };
+    }
   };
 
   let bleDevice = null;
@@ -999,21 +1003,32 @@
     queueProcessing = false;
   }
 
-  function queueCommand(str) {
-    let processedStr = str;
-    if (!processedStr.endsWith('\n')) processedStr += '\n';
+  function queueCommand(payload) {
+    if (payload && typeof payload === 'object' && payload.bytes) {
+      commandQueue.push(new Uint8Array(payload.bytes));
+      processCommandQueue();
+      return;
+    }
+    let processedStr = payload;
+    if (payload && typeof payload === 'object' && payload.ascii) {
+      processedStr = payload.ascii;
+      if (!payload.noExtraNewline && !processedStr.endsWith('\n')) processedStr += '\n';
+    } else if (!processedStr.endsWith('\n')) {
+      processedStr += '\n';
+    }
     commandQueue.push(new TextEncoder().encode(processedStr));
     processCommandQueue();
   }
 
-  // BLE ASCII Write Method
+  // BLE write (ASCII or raw bytes)
   async function writeBytesImmediate(bytes) {
     if (!activeCharacteristic) {
       return false;
     }
     try {
       const asciiString = new TextDecoder().decode(bytes).trim();
-      log(`Sending Command: "${asciiString}"`, 'write');
+      const isPrintable = [...bytes].every(b => b >= 32 && b < 127);
+      log(isPrintable ? `Sending Command: "${asciiString}"` : `Sending bytes: [${[...bytes].join(', ')}]`, 'write');
       
       if (activeCharacteristic.properties.writeWithoutResponse) {
         await activeCharacteristic.writeValueWithoutResponse(bytes);
@@ -1027,8 +1042,12 @@
     }
   }
 
+  function sendCommand(payload) {
+    queueCommand(payload);
+  }
+
   function sendAscii(str) {
-    queueCommand(str);
+    sendCommand(str);
   }
 
   window.sendRawCommand = function() {

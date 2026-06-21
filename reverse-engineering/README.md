@@ -34,12 +34,22 @@ Commit and push that file — the cloud agent can then implement missing BLE com
 - **Version:** 5.0.3 (build 31)
 - **Your path:** `/Users/rawshn/Desktop/com.oytechnology.Neon_Attack-5.0.3-31.zip`
 
-## What we're looking for
+## Output
 
-| Known (PWA) | To discover (APK) |
-|-------------|-------------------|
-| `B=0..8;` brightness | Flash mode command |
-| `S=0..100;` speed | Beat / music mode |
-| `C=R,B,G;` color (GBR swap) | Beat sensitivity |
-| `M=1..200;` animation | NUS RX notifications |
-| Nordic UART `6e400001` | Any other GATT services |
+Results are written to:
+
+```
+reverse-engineering/output/protocol-findings.txt
+```
+
+This file is **populated** from Blutter analysis of APKPure Neon Attack v5.0.3 (build 31). Re-run locally with your zip to refresh.
+
+## Discovered vs PWA
+
+| PWA (empirical) | Neon Attack APK (Blutter) |
+|-----------------|---------------------------|
+| `B=0..8;` brightness | Obfuscated byte tiers (no `B=` literal) |
+| `S=0..100;` speed | `[132,122,…,118,20]` byte sequences |
+| `C=R,B,G;` color | `C=R,G,B;\n` (PWA may still need G/B swap) |
+| `M=1..200;` mode | `M{n}\n` or `[130,20]` for mode 0 |
+| `F=` / `A=` / `P=` (guessed) | Flash/Beat bytes; `INT={n};\r\n` sensitivity |

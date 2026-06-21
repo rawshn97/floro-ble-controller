@@ -1,0 +1,80 @@
+Neon Attack v5.0.3 (build 31) — FloRo BLE Protocol Findings
+Source: Blutter decompilation of libapp.so (Dart 3.5.4)
+Date: 2026-06-21
+
+Transport
+---------
+Service:  Nordic UART 6e400001-b5a3-f393-e0a9-e50e24dcca9e
+TX char:  6e400002-b5a3-f393-e0a9-e50e24dcca9e (write with response)
+RX char:  6e400003-b5a3-f393-e0a9-e50e24dcca9e (notify)
+Device filter string in app: "floro"
+
+Commands are sent as List<int> UTF-8 code units (raw bytes over NUS).
+
+CONFIRMED — ASCII (from pp.txt / floro_page.dart assembly)
+----------------------------------------------------------
+Color preset / picker:
+  C=255,0,255;\n
+  C=0,160,227;\n
+  ... (16 hardcoded presets in pp.txt)
+  Dynamic builder: "C=" + R + "," + G + "," + B + ";\n"
+  Note: APK uses standard RGB order in C= strings (no G/B swap in source).
+
+Mode (animation):
+  M{mode}\n          e.g. M32\n  (NO equals sign, NO semicolon)
+  Mode 0 special:    [130, 20]  (2-byte obfuscated sequence)
+
+Sensitivity (beat / music reactive — neon_dashboard.dart):
+  INT={value};\r\n   e.g. INT=22;\r\n
+  Slider values in app: 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2
+
+CONFIRMED — Obfuscated byte sequences (floro_page.dart / neon_dashboard.dart)
+---------------------------------------------------------------------------
+Flash OFF:  [158, 20]
+Flash ON:   [140, 20]
+
+Beat / music reactive OFF:  [136, 96, 26, 20]
+Beat / music reactive ON:   [136, 98, 26, 20]
+
+Vibe mode (alternate beat UI): [154, 98, 108, 26, 20]
+
+Power / connect handshake (sent on connect):
+  [164, 20]
+
+Speed slider (floro_page.dart — maps slider % to 3rd byte):
+  [132, 122, {char}, 118, 20]
+  char by slider position: b@12, d@25, f@38, h@51, j@64, l@77, n@90, p@100
+
+Legacy speed tiers (brightness-linked ranges, field_2b thresholds 5/10/20…):
+  [166, 122, {char}, 96, 118, 20]  or  [166, 122, {char}, 118, 20]
+
+Sensitivity dialog (maps selected int to obfuscated array — alternative to INT=):
+  value 22: [166,138,156,122,100,98,96,118,26,20]
+  value 20: [166,138,156,122,100,96,114,118,26,20]
+  value 18: [166,138,156,122,100,96,112,118,26,20]
+  ... down to value 2
+
+NOT FOUND in APK (likely PWA-empirical / firmware accepts both)
+---------------------------------------------------------------
+  B={0-8};     — brightness (no literal in libapp.so; app may use obfuscated tiers)
+  S={0-100};   — speed ASCII (app uses byte arrays above)
+  F={0|1};     — flash ASCII (app uses [158/140, 20])
+  A={0|1};     — beat ASCII (app uses [136, 96|98, 26, 20])
+  P={0|1|2};   — sensitivity ASCII (app uses INT= or obfuscated arrays)
+  M={mode};    — PWA format; official app uses M{mode}\n
+
+PWA recommendations
+-------------------
+- Keep B= / S= / M= if already working on hardware (widely used in community PWA).
+- Use byte commands for Flash and Beat (confirmed in APK).
+- Use INT={n};\r\n for sensitivity (confirmed); map Low/Med/High → 8 / 14 / 22.
+- Color: append \n; G/B swap may still be required for FloRo hardware wiring.
+- Mode 0: send bytes [130, 20] instead of M=0;
+
+Analysis artifacts
+------------------
+Blutter output: reverse-engineering/output/blutter-out/
+Key Dart paths:
+  package:neonattack/src/ble/ble_device_interactor.dart
+  package:neonattack/src/ui/Pages/floro_page.dart
+  package:neonattack/src/ui/device_detail/neon_dashboard.dart
