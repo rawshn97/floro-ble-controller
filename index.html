@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FloRo Sign Controller</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b0f19">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b111e;
+      --card-bg: rgba(22, 33, 56, 0.45);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --neon-glow: #ff007f;
+      --neon-glow-rgba: rgba(255, 0, 127, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(22, 33, 56, 0.5) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, var(--neon-glow-rgba) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    header img {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--neon-glow-rgba);
+      border: 1px solid var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff, var(--neon-glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .glass-card.active-glow {
+      border-color: var(--neon-glow-rgba);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 0 var(--neon-glow-rgba);
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Connection State UI */
+    .connection-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background-color: var(--error);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+    }
+
+    .status-badge.connected {
+      background-color: var(--success);
+      box-shadow: 0 0 15px var(--success-glow);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-connect {
+      background: linear-gradient(135deg, var(--neon-glow), #a855f7);
+      border: none;
+      box-shadow: 0 0 15px var(--neon-glow-rgba);
+    }
+
+    .btn-connect:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 25px var(--neon-glow-rgba);
+    }
+
+    .btn-disconnect {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: none;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 56px;
+      height: 30px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: .3s;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #ffffff;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    input:checked + .slider {
+      background-color: var(--neon-glow);
+      box-shadow: 0 0 15px var(--neon-glow-rgba);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .power-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .power-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    /* Slider Container styling */
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+    }
+
+    .slider-val {
+      font-weight: 700;
+      color: var(--neon-glow);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      margin: 10px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: 2px solid var(--neon-glow);
+      box-shadow: 0 0 10px var(--neon-glow-rgba);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Disabled styling */
+    .disabled-control {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Color Swatches Grid */
+    .color-swatches {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .swatch-btn {
+      height: 48px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .swatch-btn:active {
+      transform: scale(0.92);
+    }
+
+    .swatch-btn.selected {
+      border: 2px solid white;
+      box-shadow: 0 0 15px var(--neon-glow-rgba);
+    }
+
+    /* Color Picker */
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .color-picker-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Mode Presets Grid */
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .mode-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mode-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--neon-glow);
+      box-shadow: 0 0 10px var(--neon-glow-rgba);
+    }
+
+    .mode-card.selected {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--neon-glow);
+      box-shadow: 0 0 15px var(--neon-glow-rgba);
+      font-weight: 600;
+    }
+
+    .mode-title {
+      font-size: 0.95rem;
+    }
+
+    /* Console Panel */
+    .console-header {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .console-arrow {
+      transition: transform 0.3s;
+    }
+
+    .console-arrow.collapsed {
+      transform: rotate(-90deg);
+    }
+
+    .console-body {
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 12px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+    }
+
+    .console-body.collapsed {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 0;
+      border: none;
+      overflow: hidden;
+    }
+
+    .console-entry {
+      line-height: 1.4;
+      border-left: 2px solid var(--border);
+      padding-left: 8px;
+    }
+
+    .console-entry.info { border-color: #3b82f6; color: #93c5fd; }
+    .console-entry.success { border-color: var(--success); color: #a7f3d0; }
+    .console-entry.error { border-color: var(--error); color: #fca5a5; }
+    .console-entry.write { border-color: var(--neon-glow); color: #fbcfe8; }
+
+    /* PWA Install Banner */
+    .install-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--neon-glow-rgba);
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <img src="logo.png" alt="FloRo Logo" onerror="this.src='floro.png';">
+    <h1>FloRo Controller</h1>
+  </header>
+
+  <!-- PWA Install Banner -->
+  <div id="install-banner" class="install-banner hidden">
+    <div style="font-size: 0.9rem; font-weight: 500;">Install FloRo as an App</div>
+    <button id="btn-install" class="btn btn-connect" style="padding: 6px 14px; font-size: 0.8rem;">Install</button>
+  </div>
+
+  <!-- Connection Panel -->
+  <div class="glass-card">
+    <div class="connection-row">
+      <div>
+        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 2px;">Sign Connection</div>
+        <div id="device-name" style="font-size: 0.85rem; color: var(--text-muted);">Disconnected</div>
+      </div>
+      <span id="connection-status" class="status-badge">OFFLINE</span>
+    </div>
+    
+    <div style="margin-top: 15px;">
+      <button id="btn-connect" class="btn btn-connect" style="width: 100%;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+        Scan & Connect Sign
+      </button>
+      <button id="btn-disconnect" class="btn btn-disconnect hidden" style="width: 100%;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        Disconnect Sign
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Controls Panel -->
+  <div id="controls-panel" class="glass-card active-glow disabled-control">
+    <!-- Power Toggle -->
+    <div class="power-row">
+      <span class="power-label">Sign Power</span>
+      <label class="switch">
+        <input type="checkbox" id="power-checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div id="adjustable-controls">
+      <!-- Brightness Slider -->
+      <div class="slider-container">
+        <div class="slider-label-row">
+          <span>Brightness</span>
+          <span class="slider-val" id="val-brightness">8 / 8</span>
+        </div>
+        <input type="range" id="slider-brightness" min="0" max="8" value="8">
+      </div>
+
+      <!-- Speed Slider -->
+      <div class="slider-container" style="margin-top: 20px;">
+        <div class="slider-label-row">
+          <span>Speed</span>
+          <span class="slider-val" id="val-speed">50%</span>
+        </div>
+        <input type="range" id="slider-speed" min="0" max="100" value="50">
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Control Panel -->
+  <div id="color-panel" class="glass-card disabled-control">
+    <div class="card-title">Neon Color Swatches</div>
+    
+    <div class="color-swatches">
+      <!-- Colors configured to map Ruby Red, Green, Blue, Sunny Yellow, Hot Pink, Cyan, White, Purple -->
+      <button class="swatch-btn selected" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red"></button>
+      <button class="swatch-btn" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green"></button>
+      <button class="swatch-btn" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue"></button>
+      <button class="swatch-btn" style="background: #ffff00;" onclick="selectSwatch(this, 255, 255, 0)" title="Sunny Yellow"></button>
+      <button class="swatch-btn" style="background: #ff00ff;" onclick="selectSwatch(this, 255, 0, 255)" title="Hot Pink"></button>
+      <button class="swatch-btn" style="background: #00ffff;" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan"></button>
+      <button class="swatch-btn" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple"></button>
+      <button class="swatch-btn" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White"></button>
+    </div>
+
+    <div class="color-picker-wrapper">
+      <span class="color-picker-label">Custom Neon Hue:</span>
+      <input type="color" id="color-picker" value="#ff0000">
+    </div>
+  </div>
+
+  <!-- Animation Panel -->
+  <div id="animation-panel" class="glass-card disabled-control">
+    <div class="card-title">Animation Mode</div>
+    
+    <div class="modes-grid">
+      <div class="mode-card" data-mode="32" onclick="selectMode(this, 32)">
+        <div class="mode-title">Pattern 32</div>
+      </div>
+      <div class="mode-card" data-mode="34" onclick="selectMode(this, 34)">
+        <div class="mode-title">Pattern 34</div>
+      </div>
+      <div class="mode-card" data-mode="35" onclick="selectMode(this, 35)">
+        <div class="mode-title">Pattern 35</div>
+      </div>
+      <div class="mode-card" data-mode="38" onclick="selectMode(this, 38)">
+        <div class="mode-title">Pattern 38</div>
+      </div>
+      <div class="mode-card" data-mode="50" onclick="selectMode(this, 50)">
+        <div class="mode-title">Pattern 50</div>
+      </div>
+      <div class="mode-card" data-mode="66" onclick="selectMode(this, 66)">
+        <div class="mode-title">Pattern 66</div>
+      </div>
+      <div class="mode-card" data-mode="102" onclick="selectMode(this, 102)">
+        <div class="mode-title">Pattern 102</div>
+      </div>
+      <div class="mode-card" data-mode="108" onclick="selectMode(this, 108)">
+        <div class="mode-title">Pattern 108</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagnostics Log -->
+  <div class="glass-card">
+    <div class="card-title console-header" onclick="toggleConsole()">
+      <span>Activity Console</span>
+      <span id="console-arrow" class="console-arrow">▲</span>
+    </div>
+    <div id="console-body" class="console-body">
+      <div class="console-entry info">System ready. Click Connect to find FloRo.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then((reg) => {
+        console.log('ServiceWorker registered successfully: ', reg.scope);
+      }, (err) => {
+        console.warn('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
+
+  // BLE Protocol Definitions
+  const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+  const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+
+  let bleDevice = null;
+  let bleServer = null;
+  let activeCharacteristic = null;
+
+  // App UI State
+  let lastBrightnessVal = 8; // Default to 8 (max) when turned back ON
+  let activeColor = '#ff0000'; // Default theme color (Ruby Red)
+
+  // DOM Elements
+  const btnConnect = document.getElementById('btn-connect');
+  const btnDisconnect = document.getElementById('btn-disconnect');
+  const deviceNameEl = document.getElementById('device-name');
+  const connectionStatus = document.getElementById('connection-status');
+  
+  const controlsPanel = document.getElementById('controls-panel');
+  const colorPanel = document.getElementById('color-panel');
+  const animationPanel = document.getElementById('animation-panel');
+  const adjustableControls = document.getElementById('adjustable-controls');
+
+  const powerCheckbox = document.getElementById('power-checkbox');
+  const sliderBrightness = document.getElementById('slider-brightness');
+  const valBrightness = document.getElementById('val-brightness');
+  const sliderSpeed = document.getElementById('slider-speed');
+  const valSpeed = document.getElementById('val-speed');
+  const colorPicker = document.getElementById('color-picker');
+  const consoleBody = document.getElementById('console-body');
+  const consoleArrow = document.getElementById('console-arrow');
+
+  // Console log helpers
+  function log(message, type = 'info') {
+    const entry = document.createElement('div');
+    entry.className = `console-entry ${type}`;
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    entry.textContent = `[${now}] ${message}`;
+    consoleBody.appendChild(entry);
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+  }
+
+  function toggleConsole() {
+    consoleBody.classList.toggle('collapsed');
+    consoleArrow.classList.toggle('collapsed');
+  }
+
+  // BLE Connection handling
+  async function connectDevice() {
+    try {
+      log('Scanning for FloRo Bluetooth sign...', 'info');
+      bleDevice = await navigator.bluetooth.requestDevice({
+        filters: [
+          { name: 'FloRo' },
+          { namePrefix: 'FloRo' }
+        ],
+        optionalServices: [NUS_SERVICE_UUID]
+      });
+
+      deviceNameEl.textContent = bleDevice.name || 'FloRo Sign';
+      deviceNameEl.style.color = 'var(--text)';
+      log(`Found sign: ${bleDevice.name || 'FloRo'}`, 'success');
+
+      bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+      log('Connecting to Bluetooth GATT...', 'info');
+      bleServer = await bleDevice.gatt.connect();
+      log('Bluetooth connection established.', 'success');
+
+      connectionStatus.textContent = 'CONNECTED';
+      connectionStatus.className = 'status-badge connected';
+      btnConnect.classList.add('hidden');
+      btnDisconnect.classList.remove('hidden');
+
+      log('Discovering Nordic UART Service...', 'info');
+      const service = await bleServer.getPrimaryService(NUS_SERVICE_UUID);
+      
+      log('Discovering Write Characteristic...', 'info');
+      activeCharacteristic = await service.getCharacteristic(NUS_WRITE_UUID);
+      log('Sign connected and ready for control.', 'success');
+
+      // Enable panels
+      controlsPanel.classList.remove('disabled-control');
+      colorPanel.classList.remove('disabled-control');
+      animationPanel.classList.remove('disabled-control');
+
+      // Initial Sync
+      sendAscii(`B=${sliderBrightness.value};`, 'Initial Brightness Sync');
+
+    } catch (error) {
+      log(`Connection error: ${error.message}`, 'error');
+      resetUI();
+    }
+  }
+
+  function disconnectDevice() {
+    if (!bleDevice) return;
+    log('Disconnecting from sign...', 'info');
+    bleDevice.gatt.disconnect();
+  }
+
+  function onDisconnected() {
+    log('Bluetooth connection lost.', 'error');
+    resetUI();
+  }
+
+  function resetUI() {
+    bleDevice = null;
+    bleServer = null;
+    activeCharacteristic = null;
+
+    deviceNameEl.textContent = 'Disconnected';
+    deviceNameEl.style.color = 'var(--text-muted)';
+    connectionStatus.textContent = 'OFFLINE';
+    connectionStatus.className = 'status-badge';
+    
+    btnConnect.classList.remove('hidden');
+    btnDisconnect.classList.add('hidden');
+
+    controlsPanel.classList.add('disabled-control');
+    colorPanel.classList.add('disabled-control');
+    animationPanel.classList.add('disabled-control');
+  }
+
+  btnConnect.addEventListener('click', connectDevice);
+  btnDisconnect.addEventListener('click', disconnectDevice);
+
+  // Write Characteristic logic
+  async function writeBytes(bytes) {
+    if (!activeCharacteristic) {
+      return false;
+    }
+    try {
+      const asciiString = new TextDecoder().decode(bytes).trim();
+      log(`Sending Command: "${asciiString}"`, 'write');
+      
+      if (activeCharacteristic.properties.writeWithoutResponse) {
+        await activeCharacteristic.writeValueWithoutResponse(bytes);
+      } else {
+        await activeCharacteristic.writeValueWithResponse(bytes);
+      }
+      return true;
+    } catch (error) {
+      log(`Command failed: ${error.message}`, 'error');
+      return false;
+    }
+  }
+
+  function sendAscii(str, label = 'Command') {
+    let processedStr = str;
+    if (!processedStr.endsWith('\n')) {
+      processedStr += '\n';
+    }
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(processedStr);
+    writeBytes(bytes);
+  }
+
+  // Dynamic Neon Theme Styling
+  function updateNeonThemeColor(hexColor) {
+    activeColor = hexColor;
+    document.documentElement.style.setProperty('--neon-glow', hexColor);
+    document.documentElement.style.setProperty('--neon-glow-rgba', hexColor + '40'); // 25% opacity
+    
+    // Add visual theme update confirmation
+    const panels = [controlsPanel, colorPanel, animationPanel];
+    panels.forEach(p => {
+      p.style.boxShadow = `0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 16px 0 ${hexColor}25`;
+      p.style.borderColor = `${hexColor}40`;
+    });
+  }
+
+  // Power and Brightness Control logic
+  function sendBrightness(val) {
+    sendAscii(`B=${val};`, `Set Brightness to ${val}`);
+  }
+
+  function updateBrightnessUI(val) {
+    sliderBrightness.value = val;
+    valBrightness.textContent = val === 0 ? 'OFF' : `${val} / 8`;
+    
+    if (val === 0) {
+      powerCheckbox.checked = false;
+      adjustableControls.classList.add('disabled-control');
+      colorPanel.classList.add('disabled-control');
+      animationPanel.classList.add('disabled-control');
+    } else {
+      powerCheckbox.checked = true;
+      adjustableControls.classList.remove('disabled-control');
+      colorPanel.classList.remove('disabled-control');
+      animationPanel.classList.remove('disabled-control');
+      lastBrightnessVal = val;
+    }
+  }
+
+  // Toggle Power Switch Click
+  powerCheckbox.addEventListener('change', () => {
+    if (powerCheckbox.checked) {
+      // Restore last non-zero brightness
+      updateBrightnessUI(lastBrightnessVal);
+      sendBrightness(lastBrightnessVal);
+    } else {
+      // Set to 0 (OFF)
+      updateBrightnessUI(0);
+      sendBrightness(0);
+    }
+  });
+
+  // Brightness Slider input
+  let bTimeout = null;
+  sliderBrightness.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value);
+    updateBrightnessUI(val);
+    
+    if (bTimeout) clearTimeout(bTimeout);
+    bTimeout = setTimeout(() => {
+      sendBrightness(val);
+    }, 120);
+  });
+
+  // Speed Slider input
+  let sTimeout = null;
+  sliderSpeed.addEventListener('input', (e) => {
+    const val = e.target.value;
+    valSpeed.textContent = `${val}%`;
+    
+    if (sTimeout) clearTimeout(sTimeout);
+    sTimeout = setTimeout(() => {
+      sendAscii(`S=${val};`, `Set Speed to ${val}%`);
+    }, 120);
+  });
+
+  // Color selection logic (Swatches & Custom Picker)
+  window.selectSwatch = function(btn, r, g, b) {
+    // Remove selected state from all swatches
+    document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('selected'));
+    btn.classList.add('selected');
+    
+    // Convert RGB to HEX for the theme glow
+    const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+    
+    const hex = rgbToHex(r, g, b);
+    updateNeonThemeColor(hex);
+    colorPicker.value = hex;
+
+    // Correcting physical green/blue swap: C=Red,Blue_Channel,Green_Channel;\n
+    sendAscii(`C=${r},${b},${g};`, `Color (${r}, ${g}, ${b})`);
+  };
+
+  colorPicker.addEventListener('input', (e) => {
+    const hexColor = e.target.value;
+    updateNeonThemeColor(hexColor);
+    
+    // Remove highlight on swatches
+    document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('selected'));
+
+    const r = parseInt(hexColor.substring(1, 3), 16);
+    const g = parseInt(hexColor.substring(3, 5), 16);
+    const b = parseInt(hexColor.substring(5, 7), 16);
+    
+    // Throttle color picker values slightly
+    if (window.colorTimeout) clearTimeout(window.colorTimeout);
+    window.colorTimeout = setTimeout(() => {
+      // Swapping green and blue channels for the physical LED wiring correction
+      sendAscii(`C=${r},${b},${g};`, `Color Picker (${r}, ${g}, ${b})`);
+    }, 150);
+  });
+
+  // Mode Selection logic
+  window.selectMode = function(btn, mode) {
+    document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('selected'));
+    btn.classList.add('selected');
+    sendAscii(`M=${mode};`, `Pattern Mode ${mode}`);
+  };
+
+  // PWA Install Prompt handling
+  let deferredPrompt;
+  const installBanner = document.getElementById('install-banner');
+  const btnInstall = document.getElementById('btn-install');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBanner.classList.remove('hidden');
+  });
+
+  btnInstall.addEventListener('click', () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        log('User installed FloRo Controller app.', 'success');
+      }
+      installBanner.classList.add('hidden');
+      deferredPrompt = null;
+    });
+  });
+</script>
+</body>
+</html>
