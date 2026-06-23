@@ -25,6 +25,12 @@ export class FloroBleController {
 
     this.queue = [];
     this.processing = false;
+    /** Bumped when mode changes so in-flight sendScene skips a stale trailing M command. */
+    this.sceneGeneration = 0;
+  }
+
+  bumpSceneGeneration() {
+    this.sceneGeneration += 1;
   }
 
   get isConnected() {
@@ -258,12 +264,22 @@ export class FloroBleController {
     return this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
   }
 
-  /** Push full sign state — mode is sent last after a short delay (matches Neon Attack app). */
-  async sendScene({ brightness, speed, r, g, b, mode }) {
+  /** Push sign state. Mode is sent last after a short delay unless includeMode is false. */
+  async sendScene({ brightness, speed, r, g, b, mode, includeMode = true }) {
+    const generation = ++this.sceneGeneration;
+
     await this.sendAscii(`B=${brightness}`, `Brightness ${brightness}`);
+    if (generation !== this.sceneGeneration) return;
+
     await this.sendAscii(`S=${uiSpeedToBle(speed)}`, `Speed ${speed}%`);
+    if (generation !== this.sceneGeneration) return;
+
     await this.sendAscii(colorCommand(r, g, b).trimEnd(), 'Color');
+    if (generation !== this.sceneGeneration) return;
+
     await new Promise((r) => setTimeout(r, MODE_DELAY_MS));
+    if (generation !== this.sceneGeneration || !includeMode) return;
+
     await this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
   }
 }

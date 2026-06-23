@@ -114,7 +114,7 @@ function updateReconnectButton() {
   }
 }
 
-async function syncSceneToSign() {
+async function syncSceneToSign({ includeMode } = {}) {
   if (!ble.isConnected) return;
 
   const { r, g, b } = hexToRgb(colorPicker.value);
@@ -125,7 +125,13 @@ async function syncSceneToSign() {
     g,
     b,
     mode: activeModeVal,
+    // Solid color (mode 1): color changes only need C=; M1 is sent once via setMode.
+    includeMode: includeMode ?? true,
   });
+}
+
+function syncColorToSign() {
+  return syncSceneToSign({ includeMode: activeModeVal !== 1 });
 }
 
 async function onConnected() {
@@ -244,7 +250,7 @@ window.selectSwatch = function (btn, r, g, b) {
   activeColor = updateNeonThemeColor(hex, panels);
   colorPicker.value = hex;
   haptic('light');
-  syncSceneToSign();
+  syncColorToSign();
 };
 
 let colorTimeout = null;
@@ -255,12 +261,13 @@ colorPicker.addEventListener('input', (e) => {
 
   if (colorTimeout) clearTimeout(colorTimeout);
   colorTimeout = setTimeout(() => {
-    syncSceneToSign();
+    syncColorToSign();
   }, 150);
 });
 
 function setMode(mode) {
   activeModeVal = mode;
+  ble.bumpSceneGeneration();
   if (modeSearch.value) {
     modeSearch.value = '';
     filterAnimationOptions(animDropdown, '', mode);
