@@ -49,24 +49,20 @@
     </div>
     <div id="power-strip" class="power-strip disabled-control">
       <span class="power-strip-label">Power</span>
-      <div class="power-icon-btns" role="group" aria-label="Sign power">
-        <button id="power-btn-off" class="btn btn-power-icon" type="button" aria-label="Power off" aria-pressed="false">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 18h6"></path>
-            <path d="M10 22h4"></path>
-            <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.2 4.7 3 6.1V18h8v-2.9c1.8-1.4 3-3.6 3-6.1a7 7 0 0 0-7-7z"></path>
-          </svg>
-        </button>
-        <button id="power-btn-on" class="btn btn-power-icon is-active" type="button" aria-label="Power on" aria-pressed="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 18h6"></path>
-            <path d="M10 22h4"></path>
-            <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z" fill="currentColor" stroke="none"></path>
-            <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"></path>
-            <path d="M12 2v-1M4.2 4.2l.7.7M19.8 4.2l-.7.7M2 12h1M21 12h1" stroke="currentColor" stroke-width="1.5"></path>
-          </svg>
-        </button>
-      </div>
+      <button id="power-btn" class="btn power-remote-btn is-on" type="button" aria-label="Power on" aria-pressed="true">
+        <svg class="power-icon power-icon-off" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 18h6"></path>
+          <path d="M10 22h4"></path>
+          <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.2 4.7 3 6.1V18h8v-2.9c1.8-1.4 3-3.6 3-6.1a7 7 0 0 0-7-7z"></path>
+        </svg>
+        <svg class="power-icon power-icon-on" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 18h6"></path>
+          <path d="M10 22h4"></path>
+          <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z" fill="currentColor" stroke="none"></path>
+          <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"></path>
+          <path d="M12 2v-1M4.2 4.2l.7.7M19.8 4.2l-.7.7M2 12h1M21 12h1" stroke="currentColor" stroke-width="1.5"></path>
+        </svg>
+      </button>
     </div>
   </div>
 </div>

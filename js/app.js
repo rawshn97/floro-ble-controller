@@ -42,8 +42,7 @@ const solidControls = document.getElementById('solid-controls');
 const colorPanel = document.getElementById('color-panel');
 const animControls = document.getElementById('anim-controls');
 const animationPanel = document.getElementById('animation-panel');
-const powerBtnOn = document.getElementById('power-btn-on');
-const powerBtnOff = document.getElementById('power-btn-off');
+const powerBtn = document.getElementById('power-btn');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
@@ -293,26 +292,17 @@ window.setPowerState = function (on) {
   }
 };
 
-if (powerBtnOn) {
-  powerBtnOn.addEventListener('click', () => {
-    if (!isPoweredOn) setPowerState(true);
-  });
-}
-
-if (powerBtnOff) {
-  powerBtnOff.addEventListener('click', () => {
-    if (isPoweredOn) setPowerState(false);
+if (powerBtn) {
+  powerBtn.addEventListener('click', () => {
+    setPowerState(!isPoweredOn);
   });
 }
 
 function updatePowerUI(on) {
-  if (powerBtnOn) {
-    powerBtnOn.classList.toggle('is-active', on);
-    powerBtnOn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-  if (powerBtnOff) {
-    powerBtnOff.classList.toggle('is-active', !on);
-    powerBtnOff.setAttribute('aria-pressed', !on ? 'true' : 'false');
+  if (powerBtn) {
+    powerBtn.classList.toggle('is-on', on);
+    powerBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
   }
 
   if (on) {

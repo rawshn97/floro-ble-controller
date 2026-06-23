@@ -221,39 +221,60 @@ body.sheet-open {
   font-weight: 500;
 }
 
-.power-icon-btns {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.btn-power-icon {
+.power-remote-btn {
+  position: relative;
   width: 44px;
   height: 44px;
   min-height: 44px;
   padding: 0;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--fill-tertiary);
   color: var(--label-tertiary);
   border-radius: var(--radius-md);
-  transition: background var(--spring), color var(--spring), box-shadow var(--spring), transform var(--spring);
+  transition: background var(--spring), color var(--spring), box-shadow var(--spring), transform var(--spring), opacity var(--spring);
 }
 
-.btn-power-icon.is-active {
-  color: var(--label-primary);
-  background: var(--fill-primary);
+.power-remote-btn .power-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition: opacity var(--spring), transform var(--spring);
 }
 
-#power-btn-on.is-active {
+.power-remote-btn .power-icon-off {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.power-remote-btn .power-icon-on {
+  opacity: 0;
+  transform: scale(0.88);
+}
+
+.power-remote-btn.is-on {
   color: #ffe566;
   background: rgba(255, 229, 102, 0.18);
-  box-shadow: 0 0 0 1px rgba(255, 229, 102, 0.35), 0 0 12px rgba(255, 229, 102, 0.15);
+  box-shadow: 0 0 0 1px rgba(255, 229, 102, 0.35), 0 0 14px rgba(255, 229, 102, 0.2);
 }
 
-#power-btn-off.is-active {
-  color: var(--label-secondary);
-  background: var(--fill-primary);
-  box-shadow: 0 0 0 1px var(--separator);
+.power-remote-btn.is-on .power-icon-off {
+  opacity: 0;
+  transform: scale(0.88);
+}
+
+.power-remote-btn.is-on .power-icon-on {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.power-remote-btn:not(.is-on) {
+  color: var(--label-tertiary);
+  background: var(--fill-tertiary);
+  box-shadow: none;
+  opacity: 0.72;
 }
 
 /* ── Main ── */
