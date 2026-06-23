@@ -1,0 +1,391 @@
+import { FloroBleController, isBleSupported } from './ble.js';
+import { hexToRgb } from './protocol.js';
+import {
+  createLogger,
+  filterAnimationOptions,
+  haptic,
+  rgbToHex,
+  setupCompatBanner,
+  setupFavoriteModal,
+  setupInstallBanner,
+  toggleConsole,
+  updateNeonThemeColor,
+  WakeLockManager,
+} from './ui.js';
+
+const defaultFavorites = [
+  { mode: 32, label: 'Pattern 32' },
+  { mode: 34, label: 'Pattern 34' },
+  { mode: 35, label: 'Pattern 35' },
+  { mode: 38, label: 'Pattern 38' },
+  { mode: 50, label: 'Pattern 50' },
+  { mode: 66, label: 'Pattern 66' },
+  { mode: 102, label: 'Pattern 102' },
+  { mode: 108, label: 'Pattern 108' },
+];
+
+const btnConnect = document.getElementById('btn-connect');
+const btnReconnect = document.getElementById('btn-reconnect');
+const btnDisconnect = document.getElementById('btn-disconnect');
+const deviceNameEl = document.getElementById('device-name');
+const connectionStatus = document.getElementById('connection-status');
+
+const powerPanel = document.getElementById('power-panel');
+const controlsPanel = document.getElementById('controls-panel');
+const colorPanel = document.getElementById('color-panel');
+const animationPanel = document.getElementById('animation-panel');
+const powerStatusText = document.getElementById('power-status-text');
+
+const sliderBrightness = document.getElementById('slider-brightness');
+const valBrightness = document.getElementById('val-brightness');
+const sliderSpeed = document.getElementById('slider-speed');
+const valSpeed = document.getElementById('val-speed');
+const colorPicker = document.getElementById('color-picker');
+const animDropdown = document.getElementById('anim-dropdown');
+const modeSearch = document.getElementById('mode-search');
+const favoritesGrid = document.getElementById('favorites-grid');
+
+const consoleBody = document.getElementById('console-body');
+const consoleArrow = document.getElementById('console-arrow');
+const compatBanner = document.getElementById('compat-banner');
+
+const panels = [powerPanel, controlsPanel, colorPanel, animationPanel];
+
+let isPoweredOn = true;
+let lastBrightnessVal = 8;
+let activeColor = '#ff0000';
+let activeModeVal = 32;
+let favorites = [];
+
+const log = createLogger(consoleBody);
+const wakeLock = new WakeLockManager(log);
+
+const ble = new FloroBleController({
+  onLog: log,
+  onConnectionChange: (connected, name) => {
+    if (connected) {
+      deviceNameEl.textContent = name;
+      deviceNameEl.style.color = 'var(--text)';
+      connectionStatus.textContent = 'CONNECTED';
+      connectionStatus.className = 'status-badge connected';
+      btnConnect.classList.add('hidden');
+      btnReconnect.classList.add('hidden');
+      btnDisconnect.classList.remove('hidden');
+      enablePanels(true);
+      wakeLock.acquire();
+      updateReconnectButton();
+    } else {
+      resetUI();
+    }
+  },
+  onDisconnect: () => {
+    wakeLock.release();
+  },
+});
+
+function enablePanels(enabled) {
+  panels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
+}
+
+function resetUI() {
+  deviceNameEl.textContent = 'Disconnected';
+  deviceNameEl.style.color = 'var(--text-muted)';
+  connectionStatus.textContent = 'OFFLINE';
+  connectionStatus.className = 'status-badge';
+  btnConnect.classList.remove('hidden');
+  btnDisconnect.classList.add('hidden');
+  enablePanels(false);
+  updateReconnectButton();
+}
+
+function updateReconnectButton() {
+  if (!isBleSupported() || ble.isConnected) {
+    btnReconnect.classList.add('hidden');
+    return;
+  }
+
+  const last = ble.lastDeviceInfo;
+  if (ble.canReconnect() && last) {
+    btnReconnect.textContent = `Reconnect to ${last.name}`;
+    btnReconnect.classList.remove('hidden');
+  } else {
+    btnReconnect.classList.add('hidden');
+  }
+}
+
+async function syncSceneToSign() {
+  if (!ble.isConnected) return;
+
+  const { r, g, b } = hexToRgb(colorPicker.value);
+  await ble.sendScene({
+    brightness: isPoweredOn ? lastBrightnessVal : 0,
+    speed: sliderSpeed.value,
+    r,
+    g,
+    b,
+    mode: activeModeVal,
+  });
+}
+
+async function onConnected() {
+  isPoweredOn = true;
+  updatePowerUI(true);
+  log(`Applying flow mode ${activeModeVal}…`, 'info');
+  await syncSceneToSign();
+}
+
+async function connectDevice() {
+  if (!isBleSupported()) {
+    log('Web Bluetooth is not available.', 'error');
+    return;
+  }
+
+  try {
+    btnConnect.disabled = true;
+    btnReconnect.disabled = true;
+    await ble.connectNew();
+    await onConnected();
+    haptic('light');
+  } catch (error) {
+    if (error.name !== 'NotFoundError') {
+      log(`Connection error: ${error.message}`, 'error');
+    } else {
+      log('Scan cancelled.', 'info');
+    }
+    resetUI();
+  } finally {
+    btnConnect.disabled = false;
+    btnReconnect.disabled = false;
+  }
+}
+
+async function reconnectDevice() {
+  if (!isBleSupported()) return;
+
+  try {
+    btnConnect.disabled = true;
+    btnReconnect.disabled = true;
+    await ble.reconnectLast();
+    await onConnected();
+    haptic('light');
+  } catch (error) {
+    log(`Reconnect error: ${error.message}`, 'error');
+    resetUI();
+  } finally {
+    btnConnect.disabled = false;
+    btnReconnect.disabled = false;
+  }
+}
+
+function disconnectDevice() {
+  ble.disconnect();
+  wakeLock.release();
+  haptic('light');
+}
+
+window.setPowerState = function (on) {
+  isPoweredOn = on;
+  updatePowerUI(on);
+  haptic(on ? 'light' : 'heavy');
+  if (on) {
+    syncSceneToSign();
+  } else {
+    ble.sendBrightness(0);
+  }
+};
+
+function updatePowerUI(on) {
+  if (on) {
+    powerStatusText.textContent = 'POWER ON';
+    powerStatusText.className = 'power-status-indicator';
+    controlsPanel.classList.remove('disabled-control');
+    colorPanel.classList.remove('disabled-control');
+    animationPanel.classList.remove('disabled-control');
+    sliderBrightness.value = lastBrightnessVal;
+    valBrightness.textContent = `${lastBrightnessVal} / 8`;
+  } else {
+    powerStatusText.textContent = 'POWER OFF';
+    powerStatusText.className = 'power-status-indicator off';
+    controlsPanel.classList.add('disabled-control');
+    colorPanel.classList.add('disabled-control');
+    animationPanel.classList.add('disabled-control');
+    valBrightness.textContent = 'OFF';
+  }
+}
+
+let bTimeout = null;
+sliderBrightness.addEventListener('input', (e) => {
+  const val = parseInt(e.target.value, 10);
+  lastBrightnessVal = val;
+  valBrightness.textContent = `${val} / 8`;
+  if (bTimeout) clearTimeout(bTimeout);
+  bTimeout = setTimeout(() => {
+    if (isPoweredOn) ble.sendBrightness(val);
+  }, 120);
+});
+
+let sTimeout = null;
+sliderSpeed.addEventListener('input', (e) => {
+  const val = e.target.value;
+  valSpeed.textContent = `${val}%`;
+  if (sTimeout) clearTimeout(sTimeout);
+  sTimeout = setTimeout(() => ble.sendSpeed(val), 120);
+});
+
+window.selectSwatch = function (btn, r, g, b) {
+  document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const hex = rgbToHex(r, g, b);
+  activeColor = updateNeonThemeColor(hex, panels);
+  colorPicker.value = hex;
+  haptic('light');
+  syncSceneToSign();
+};
+
+let colorTimeout = null;
+colorPicker.addEventListener('input', (e) => {
+  const hexColor = e.target.value;
+  activeColor = updateNeonThemeColor(hexColor, panels);
+  document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+
+  if (colorTimeout) clearTimeout(colorTimeout);
+  colorTimeout = setTimeout(() => {
+    syncSceneToSign();
+  }, 150);
+});
+
+function setMode(mode) {
+  activeModeVal = mode;
+  if (modeSearch.value) {
+    modeSearch.value = '';
+    filterAnimationOptions(animDropdown, '', mode);
+  } else {
+    animDropdown.value = mode;
+  }
+  syncSceneToSign();
+  highlightActiveFavorite();
+  haptic('light');
+}
+
+animDropdown.addEventListener('change', (e) => {
+  setMode(parseInt(e.target.value, 10));
+});
+
+window.stepMode = function (delta) {
+  let mode = parseInt(animDropdown.value, 10) + delta;
+  if (mode < 1) mode = 200;
+  if (mode > 200) mode = 1;
+  setMode(mode);
+};
+
+modeSearch.addEventListener('input', (e) => {
+  filterAnimationOptions(animDropdown, e.target.value, activeModeVal);
+});
+
+function loadFavorites() {
+  const stored = localStorage.getItem('floro_favorites');
+  if (stored) {
+    favorites = JSON.parse(stored);
+  } else {
+    favorites = [...defaultFavorites];
+    saveFavorites();
+  }
+  renderFavorites();
+}
+
+function saveFavorites() {
+  localStorage.setItem('floro_favorites', JSON.stringify(favorites));
+}
+
+function renderFavorites() {
+  favoritesGrid.innerHTML = '';
+  favorites.forEach((fav) => {
+    const chip = document.createElement('div');
+    chip.className = `fav-chip ${fav.mode === activeModeVal ? 'active' : ''}`;
+    chip.setAttribute('data-mode', fav.mode);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = fav.label;
+    labelSpan.addEventListener('click', () => setMode(fav.mode));
+    chip.appendChild(labelSpan);
+
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'fav-chip-remove';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeFavorite(fav.mode);
+    });
+    chip.appendChild(removeBtn);
+
+    favoritesGrid.appendChild(chip);
+  });
+}
+
+function highlightActiveFavorite() {
+  document.querySelectorAll('.fav-chip').forEach((chip) => {
+    const mode = parseInt(chip.getAttribute('data-mode'), 10);
+    chip.classList.toggle('active', mode === activeModeVal);
+  });
+}
+
+window.addCurrentToFavorites = function () {
+  const mode = activeModeVal;
+  if (favorites.some((f) => f.mode === mode)) {
+    log('Mode is already in your favorites.', 'info');
+    return;
+  }
+  window.openFavoriteModal(mode);
+};
+
+function removeFavorite(mode) {
+  favorites = favorites.filter((f) => f.mode !== mode);
+  saveFavorites();
+  renderFavorites();
+  log(`Removed Mode ${mode} from presets.`, 'info');
+}
+
+window.toggleConsole = () => toggleConsole(consoleBody, consoleArrow);
+
+btnConnect.addEventListener('click', connectDevice);
+btnReconnect.addEventListener('click', reconnectDevice);
+btnDisconnect.addEventListener('click', disconnectDevice);
+
+filterAnimationOptions(animDropdown, '', activeModeVal);
+animDropdown.value = activeModeVal;
+loadFavorites();
+updateReconnectButton();
+setupCompatBanner(compatBanner, log);
+
+setupInstallBanner({
+  bannerEl: document.getElementById('install-banner'),
+  btnInstall: document.getElementById('btn-install'),
+  btnDismiss: document.getElementById('btn-dismiss-install'),
+  log,
+});
+
+setupFavoriteModal({
+  modal: document.getElementById('favorite-modal'),
+  input: document.getElementById('favorite-name-input'),
+  btnConfirm: document.getElementById('favorite-modal-confirm'),
+  btnCancel: document.getElementById('favorite-modal-cancel'),
+  onConfirm: (mode, name) => {
+    favorites.push({ mode, label: name });
+    saveFavorites();
+    renderFavorites();
+    log(`Added Mode ${mode} to presets.`, 'success');
+    haptic('light');
+  },
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(
+      (reg) => console.log('ServiceWorker registered:', reg.scope),
+      (err) => console.warn('ServiceWorker registration failed:', err)
+    );
+  });
+}
+
+log('System ready. Click Connect to find FloRo.', 'info');
