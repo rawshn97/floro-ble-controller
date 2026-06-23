@@ -1,3 +1,5 @@
+export const APP_VERSION = '2.0.0';
+
 export function createLogger(consoleBody) {
   return function log(message, type = 'info') {
     const entry = document.createElement('div');
@@ -13,11 +15,6 @@ export function createLogger(consoleBody) {
   };
 }
 
-export function toggleConsole(consoleBody, consoleArrow) {
-  consoleBody.classList.toggle('collapsed');
-  consoleArrow.classList.toggle('collapsed');
-}
-
 export function updateNeonThemeColor(hexColor, panels) {
   document.documentElement.style.setProperty('--neon-glow', hexColor);
   document.documentElement.style.setProperty('--accent', hexColor);
@@ -26,6 +23,7 @@ export function updateNeonThemeColor(hexColor, panels) {
   document.documentElement.style.setProperty('--accent-muted', `${hexColor}26`);
 
   panels.forEach((panel) => {
+    if (!panel) return;
     panel.style.boxShadow = `0 2px 20px ${hexColor}18`;
     panel.style.borderColor = `${hexColor}40`;
   });
@@ -49,6 +47,118 @@ export function haptic(type = 'light') {
   if (navigator.vibrate) {
     navigator.vibrate(type === 'heavy' ? 50 : 15);
   }
+}
+
+export function updateConnectionChip(chipEl, textEl, state, name = '', lastDevice = null) {
+  if (!chipEl || !textEl) return;
+
+  chipEl.className = `status-chip chip-${state}`;
+
+  if (state === 'connecting') {
+    textEl.textContent = 'Connecting…';
+    return;
+  }
+
+  if (state === 'connected') {
+    const label = name || 'Connected';
+    textEl.textContent = label.length > 14 ? `${label.slice(0, 12)}…` : label;
+    return;
+  }
+
+  if (state === 'error') {
+    textEl.textContent = 'Tap to connect';
+    return;
+  }
+
+  if (lastDevice?.name) {
+    textEl.textContent = 'Tap to connect';
+  } else {
+    textEl.textContent = 'Offline';
+  }
+}
+
+let viewTransitionLock = false;
+
+export function setDisplayView(
+  solidView,
+  animationView,
+  segSolid,
+  segAnimation,
+  view,
+  { animate = true } = {}
+) {
+  const isSolid = view === 'solid';
+  const incoming = isSolid ? solidView : animationView;
+  const outgoing = isSolid ? animationView : solidView;
+
+  segSolid.classList.toggle('active', isSolid);
+  segSolid.setAttribute('aria-selected', isSolid ? 'true' : 'false');
+  segAnimation.classList.toggle('active', !isSolid);
+  segAnimation.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
+
+  if (!animate || viewTransitionLock) {
+    solidView.classList.toggle('is-active', isSolid);
+    solidView.hidden = !isSolid;
+    animationView.classList.toggle('is-active', !isSolid);
+    animationView.hidden = isSolid;
+    return;
+  }
+
+  if (incoming.classList.contains('is-active')) return;
+
+  viewTransitionLock = true;
+  outgoing.classList.remove('is-active');
+  outgoing.classList.add('is-exiting');
+  incoming.hidden = false;
+
+  const finish = () => {
+    outgoing.hidden = true;
+    outgoing.classList.remove('is-exiting');
+    incoming.classList.add('is-active');
+    viewTransitionLock = false;
+  };
+
+  window.requestAnimationFrame(() => {
+    window.setTimeout(finish, 280);
+  });
+}
+
+export function setupPaletteToggle(toggleBtn, bodyEl) {
+  if (!toggleBtn || !bodyEl) return;
+
+  toggleBtn.addEventListener('click', () => {
+    const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+    toggleBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+    bodyEl.classList.toggle('is-collapsed', expanded);
+    haptic('light');
+  });
+}
+
+export function setupSettingsSheet({ sheet, openBtn, closeBtn }) {
+  if (!sheet) return;
+
+  const backdrop = sheet.querySelector('[data-close-sheet]');
+
+  function open() {
+    sheet.classList.remove('hidden');
+    document.body.classList.add('sheet-open');
+    haptic('light');
+  }
+
+  function close() {
+    sheet.classList.add('hidden');
+    document.body.classList.remove('sheet-open');
+  }
+
+  window.openSettingsSheet = open;
+
+  openBtn?.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
+  backdrop?.addEventListener('click', close);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sheet.classList.contains('hidden')) close();
+  });
 }
 
 export class WakeLockManager {
@@ -94,11 +204,10 @@ export function setupCompatBanner(bannerEl, log) {
   if (isBleSupported()) return;
 
   bannerEl.classList.remove('hidden');
-  bannerEl.classList.add('compat-banner');
   bannerEl.innerHTML = `
-    <div>
-      <div class="banner-title">Web Bluetooth not supported</div>
-      <div class="banner-subtitle">Use Chrome or Edge on desktop/Android over HTTPS to control your sign.</div>
+    <div class="compat-banner-text">
+      <strong>Web Bluetooth not supported</strong>
+      <span>Use Chrome or Edge on desktop/Android over HTTPS.</span>
     </div>
   `;
 
@@ -116,7 +225,7 @@ export function setupPwaInstall({
   iosStepsEl,
   btnInstall,
   btnDismiss,
-  headerBtn,
+  settingsBtn,
   modal,
   modalTitle,
   modalDesc,
@@ -146,32 +255,8 @@ export function setupPwaInstall({
     return localStorage.getItem(DISMISS_KEY) === '1';
   }
 
-  function updateHeaderButton() {
-    if (!headerBtn) return;
-    headerBtn.classList.toggle('hidden', isStandalone());
-  }
-
   function hideBanner() {
-    bannerEl.classList.add('hidden');
-  }
-
-  function showAndroidBanner() {
-    bannerTitle.textContent = 'Install FloRo as an App';
-    bannerSubtitle.classList.add('hidden');
-    iosStepsEl.classList.add('hidden');
-    btnInstall.classList.remove('hidden');
-    btnInstall.textContent = 'Install';
-    bannerEl.classList.remove('hidden');
-  }
-
-  function showIOSBanner() {
-    bannerTitle.textContent = 'Add FloRo to Home Screen';
-    bannerSubtitle.textContent = 'Install for quick access from your home screen.';
-    bannerSubtitle.classList.remove('hidden');
-    iosStepsEl.classList.remove('hidden');
-    btnInstall.classList.remove('hidden');
-    btnInstall.textContent = 'How to Install';
-    bannerEl.classList.remove('hidden');
+    bannerEl?.classList.add('hidden');
   }
 
   function iosStepItems() {
@@ -191,6 +276,7 @@ export function setupPwaInstall({
   }
 
   function renderModalSteps(items) {
+    if (!modalSteps) return;
     modalSteps.innerHTML = '';
     items.forEach((text) => {
       const li = document.createElement('li');
@@ -241,7 +327,6 @@ export function setupPwaInstall({
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       log('User installed FloRo Controller app.', 'success');
-      updateHeaderButton();
     }
     hideBanner();
     deferredPrompt = null;
@@ -251,20 +336,15 @@ export function setupPwaInstall({
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    updateHeaderButton();
-    if (!isDismissed()) {
-      showAndroidBanner();
-    }
   });
 
   window.addEventListener('appinstalled', () => {
     log('FloRo Controller installed.', 'success');
     hideBanner();
     deferredPrompt = null;
-    updateHeaderButton();
   });
 
-  btnInstall.addEventListener('click', () => {
+  btnInstall?.addEventListener('click', () => {
     if (isIOS() && !deferredPrompt) {
       openInstallModal('ios');
       return;
@@ -272,13 +352,13 @@ export function setupPwaInstall({
     triggerInstall();
   });
 
-  btnDismiss.addEventListener('click', () => {
+  btnDismiss?.addEventListener('click', () => {
     localStorage.setItem(DISMISS_KEY, '1');
     hideBanner();
-    log('Install banner dismissed. Tap the header download icon anytime to install.', 'info');
+    log('Install prompt dismissed. Use Settings to install anytime.', 'info');
   });
 
-  headerBtn?.addEventListener('click', () => {
+  settingsBtn?.addEventListener('click', () => {
     if (deferredPrompt) {
       openInstallModal('android');
       return;
@@ -286,22 +366,16 @@ export function setupPwaInstall({
     openInstallModal(isIOS() ? 'ios' : 'generic');
   });
 
-  modalClose.addEventListener('click', closeInstallModal);
-  modalAction.addEventListener('click', triggerInstall);
-  modal.addEventListener('click', (e) => {
+  modalClose?.addEventListener('click', closeInstallModal);
+  modalAction?.addEventListener('click', triggerInstall);
+  modal?.querySelector('[data-close-install]')?.addEventListener('click', closeInstallModal);
+  modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeInstallModal();
   });
 
-  updateHeaderButton();
-
-  if (!isStandalone() && isIOS() && !isDismissed()) {
-    showIOSBanner();
+  if (settingsBtn && isStandalone()) {
+    settingsBtn.closest('.settings-section')?.classList.add('hidden');
   }
-}
-
-/** @deprecated Use setupPwaInstall */
-export function setupInstallBanner(opts) {
-  setupPwaInstall(opts);
 }
 
 export function setupFavoriteModal({ modal, input, btnConfirm, btnCancel, onConfirm }) {
@@ -328,6 +402,11 @@ export function setupFavoriteModal({ modal, input, btnConfirm, btnCancel, onConf
     modal.classList.add('hidden');
   });
 
+  modal.querySelector('[data-close-favorite]')?.addEventListener('click', () => {
+    pendingMode = null;
+    modal.classList.add('hidden');
+  });
+
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       pendingMode = null;
@@ -347,7 +426,7 @@ export function filterAnimationOptions(selectEl, query, selectedValue) {
 
   selectEl.innerHTML = '';
   for (let i = 1; i <= 200; i++) {
-    const label = i === 1 ? 'Mode 1 — Solid Color' : `Animation Mode ${i}`;
+    const label = i === 1 ? 'Mode 1 - Solid Color' : `Animation Mode ${i}`;
     const matches = !q || label.toLowerCase().includes(q) || String(i).includes(q);
     if (!matches) continue;
 

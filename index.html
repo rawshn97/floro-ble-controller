@@ -14,126 +14,57 @@
 </head>
 <body>
 
-<header class="ios-nav">
-  <div class="ios-nav-inner">
-    <div class="ios-nav-leading">
-      <img src="logo.png" alt="FloRo" class="ios-nav-logo" onerror="this.src='floro.png';">
-      <div class="ios-nav-titles">
-        <h1 class="ios-large-title">FloRo</h1>
-        <p class="ios-nav-subtitle">Sign Controller</p>
-      </div>
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-brand">
+      <img src="logo.png" alt="" class="header-logo" onerror="this.src='floro.png';">
+      <span class="header-title">FloRo</span>
     </div>
-    <button id="btn-header-install" class="ios-nav-btn hidden" type="button" aria-label="Install app" title="Install App">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    <button id="status-chip" class="status-chip chip-offline" type="button" aria-label="Connection status">
+      <span class="status-chip-dot" aria-hidden="true"></span>
+      <span id="status-chip-text">Offline</span>
+    </button>
+    <button id="btn-menu" class="header-menu-btn" type="button" aria-label="Settings" aria-haspopup="dialog">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
     </button>
   </div>
 </header>
 
-<main class="app-main">
-
-  <div id="compat-banner" class="banner-card banner-compat hidden"></div>
-
-  <div id="install-banner" class="banner-card banner-install hidden">
-    <div class="install-banner-body">
-      <div id="install-banner-title" class="banner-title">Install FloRo as an App</div>
-      <div id="install-banner-subtitle" class="banner-subtitle hidden"></div>
-      <ol id="install-ios-steps" class="install-ios-steps hidden">
-        <li>Tap the <strong>Share</strong> button <span class="ios-share-icon" aria-hidden="true">⎋</span> in Safari</li>
-        <li>Scroll and tap <strong>Add to Home Screen</strong></li>
-        <li>Tap <strong>Add</strong> to confirm</li>
-      </ol>
+<div class="mode-toolbar">
+  <div class="mode-toolbar-inner">
+    <div class="seg-control mode-seg-control" role="tablist" aria-label="Display mode">
+      <button id="mode-seg-solid" class="seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view">Solid</button>
+      <button id="mode-seg-animation" class="seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view">Animation</button>
     </div>
-    <div class="banner-actions">
-      <button id="btn-dismiss-install" class="btn btn-text" type="button">Not now</button>
-      <button id="btn-install" class="btn btn-primary btn-install-action" type="button">Install</button>
+    <div id="power-strip" class="power-strip disabled-control">
+      <span class="power-strip-label">Power</span>
+      <label class="ios-switch-wrap compact" aria-label="Toggle sign power">
+        <input type="checkbox" id="power-toggle" class="ios-switch" checked>
+        <span class="ios-switch-track"></span>
+      </label>
     </div>
   </div>
+</div>
 
-  <section class="section">
-    <h2 class="section-header">Connection</h2>
-    <div class="list-group glass-card">
-      <div class="list-row list-row-header">
-        <div class="list-row-content">
-          <span class="list-row-title">Sign Connection</span>
-          <span id="device-name" class="list-row-subtitle">Disconnected</span>
-        </div>
-        <span id="connection-status" class="status-pill">OFFLINE</span>
-      </div>
-      <div class="list-separator"></div>
-      <div class="list-row list-row-actions">
-        <button id="btn-connect" class="btn btn-primary btn-full" type="button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
-          Scan &amp; Connect
-        </button>
-        <button id="btn-reconnect" class="btn btn-secondary btn-full btn-reconnect hidden" type="button">Reconnect</button>
-        <button id="btn-disconnect" class="btn btn-destructive btn-full hidden" type="button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          Disconnect
-        </button>
-      </div>
-    </div>
-  </section>
+<main class="app-main">
 
-  <section class="section">
-    <h2 class="section-header">Power</h2>
-    <div id="power-panel" class="list-group glass-card disabled-control">
-      <div class="list-row">
-        <div class="list-row-content">
-          <span class="list-row-title">Sign Power</span>
-          <span id="power-status-text" class="list-row-subtitle power-status-on">Power on</span>
-        </div>
-        <label class="ios-switch-wrap" aria-label="Toggle sign power">
-          <input type="checkbox" id="power-toggle" class="ios-switch" checked>
-          <span class="ios-switch-track"></span>
-        </label>
-      </div>
-    </div>
-  </section>
+  <div id="compat-banner" class="compat-banner hidden"></div>
 
-  <section class="section">
-    <h2 class="section-header">Adjustments</h2>
-    <div id="controls-panel" class="list-group glass-card disabled-control">
-      <div class="list-row list-row-slider">
-        <div class="slider-header">
-          <span class="list-row-title">Brightness</span>
-          <span class="slider-val" id="val-brightness">8 / 8</span>
-        </div>
-        <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-      </div>
-      <div class="list-separator"></div>
-      <div class="list-row list-row-slider">
-        <div class="slider-header">
-          <span class="list-row-title">Animation Speed</span>
-          <span class="slider-val" id="val-speed">50%</span>
-        </div>
-        <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
-      </div>
-    </div>
-  </section>
+  <div class="view-stage">
+    <div id="solid-view" class="view-panel is-active" role="tabpanel" aria-labelledby="mode-seg-solid">
 
-  <section class="section">
-    <h2 class="section-header">Display Mode</h2>
-    <div id="display-mode-bar" class="list-group glass-card disabled-control">
-      <div class="list-row list-row-segmented">
-        <div class="seg-control" role="tablist" aria-label="Display mode">
-          <button id="mode-seg-solid" class="seg-btn active" type="button" role="tab" aria-selected="true">Solid</button>
-          <button id="mode-seg-animation" class="seg-btn" type="button" role="tab" aria-selected="false">Animation</button>
+      <div id="solid-controls" class="control-card disabled-control">
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="control-label">Brightness</span>
+            <span class="slider-val" id="val-brightness">8 / 8</span>
+          </div>
+          <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
         </div>
       </div>
-      <div class="list-separator"></div>
-      <div class="list-row">
-        <div id="mode-status" class="mode-status mode-status-solid">
-          <span class="mode-status-dot" aria-hidden="true"></span>
-          <span id="mode-status-text">Solid color active</span>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <h2 class="section-header">Neon Colors</h2>
-    <div id="color-panel" class="list-group glass-card disabled-control">
-      <div class="list-row list-row-swatches">
+      <div id="color-panel" class="control-card disabled-control">
+        <p class="card-eyebrow">Neon color</p>
         <div class="color-swatches">
           <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red" aria-label="Ruby Red"></button>
           <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green" aria-label="Electric Green"></button>
@@ -144,65 +75,118 @@
           <button class="swatch-btn" type="button" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
           <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
         </div>
-      </div>
-      <div class="list-separator"></div>
-      <div class="list-row list-row-picker">
-        <div id="custom-color-picker" class="custom-color-picker"></div>
-      </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <h2 class="section-header">Animations</h2>
-    <div id="animation-panel" class="list-group glass-card disabled-control">
-      <div class="list-row">
-        <p class="panel-hint">Pick a mode below or use Quick Presets. Tap any color above to return to solid.</p>
-      </div>
-      <div class="list-separator"></div>
-      <div class="list-row">
-        <div class="search-wrap">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="search" id="mode-search" class="ios-search" placeholder="Search or jump to mode number…" autocomplete="off">
+        <button id="palette-toggle" class="palette-disclosure" type="button" aria-expanded="false" aria-controls="palette-body">
+          <span class="palette-disclosure-label">Custom color</span>
+          <svg class="palette-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div id="palette-body" class="palette-body is-collapsed">
+          <div id="custom-color-picker" class="custom-color-picker"></div>
         </div>
       </div>
-      <div class="list-separator"></div>
-      <div class="list-row">
+
+    </div>
+
+    <div id="animation-view" class="view-panel" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
+
+      <div id="anim-controls" class="control-card disabled-control">
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="control-label">Brightness</span>
+            <span class="slider-val" id="val-brightness-anim">8 / 8</span>
+          </div>
+          <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+        </div>
+        <div class="card-divider"></div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="control-label">Speed</span>
+            <span class="slider-val" id="val-speed">50%</span>
+          </div>
+          <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
+        </div>
+      </div>
+
+      <div id="animation-panel" class="control-card disabled-control">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="mode-search" class="ios-search" placeholder="Search modes…" autocomplete="off">
+        </div>
+
         <div class="animation-select-row">
           <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
           <select id="anim-dropdown" class="ios-select anim-dropdown"></select>
           <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
         </div>
-      </div>
-      <div class="list-separator"></div>
-      <div class="list-row list-row-favorites">
+
         <div class="fav-header-row">
           <span class="fav-section-label">Quick Presets</span>
           <button class="btn btn-text btn-add-fav" type="button" onclick="addCurrentToFavorites()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Add Current
+            Add
           </button>
         </div>
         <div id="favorites-grid" class="favorites-grid"></div>
       </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <h2 class="section-header">Activity</h2>
-    <div class="list-group glass-card">
-      <button type="button" class="list-row list-row-disclosure console-header" onclick="toggleConsole()" aria-expanded="true">
-        <span class="list-row-title">Activity Console</span>
-        <svg id="console-arrow" class="disclosure-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </button>
-      <div id="console-body" class="console-body">
-        <div class="console-entry info">System ready. Click Connect to find FloRo.</div>
-      </div>
     </div>
-  </section>
+  </div>
 
 </main>
 
-<div id="install-modal" class="modal-overlay hidden">
+<div id="settings-sheet" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="sheet-backdrop" data-close-sheet></div>
+  <div class="modal-sheet settings-sheet">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 id="settings-title" class="sheet-title">Settings</h2>
+
+    <section class="settings-section">
+      <h3 class="settings-section-title">Connection</h3>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <span class="settings-label">Sign</span>
+            <span id="device-name" class="settings-value">Not connected</span>
+          </div>
+          <span id="connection-status" class="status-pill">OFFLINE</span>
+        </div>
+        <div class="settings-actions">
+          <button id="btn-connect" class="btn btn-primary btn-full" type="button">Scan &amp; Connect</button>
+          <button id="btn-reconnect" class="btn btn-secondary btn-full hidden" type="button">Reconnect</button>
+          <button id="btn-disconnect" class="btn btn-destructive btn-full hidden" type="button">Disconnect</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h3 class="settings-section-title">Activity Log</h3>
+      <div class="settings-card settings-console-card">
+        <div id="console-body" class="console-body">
+          <div class="console-entry info">System ready.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <div class="settings-card settings-list">
+        <button id="btn-settings-install" class="settings-list-btn" type="button">
+          <span>Install App</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="settings-section settings-about">
+      <p class="about-line">FloRo Sign Controller</p>
+      <p class="about-version" id="app-version">v2.0.0</p>
+    </section>
+
+    <button id="btn-close-settings" class="btn btn-secondary btn-full" type="button">Done</button>
+  </div>
+</div>
+
+<div id="install-modal" class="sheet-overlay hidden">
+  <div class="sheet-backdrop" data-close-install></div>
   <div class="modal-sheet install-modal-card">
     <div class="sheet-grabber" aria-hidden="true"></div>
     <h2 id="install-modal-title" class="sheet-title">Install FloRo</h2>
@@ -215,7 +199,8 @@
   </div>
 </div>
 
-<div id="favorite-modal" class="modal-overlay hidden">
+<div id="favorite-modal" class="sheet-overlay hidden">
+  <div class="sheet-backdrop" data-close-favorite></div>
   <div class="modal-sheet">
     <div class="sheet-grabber" aria-hidden="true"></div>
     <h2 class="sheet-title">Save Favorite</h2>
@@ -226,6 +211,14 @@
       <button id="favorite-modal-confirm" class="btn btn-primary" type="button">Save</button>
     </div>
   </div>
+</div>
+
+<div id="install-banner" class="hidden" aria-hidden="true">
+  <span id="install-banner-title"></span>
+  <span id="install-banner-subtitle"></span>
+  <ol id="install-ios-steps"></ol>
+  <button id="btn-install" type="button"></button>
+  <button id="btn-dismiss-install" type="button"></button>
 </div>
 
 <script type="module" src="js/app.js"></script>

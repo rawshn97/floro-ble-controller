@@ -2,14 +2,18 @@ import { FloroBleController, isBleSupported } from './ble.js';
 import { createColorPicker } from './color-picker.js';
 import { hexToRgb } from './protocol.js';
 import {
+  APP_VERSION,
   createLogger,
   filterAnimationOptions,
   haptic,
   rgbToHex,
+  setDisplayView,
   setupCompatBanner,
   setupFavoriteModal,
+  setupPaletteToggle,
   setupPwaInstall,
-  toggleConsole,
+  setupSettingsSheet,
+  updateConnectionChip,
   updateNeonThemeColor,
   WakeLockManager,
 } from './ui.js';
@@ -30,22 +34,25 @@ const btnReconnect = document.getElementById('btn-reconnect');
 const btnDisconnect = document.getElementById('btn-disconnect');
 const deviceNameEl = document.getElementById('device-name');
 const connectionStatus = document.getElementById('connection-status');
+const statusChip = document.getElementById('status-chip');
+const statusChipText = document.getElementById('status-chip-text');
 
-const powerPanel = document.getElementById('power-panel');
-const controlsPanel = document.getElementById('controls-panel');
-const displayModeBar = document.getElementById('display-mode-bar');
+const powerStrip = document.getElementById('power-strip');
+const solidControls = document.getElementById('solid-controls');
 const colorPanel = document.getElementById('color-panel');
+const animControls = document.getElementById('anim-controls');
 const animationPanel = document.getElementById('animation-panel');
-const powerStatusText = document.getElementById('power-status-text');
 const powerToggle = document.getElementById('power-toggle');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
-const modeStatusEl = document.getElementById('mode-status');
-const modeStatusText = document.getElementById('mode-status-text');
+const solidView = document.getElementById('solid-view');
+const animationView = document.getElementById('animation-view');
 
 const sliderBrightness = document.getElementById('slider-brightness');
+const sliderBrightnessAnim = document.getElementById('slider-brightness-anim');
 const valBrightness = document.getElementById('val-brightness');
+const valBrightnessAnim = document.getElementById('val-brightness-anim');
 const sliderSpeed = document.getElementById('slider-speed');
 const valSpeed = document.getElementById('val-speed');
 const customColorPickerRoot = document.getElementById('custom-color-picker');
@@ -54,21 +61,27 @@ const modeSearch = document.getElementById('mode-search');
 const favoritesGrid = document.getElementById('favorites-grid');
 
 const consoleBody = document.getElementById('console-body');
-const consoleArrow = document.getElementById('console-arrow');
 const compatBanner = document.getElementById('compat-banner');
+const appVersionEl = document.getElementById('app-version');
 
-const panels = [powerPanel, controlsPanel, displayModeBar, colorPanel, animationPanel];
+const panels = [powerStrip, solidControls, colorPanel, animControls, animationPanel];
 
 let isPoweredOn = true;
 let lastBrightnessVal = 8;
 let lastSpeedVal = 50;
 let activeColor = '#ff0000';
-let activeModeVal = 32;
+let activeModeVal = 1;
 let lastAnimationMode = 32;
+let displayView = 'solid';
 let favorites = [];
+let connectionState = 'offline';
 
 const log = createLogger(consoleBody);
 const wakeLock = new WakeLockManager(log);
+
+if (appVersionEl) {
+  appVersionEl.textContent = `v${APP_VERSION}`;
+}
 
 const colorPicker = createColorPicker({
   root: customColorPickerRoot,
@@ -88,15 +101,14 @@ const ble = new FloroBleController({
   onConnectionChange: (connected, name) => {
     if (connected) {
       deviceNameEl.textContent = name;
-      deviceNameEl.style.color = 'var(--text)';
       connectionStatus.textContent = 'CONNECTED';
-      connectionStatus.className = 'status-badge connected';
+      connectionStatus.className = 'status-pill connected';
       btnConnect.classList.add('hidden');
       btnReconnect.classList.add('hidden');
       btnDisconnect.classList.remove('hidden');
       enablePanels(true);
       wakeLock.acquire();
-      updateReconnectButton();
+      setConnectionState('connected', name);
     } else {
       resetUI();
     }
@@ -106,19 +118,24 @@ const ble = new FloroBleController({
   },
 });
 
+function setConnectionState(state, name = '') {
+  connectionState = state;
+  updateConnectionChip(statusChip, statusChipText, state, name, ble.lastDeviceInfo);
+}
+
 function enablePanels(enabled) {
   panels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
 }
 
 function resetUI() {
-  deviceNameEl.textContent = 'Disconnected';
-  deviceNameEl.style.color = 'var(--text-muted)';
+  deviceNameEl.textContent = 'Not connected';
   connectionStatus.textContent = 'OFFLINE';
-  connectionStatus.className = 'status-badge';
+  connectionStatus.className = 'status-pill';
   btnConnect.classList.remove('hidden');
   btnDisconnect.classList.add('hidden');
   enablePanels(false);
   updateReconnectButton();
+  setConnectionState('offline');
 }
 
 function updateReconnectButton() {
@@ -147,7 +164,6 @@ async function syncSceneToSign({ includeMode } = {}) {
     g,
     b,
     mode: activeModeVal,
-    // Solid color (mode 1): color changes only need C=; M1 is sent once via setMode.
     includeMode: includeMode ?? true,
   });
 }
@@ -156,19 +172,12 @@ function syncColorToSign() {
   return syncSceneToSign({ includeMode: activeModeVal !== 1 });
 }
 
-function updateModeStatusUI() {
-  const isSolid = activeModeVal === 1;
-
-  modeSegSolid.classList.toggle('active', isSolid);
-  modeSegSolid.setAttribute('aria-selected', isSolid ? 'true' : 'false');
-  modeSegAnimation.classList.toggle('active', !isSolid);
-  modeSegAnimation.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
-
-  modeStatusEl.classList.toggle('mode-status-solid', isSolid);
-  modeStatusEl.classList.toggle('mode-status-animation', !isSolid);
-  modeStatusText.textContent = isSolid
-    ? 'Solid color active'
-    : `Animation active - Mode ${activeModeVal}`;
+function syncDisplayViewWithMode() {
+  const target = activeModeVal === 1 ? 'solid' : 'animation';
+  if (target !== displayView) {
+    displayView = target;
+    setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, target);
+  }
 }
 
 function updateModeDropdown(mode) {
@@ -188,7 +197,7 @@ function setMode(mode, { sendBle = true } = {}) {
 
   updateModeDropdown(mode);
   highlightActiveFavorite();
-  updateModeStatusUI();
+  syncDisplayViewWithMode();
 
   if (!sendBle) return;
 
@@ -203,6 +212,8 @@ async function applyColorSelection() {
   const switchingFromAnimation = activeModeVal !== 1;
 
   if (switchingFromAnimation) {
+    displayView = 'solid';
+    setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
     setMode(1, { sendBle: false });
     ble.bumpSceneGeneration();
     await syncSceneToSign({ includeMode: true });
@@ -226,6 +237,7 @@ async function connectDevice() {
   }
 
   try {
+    setConnectionState('connecting');
     btnConnect.disabled = true;
     btnReconnect.disabled = true;
     await ble.connectNew();
@@ -248,6 +260,7 @@ async function reconnectDevice() {
   if (!isBleSupported()) return;
 
   try {
+    setConnectionState('connecting');
     btnConnect.disabled = true;
     btnReconnect.disabled = true;
     await ble.reconnectLast();
@@ -289,36 +302,43 @@ function updatePowerUI(on) {
   if (powerToggle) {
     powerToggle.checked = on;
   }
+
   if (on) {
-    powerStatusText.textContent = 'Power on';
-    powerStatusText.className = 'list-row-subtitle power-status-on';
-    controlsPanel.classList.remove('disabled-control');
-    displayModeBar.classList.remove('disabled-control');
+    solidControls.classList.remove('disabled-control');
     colorPanel.classList.remove('disabled-control');
+    animControls.classList.remove('disabled-control');
     animationPanel.classList.remove('disabled-control');
-    sliderBrightness.value = lastBrightnessVal;
-    valBrightness.textContent = `${lastBrightnessVal} / 8`;
+    syncBrightnessSliders(lastBrightnessVal);
   } else {
-    powerStatusText.textContent = 'Power off';
-    powerStatusText.className = 'list-row-subtitle power-status-off';
-    controlsPanel.classList.add('disabled-control');
-    displayModeBar.classList.add('disabled-control');
+    solidControls.classList.add('disabled-control');
     colorPanel.classList.add('disabled-control');
+    animControls.classList.add('disabled-control');
     animationPanel.classList.add('disabled-control');
     valBrightness.textContent = 'OFF';
+    valBrightnessAnim.textContent = 'OFF';
   }
 }
 
-let bTimeout = null;
-sliderBrightness.addEventListener('input', (e) => {
-  const val = parseInt(e.target.value, 10);
+function syncBrightnessSliders(val) {
+  sliderBrightness.value = val;
+  sliderBrightnessAnim.value = val;
+  const label = isPoweredOn ? `${val} / 8` : 'OFF';
+  valBrightness.textContent = label;
+  valBrightnessAnim.textContent = label;
+}
+
+function onBrightnessInput(val) {
   lastBrightnessVal = val;
-  valBrightness.textContent = `${val} / 8`;
+  syncBrightnessSliders(val);
   if (bTimeout) clearTimeout(bTimeout);
   bTimeout = setTimeout(() => {
     if (isPoweredOn) ble.sendBrightness(val);
   }, 120);
-});
+}
+
+let bTimeout = null;
+sliderBrightness.addEventListener('input', (e) => onBrightnessInput(parseInt(e.target.value, 10)));
+sliderBrightnessAnim.addEventListener('input', (e) => onBrightnessInput(parseInt(e.target.value, 10)));
 
 let sTimeout = null;
 sliderSpeed.addEventListener('input', (e) => {
@@ -417,29 +437,46 @@ function removeFavorite(mode) {
   log(`Removed Mode ${mode} from presets.`, 'info');
 }
 
-window.toggleConsole = () => toggleConsole(consoleBody, consoleArrow);
-
 btnConnect.addEventListener('click', connectDevice);
 btnReconnect.addEventListener('click', reconnectDevice);
 btnDisconnect.addEventListener('click', disconnectDevice);
 
 modeSegSolid.addEventListener('click', () => {
-  if (activeModeVal === 1) return;
-  setMode(1);
+  if (displayView === 'solid') return;
+  displayView = 'solid';
+  setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
+  if (activeModeVal !== 1) setMode(1);
 });
 
 modeSegAnimation.addEventListener('click', () => {
-  if (activeModeVal > 1) return;
-  setMode(lastAnimationMode);
+  if (displayView === 'animation') return;
+  displayView = 'animation';
+  setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'animation');
+  if (activeModeVal === 1) setMode(lastAnimationMode);
 });
 
-filterAnimationOptions(animDropdown, '', activeModeVal);
-animDropdown.value = activeModeVal;
-updateModeStatusUI();
+statusChip.addEventListener('click', () => {
+  window.openSettingsSheet?.();
+});
+
+filterAnimationOptions(animDropdown, '', lastAnimationMode);
+animDropdown.value = lastAnimationMode;
+displayView = 'solid';
+setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid', { animate: false });
 lastSpeedVal = parseInt(sliderSpeed.value, 10);
 loadFavorites();
 updateReconnectButton();
 setupCompatBanner(compatBanner, log);
+setupPaletteToggle(
+  document.getElementById('palette-toggle'),
+  document.getElementById('palette-body')
+);
+
+setupSettingsSheet({
+  sheet: document.getElementById('settings-sheet'),
+  openBtn: document.getElementById('btn-menu'),
+  closeBtn: document.getElementById('btn-close-settings'),
+});
 
 setupPwaInstall({
   bannerEl: document.getElementById('install-banner'),
@@ -448,7 +485,7 @@ setupPwaInstall({
   iosStepsEl: document.getElementById('install-ios-steps'),
   btnInstall: document.getElementById('btn-install'),
   btnDismiss: document.getElementById('btn-dismiss-install'),
-  headerBtn: document.getElementById('btn-header-install'),
+  settingsBtn: document.getElementById('btn-settings-install'),
   modal: document.getElementById('install-modal'),
   modalTitle: document.getElementById('install-modal-title'),
   modalDesc: document.getElementById('install-modal-desc'),
@@ -481,4 +518,25 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-log('System ready. Click Connect to find FloRo.', 'info');
+async function tryAutoReconnect() {
+  if (!isBleSupported() || !ble.canReconnect() || !ble.lastDeviceInfo) return;
+
+  log(`Auto-connecting to ${ble.lastDeviceInfo.name}…`, 'info');
+  setConnectionState('connecting');
+
+  try {
+    btnConnect.disabled = true;
+    btnReconnect.disabled = true;
+    await ble.reconnectLast();
+    await onConnected();
+  } catch (error) {
+    log(`Auto-connect failed: ${error.message}`, 'error');
+    resetUI();
+  } finally {
+    btnConnect.disabled = false;
+    btnReconnect.disabled = false;
+  }
+}
+
+log('System ready.', 'info');
+tryAutoReconnect();
