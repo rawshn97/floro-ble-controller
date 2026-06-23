@@ -20,10 +20,13 @@ export function toggleConsole(consoleBody, consoleArrow) {
 
 export function updateNeonThemeColor(hexColor, panels) {
   document.documentElement.style.setProperty('--neon-glow', hexColor);
-  document.documentElement.style.setProperty('--neon-glow-rgba', `${hexColor}40`);
+  document.documentElement.style.setProperty('--accent', hexColor);
+  document.documentElement.style.setProperty('--neon-glow-rgba', `${hexColor}59`);
+  document.documentElement.style.setProperty('--accent-rgba', `${hexColor}59`);
+  document.documentElement.style.setProperty('--accent-muted', `${hexColor}26`);
 
   panels.forEach((panel) => {
-    panel.style.boxShadow = `0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 16px 0 ${hexColor}20`;
+    panel.style.boxShadow = `0 2px 20px ${hexColor}18`;
     panel.style.borderColor = `${hexColor}40`;
   });
 

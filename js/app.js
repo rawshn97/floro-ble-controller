@@ -37,6 +37,7 @@ const displayModeBar = document.getElementById('display-mode-bar');
 const colorPanel = document.getElementById('color-panel');
 const animationPanel = document.getElementById('animation-panel');
 const powerStatusText = document.getElementById('power-status-text');
+const powerToggle = document.getElementById('power-toggle');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
@@ -167,7 +168,7 @@ function updateModeStatusUI() {
   modeStatusEl.classList.toggle('mode-status-animation', !isSolid);
   modeStatusText.textContent = isSolid
     ? 'Solid color active'
-    : `Animation active — Mode ${activeModeVal}`;
+    : `Animation active - Mode ${activeModeVal}`;
 }
 
 function updateModeDropdown(mode) {
@@ -278,10 +279,19 @@ window.setPowerState = function (on) {
   }
 };
 
+if (powerToggle) {
+  powerToggle.addEventListener('change', (e) => {
+    setPowerState(e.target.checked);
+  });
+}
+
 function updatePowerUI(on) {
+  if (powerToggle) {
+    powerToggle.checked = on;
+  }
   if (on) {
-    powerStatusText.textContent = 'POWER ON';
-    powerStatusText.className = 'power-status-indicator';
+    powerStatusText.textContent = 'Power on';
+    powerStatusText.className = 'list-row-subtitle power-status-on';
     controlsPanel.classList.remove('disabled-control');
     displayModeBar.classList.remove('disabled-control');
     colorPanel.classList.remove('disabled-control');
@@ -289,8 +299,8 @@ function updatePowerUI(on) {
     sliderBrightness.value = lastBrightnessVal;
     valBrightness.textContent = `${lastBrightnessVal} / 8`;
   } else {
-    powerStatusText.textContent = 'POWER OFF';
-    powerStatusText.className = 'power-status-indicator off';
+    powerStatusText.textContent = 'Power off';
+    powerStatusText.className = 'list-row-subtitle power-status-off';
     controlsPanel.classList.add('disabled-control');
     displayModeBar.classList.add('disabled-control');
     colorPanel.classList.add('disabled-control');

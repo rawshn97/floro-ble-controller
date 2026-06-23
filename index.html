@@ -2,33 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b0f19">
+  <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FloRo">
   <link rel="apple-touch-icon" href="logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-<div class="container">
-  <header>
-    <img src="logo.png" alt="FloRo Logo" onerror="this.src='floro.png';">
-    <h1>FloRo Controller</h1>
-    <button id="btn-header-install" class="btn-header-install hidden" type="button" aria-label="Install app" title="Install App">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+<header class="ios-nav">
+  <div class="ios-nav-inner">
+    <div class="ios-nav-leading">
+      <img src="logo.png" alt="FloRo" class="ios-nav-logo" onerror="this.src='floro.png';">
+      <div class="ios-nav-titles">
+        <h1 class="ios-large-title">FloRo</h1>
+        <p class="ios-nav-subtitle">Sign Controller</p>
+      </div>
+    </div>
+    <button id="btn-header-install" class="ios-nav-btn hidden" type="button" aria-label="Install app" title="Install App">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
     </button>
-  </header>
+  </div>
+</header>
 
-  <div id="compat-banner" class="compat-banner hidden"></div>
+<main class="app-main">
 
-  <div id="install-banner" class="install-banner hidden">
+  <div id="compat-banner" class="banner-card banner-compat hidden"></div>
+
+  <div id="install-banner" class="banner-card banner-install hidden">
     <div class="install-banner-body">
       <div id="install-banner-title" class="banner-title">Install FloRo as an App</div>
       <div id="install-banner-subtitle" class="banner-subtitle hidden"></div>
@@ -39,143 +44,186 @@
       </ol>
     </div>
     <div class="banner-actions">
-      <button id="btn-dismiss-install" class="btn btn-dismiss" type="button">Not now</button>
-      <button id="btn-install" class="btn btn-connect btn-install-action" type="button">Install</button>
+      <button id="btn-dismiss-install" class="btn btn-text" type="button">Not now</button>
+      <button id="btn-install" class="btn btn-primary btn-install-action" type="button">Install</button>
     </div>
   </div>
 
-  <div class="glass-card">
-    <div class="connection-row">
-      <div>
-        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 2px;">Sign Connection</div>
-        <div id="device-name" style="font-size: 0.85rem; color: var(--text-muted);">Disconnected</div>
+  <section class="section">
+    <h2 class="section-header">Connection</h2>
+    <div class="list-group glass-card">
+      <div class="list-row list-row-header">
+        <div class="list-row-content">
+          <span class="list-row-title">Sign Connection</span>
+          <span id="device-name" class="list-row-subtitle">Disconnected</span>
+        </div>
+        <span id="connection-status" class="status-pill">OFFLINE</span>
       </div>
-      <span id="connection-status" class="status-badge">OFFLINE</span>
+      <div class="list-separator"></div>
+      <div class="list-row list-row-actions">
+        <button id="btn-connect" class="btn btn-primary btn-full" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+          Scan &amp; Connect
+        </button>
+        <button id="btn-reconnect" class="btn btn-secondary btn-full btn-reconnect hidden" type="button">Reconnect</button>
+        <button id="btn-disconnect" class="btn btn-destructive btn-full hidden" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          Disconnect
+        </button>
+      </div>
     </div>
+  </section>
 
-    <div class="connection-actions">
-      <button id="btn-connect" class="btn btn-connect" type="button">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
-        Scan &amp; Connect Sign
-      </button>
-      <button id="btn-reconnect" class="btn btn-connect btn-reconnect hidden" type="button">Reconnect</button>
-      <button id="btn-disconnect" class="btn btn-disconnect hidden" type="button">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        Disconnect Sign
-      </button>
+  <section class="section">
+    <h2 class="section-header">Power</h2>
+    <div id="power-panel" class="list-group glass-card disabled-control">
+      <div class="list-row">
+        <div class="list-row-content">
+          <span class="list-row-title">Sign Power</span>
+          <span id="power-status-text" class="list-row-subtitle power-status-on">Power on</span>
+        </div>
+        <label class="ios-switch-wrap" aria-label="Toggle sign power">
+          <input type="checkbox" id="power-toggle" class="ios-switch" checked>
+          <span class="ios-switch-track"></span>
+        </label>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div id="power-panel" class="glass-card disabled-control">
-    <div class="card-title">Sign Power</div>
-    <div class="power-grid">
-      <button id="btn-power-on" class="btn btn-power-on" type="button" onclick="setPowerState(true)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-        Power ON
-      </button>
-      <button id="btn-power-off" class="btn btn-power-off" type="button" onclick="setPowerState(false)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-        Power OFF
-      </button>
-    </div>
-    <div id="power-status-text" class="power-status-indicator">POWER ON</div>
-  </div>
-
-  <div id="controls-panel" class="glass-card disabled-control">
-    <div class="card-title">Adjustments</div>
-    <div style="display: flex; flex-direction: column; gap: 20px;">
-      <div class="slider-container">
-        <div class="slider-label-row">
-          <span>Brightness Level</span>
+  <section class="section">
+    <h2 class="section-header">Adjustments</h2>
+    <div id="controls-panel" class="list-group glass-card disabled-control">
+      <div class="list-row list-row-slider">
+        <div class="slider-header">
+          <span class="list-row-title">Brightness</span>
           <span class="slider-val" id="val-brightness">8 / 8</span>
         </div>
-        <input type="range" id="slider-brightness" min="1" max="8" value="8">
+        <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
       </div>
-      <div class="slider-container">
-        <div class="slider-label-row">
-          <span>Animation Speed</span>
+      <div class="list-separator"></div>
+      <div class="list-row list-row-slider">
+        <div class="slider-header">
+          <span class="list-row-title">Animation Speed</span>
           <span class="slider-val" id="val-speed">50%</span>
         </div>
-        <input type="range" id="slider-speed" min="0" max="100" value="50">
+        <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
       </div>
     </div>
-  </div>
+  </section>
 
-  <div id="display-mode-bar" class="display-mode-bar glass-card disabled-control">
-    <div class="mode-segmented" role="tablist" aria-label="Display mode">
-      <button id="mode-seg-solid" class="mode-seg active" type="button" role="tab" aria-selected="true">Solid</button>
-      <button id="mode-seg-animation" class="mode-seg" type="button" role="tab" aria-selected="false">Animation</button>
-    </div>
-    <div id="mode-status" class="mode-status mode-status-solid">
-      <span class="mode-status-dot" aria-hidden="true"></span>
-      <span id="mode-status-text">Solid color active</span>
-    </div>
-  </div>
-
-  <div id="color-panel" class="glass-card disabled-control">
-    <div class="card-title">Neon Colors</div>
-    <div class="color-swatches">
-      <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red"></button>
-      <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green"></button>
-      <button class="swatch-btn" type="button" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue"></button>
-      <button class="swatch-btn" type="button" style="background: #ffff00;" onclick="selectSwatch(this, 255, 255, 0)" title="Sunny Yellow"></button>
-      <button class="swatch-btn" type="button" style="background: #ff00ff;" onclick="selectSwatch(this, 255, 0, 255)" title="Hot Pink"></button>
-      <button class="swatch-btn" type="button" style="background: #00ffff;" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan"></button>
-      <button class="swatch-btn" type="button" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple"></button>
-      <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White"></button>
-    </div>
-    <div id="custom-color-picker" class="custom-color-picker"></div>
-  </div>
-
-  <div id="animation-panel" class="glass-card disabled-control">
-    <div class="card-title">Built-in Animations</div>
-    <p class="panel-hint">Pick a mode below or use Quick Presets. Tap any color above to return to solid.</p>
-    <input type="search" id="mode-search" class="mode-search" placeholder="Search or jump to mode number…" autocomplete="off">
-    <div class="animation-select-row">
-      <button class="btn btn-step" type="button" onclick="stepMode(-1)">−</button>
-      <select id="anim-dropdown" class="anim-dropdown"></select>
-      <button class="btn btn-step" type="button" onclick="stepMode(1)">+</button>
-    </div>
-    <div class="favorites-section">
-      <div class="fav-header-row">
-        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">Quick Presets &amp; Favorites</span>
-        <button class="btn btn-add-fav" type="button" onclick="addCurrentToFavorites()">+ Add Current</button>
+  <section class="section">
+    <h2 class="section-header">Display Mode</h2>
+    <div id="display-mode-bar" class="list-group glass-card disabled-control">
+      <div class="list-row list-row-segmented">
+        <div class="seg-control" role="tablist" aria-label="Display mode">
+          <button id="mode-seg-solid" class="seg-btn active" type="button" role="tab" aria-selected="true">Solid</button>
+          <button id="mode-seg-animation" class="seg-btn" type="button" role="tab" aria-selected="false">Animation</button>
+        </div>
       </div>
-      <div id="favorites-grid" class="favorites-grid"></div>
+      <div class="list-separator"></div>
+      <div class="list-row">
+        <div id="mode-status" class="mode-status mode-status-solid">
+          <span class="mode-status-dot" aria-hidden="true"></span>
+          <span id="mode-status-text">Solid color active</span>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="glass-card">
-    <div class="card-title console-header" onclick="toggleConsole()">
-      <span>Activity Console</span>
-      <span id="console-arrow" class="console-arrow">▲</span>
+  <section class="section">
+    <h2 class="section-header">Neon Colors</h2>
+    <div id="color-panel" class="list-group glass-card disabled-control">
+      <div class="list-row list-row-swatches">
+        <div class="color-swatches">
+          <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red" aria-label="Ruby Red"></button>
+          <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green" aria-label="Electric Green"></button>
+          <button class="swatch-btn" type="button" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue" aria-label="Neon Blue"></button>
+          <button class="swatch-btn" type="button" style="background: #ffff00;" onclick="selectSwatch(this, 255, 255, 0)" title="Sunny Yellow" aria-label="Sunny Yellow"></button>
+          <button class="swatch-btn" type="button" style="background: #ff00ff;" onclick="selectSwatch(this, 255, 0, 255)" title="Hot Pink" aria-label="Hot Pink"></button>
+          <button class="swatch-btn" type="button" style="background: #00ffff;" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan" aria-label="Ice Cyan"></button>
+          <button class="swatch-btn" type="button" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
+          <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
+        </div>
+      </div>
+      <div class="list-separator"></div>
+      <div class="list-row list-row-picker">
+        <div id="custom-color-picker" class="custom-color-picker"></div>
+      </div>
     </div>
-    <div id="console-body" class="console-body">
-      <div class="console-entry info">System ready. Click Connect to find FloRo.</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-header">Animations</h2>
+    <div id="animation-panel" class="list-group glass-card disabled-control">
+      <div class="list-row">
+        <p class="panel-hint">Pick a mode below or use Quick Presets. Tap any color above to return to solid.</p>
+      </div>
+      <div class="list-separator"></div>
+      <div class="list-row">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="mode-search" class="ios-search" placeholder="Search or jump to mode number…" autocomplete="off">
+        </div>
+      </div>
+      <div class="list-separator"></div>
+      <div class="list-row">
+        <div class="animation-select-row">
+          <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
+          <select id="anim-dropdown" class="ios-select anim-dropdown"></select>
+          <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
+        </div>
+      </div>
+      <div class="list-separator"></div>
+      <div class="list-row list-row-favorites">
+        <div class="fav-header-row">
+          <span class="fav-section-label">Quick Presets</span>
+          <button class="btn btn-text btn-add-fav" type="button" onclick="addCurrentToFavorites()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Current
+          </button>
+        </div>
+        <div id="favorites-grid" class="favorites-grid"></div>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-header">Activity</h2>
+    <div class="list-group glass-card">
+      <button type="button" class="list-row list-row-disclosure console-header" onclick="toggleConsole()" aria-expanded="true">
+        <span class="list-row-title">Activity Console</span>
+        <svg id="console-arrow" class="disclosure-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <div id="console-body" class="console-body">
+        <div class="console-entry info">System ready. Click Connect to find FloRo.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
 
 <div id="install-modal" class="modal-overlay hidden">
-  <div class="modal-card install-modal-card">
-    <h2 id="install-modal-title">Install FloRo</h2>
-    <p id="install-modal-desc">Add FloRo Controller to your home screen for quick access.</p>
+  <div class="modal-sheet install-modal-card">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 id="install-modal-title" class="sheet-title">Install FloRo</h2>
+    <p id="install-modal-desc" class="sheet-desc">Add FloRo Controller to your home screen for quick access.</p>
     <ol id="install-modal-steps" class="install-modal-steps"></ol>
-    <div class="modal-actions">
-      <button id="install-modal-close" class="btn" type="button">Close</button>
-      <button id="install-modal-action" class="btn btn-connect hidden" type="button">Install</button>
+    <div class="sheet-actions">
+      <button id="install-modal-close" class="btn btn-secondary btn-full" type="button">Close</button>
+      <button id="install-modal-action" class="btn btn-primary btn-full hidden" type="button">Install</button>
     </div>
   </div>
 </div>
 
 <div id="favorite-modal" class="modal-overlay hidden">
-  <div class="modal-card">
-    <h2>Save Favorite</h2>
-    <p>Give this animation mode a name for quick access.</p>
-    <input id="favorite-name-input" class="modal-input" type="text" maxlength="40" autocomplete="off">
-    <div class="modal-actions">
-      <button id="favorite-modal-cancel" class="btn" type="button">Cancel</button>
-      <button id="favorite-modal-confirm" class="btn btn-connect" type="button">Save</button>
+  <div class="modal-sheet">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 class="sheet-title">Save Favorite</h2>
+    <p class="sheet-desc">Give this animation mode a name for quick access.</p>
+    <input id="favorite-name-input" class="ios-input modal-input" type="text" maxlength="40" autocomplete="off" placeholder="Preset name">
+    <div class="sheet-actions sheet-actions-row">
+      <button id="favorite-modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
+      <button id="favorite-modal-confirm" class="btn btn-primary" type="button">Save</button>
     </div>
   </div>
 </div>
