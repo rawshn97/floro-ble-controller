@@ -8,7 +8,7 @@ import {
   rgbToHex,
   setupCompatBanner,
   setupFavoriteModal,
-  setupInstallBanner,
+  setupPwaInstall,
   toggleConsole,
   updateNeonThemeColor,
   WakeLockManager,
@@ -33,9 +33,15 @@ const connectionStatus = document.getElementById('connection-status');
 
 const powerPanel = document.getElementById('power-panel');
 const controlsPanel = document.getElementById('controls-panel');
+const displayModeBar = document.getElementById('display-mode-bar');
 const colorPanel = document.getElementById('color-panel');
 const animationPanel = document.getElementById('animation-panel');
 const powerStatusText = document.getElementById('power-status-text');
+
+const modeSegSolid = document.getElementById('mode-seg-solid');
+const modeSegAnimation = document.getElementById('mode-seg-animation');
+const modeStatusEl = document.getElementById('mode-status');
+const modeStatusText = document.getElementById('mode-status-text');
 
 const sliderBrightness = document.getElementById('slider-brightness');
 const valBrightness = document.getElementById('val-brightness');
@@ -50,13 +56,14 @@ const consoleBody = document.getElementById('console-body');
 const consoleArrow = document.getElementById('console-arrow');
 const compatBanner = document.getElementById('compat-banner');
 
-const panels = [powerPanel, controlsPanel, colorPanel, animationPanel];
+const panels = [powerPanel, controlsPanel, displayModeBar, colorPanel, animationPanel];
 
 let isPoweredOn = true;
 let lastBrightnessVal = 8;
 let lastSpeedVal = 50;
 let activeColor = '#ff0000';
 let activeModeVal = 32;
+let lastAnimationMode = 32;
 let favorites = [];
 
 const log = createLogger(consoleBody);
@@ -71,7 +78,7 @@ const colorPicker = createColorPicker({
   },
   onColorCommit: () => {
     haptic('light');
-    syncColorToSign();
+    applyColorSelection();
   },
 });
 
@@ -148,6 +155,62 @@ function syncColorToSign() {
   return syncSceneToSign({ includeMode: activeModeVal !== 1 });
 }
 
+function updateModeStatusUI() {
+  const isSolid = activeModeVal === 1;
+
+  modeSegSolid.classList.toggle('active', isSolid);
+  modeSegSolid.setAttribute('aria-selected', isSolid ? 'true' : 'false');
+  modeSegAnimation.classList.toggle('active', !isSolid);
+  modeSegAnimation.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
+
+  modeStatusEl.classList.toggle('mode-status-solid', isSolid);
+  modeStatusEl.classList.toggle('mode-status-animation', !isSolid);
+  modeStatusText.textContent = isSolid
+    ? 'Solid color active'
+    : `Animation active — Mode ${activeModeVal}`;
+}
+
+function updateModeDropdown(mode) {
+  if (modeSearch.value) {
+    modeSearch.value = '';
+    filterAnimationOptions(animDropdown, '', mode);
+  } else {
+    animDropdown.value = mode;
+  }
+}
+
+function setMode(mode, { sendBle = true } = {}) {
+  activeModeVal = mode;
+  if (mode > 1) {
+    lastAnimationMode = mode;
+  }
+
+  updateModeDropdown(mode);
+  highlightActiveFavorite();
+  updateModeStatusUI();
+
+  if (!sendBle) return;
+
+  ble.bumpSceneGeneration();
+  if (ble.isConnected && isPoweredOn) {
+    ble.sendMode(mode);
+  }
+  haptic('light');
+}
+
+async function applyColorSelection() {
+  const switchingFromAnimation = activeModeVal !== 1;
+
+  if (switchingFromAnimation) {
+    setMode(1, { sendBle: false });
+    ble.bumpSceneGeneration();
+    await syncSceneToSign({ includeMode: true });
+    return;
+  }
+
+  await syncColorToSign();
+}
+
 async function onConnected() {
   isPoweredOn = true;
   updatePowerUI(true);
@@ -220,6 +283,7 @@ function updatePowerUI(on) {
     powerStatusText.textContent = 'POWER ON';
     powerStatusText.className = 'power-status-indicator';
     controlsPanel.classList.remove('disabled-control');
+    displayModeBar.classList.remove('disabled-control');
     colorPanel.classList.remove('disabled-control');
     animationPanel.classList.remove('disabled-control');
     sliderBrightness.value = lastBrightnessVal;
@@ -228,6 +292,7 @@ function updatePowerUI(on) {
     powerStatusText.textContent = 'POWER OFF';
     powerStatusText.className = 'power-status-indicator off';
     controlsPanel.classList.add('disabled-control');
+    displayModeBar.classList.add('disabled-control');
     colorPanel.classList.add('disabled-control');
     animationPanel.classList.add('disabled-control');
     valBrightness.textContent = 'OFF';
@@ -259,24 +324,10 @@ sliderSpeed.addEventListener('input', (e) => {
 window.selectSwatch = function (btn, r, g, b) {
   document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
   btn.classList.add('selected');
-  colorPicker.setHex(rgbToHex(r, g, b), { commit: true });
-};
-
-function setMode(mode) {
-  activeModeVal = mode;
-  ble.bumpSceneGeneration();
-  if (modeSearch.value) {
-    modeSearch.value = '';
-    filterAnimationOptions(animDropdown, '', mode);
-  } else {
-    animDropdown.value = mode;
-  }
-  if (ble.isConnected && isPoweredOn) {
-    ble.sendMode(mode);
-  }
-  highlightActiveFavorite();
+  colorPicker.setHex(rgbToHex(r, g, b), { commit: false });
   haptic('light');
-}
+  applyColorSelection();
+};
 
 animDropdown.addEventListener('change', (e) => {
   setMode(parseInt(e.target.value, 10));
@@ -362,17 +413,38 @@ btnConnect.addEventListener('click', connectDevice);
 btnReconnect.addEventListener('click', reconnectDevice);
 btnDisconnect.addEventListener('click', disconnectDevice);
 
+modeSegSolid.addEventListener('click', () => {
+  if (activeModeVal === 1) return;
+  setMode(1);
+});
+
+modeSegAnimation.addEventListener('click', () => {
+  if (activeModeVal > 1) return;
+  setMode(lastAnimationMode);
+});
+
 filterAnimationOptions(animDropdown, '', activeModeVal);
 animDropdown.value = activeModeVal;
+updateModeStatusUI();
 lastSpeedVal = parseInt(sliderSpeed.value, 10);
 loadFavorites();
 updateReconnectButton();
 setupCompatBanner(compatBanner, log);
 
-setupInstallBanner({
+setupPwaInstall({
   bannerEl: document.getElementById('install-banner'),
+  bannerTitle: document.getElementById('install-banner-title'),
+  bannerSubtitle: document.getElementById('install-banner-subtitle'),
+  iosStepsEl: document.getElementById('install-ios-steps'),
   btnInstall: document.getElementById('btn-install'),
   btnDismiss: document.getElementById('btn-dismiss-install'),
+  headerBtn: document.getElementById('btn-header-install'),
+  modal: document.getElementById('install-modal'),
+  modalTitle: document.getElementById('install-modal-title'),
+  modalDesc: document.getElementById('install-modal-desc'),
+  modalSteps: document.getElementById('install-modal-steps'),
+  modalClose: document.getElementById('install-modal-close'),
+  modalAction: document.getElementById('install-modal-action'),
   log,
 });
 

@@ -1,7 +1,9 @@
 {
   "name": "FloRo Sign Controller",
   "short_name": "FloRo",
+  "description": "Control your FloRo neon sign over Bluetooth",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b0f19",
@@ -11,7 +13,13 @@
       "src": "logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

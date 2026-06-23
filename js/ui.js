@@ -106,32 +106,199 @@ function isBleSupported() {
   return Boolean(navigator.bluetooth?.requestDevice);
 }
 
-export function setupInstallBanner({ bannerEl, btnInstall, btnDismiss, log }) {
+export function setupPwaInstall({
+  bannerEl,
+  bannerTitle,
+  bannerSubtitle,
+  iosStepsEl,
+  btnInstall,
+  btnDismiss,
+  headerBtn,
+  modal,
+  modalTitle,
+  modalDesc,
+  modalSteps,
+  modalClose,
+  modalAction,
+  log,
+}) {
+  const DISMISS_KEY = 'floro_install_dismissed';
   let deferredPrompt = null;
-  const dismissed = localStorage.getItem('floro_install_dismissed') === '1';
 
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    if (dismissed) return;
-    deferredPrompt = e;
+  function isStandalone() {
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true
+    );
+  }
+
+  function isIOS() {
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }
+
+  function isDismissed() {
+    return localStorage.getItem(DISMISS_KEY) === '1';
+  }
+
+  function updateHeaderButton() {
+    if (!headerBtn) return;
+    headerBtn.classList.toggle('hidden', isStandalone());
+  }
+
+  function hideBanner() {
+    bannerEl.classList.add('hidden');
+  }
+
+  function showAndroidBanner() {
+    bannerTitle.textContent = 'Install FloRo as an App';
+    bannerSubtitle.classList.add('hidden');
+    iosStepsEl.classList.add('hidden');
+    btnInstall.classList.remove('hidden');
+    btnInstall.textContent = 'Install';
     bannerEl.classList.remove('hidden');
-  });
+  }
 
-  btnInstall.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
+  function showIOSBanner() {
+    bannerTitle.textContent = 'Add FloRo to Home Screen';
+    bannerSubtitle.textContent = 'Install for quick access from your home screen.';
+    bannerSubtitle.classList.remove('hidden');
+    iosStepsEl.classList.remove('hidden');
+    btnInstall.classList.remove('hidden');
+    btnInstall.textContent = 'How to Install';
+    bannerEl.classList.remove('hidden');
+  }
+
+  function iosStepItems() {
+    return [
+      'Tap the Share button in Safari (square with arrow)',
+      'Scroll down and tap Add to Home Screen',
+      'Tap Add to confirm',
+    ];
+  }
+
+  function genericStepItems() {
+    return [
+      'Open this page in Chrome or Edge',
+      'Use the browser menu and choose Install app or Add to Home Screen',
+      'Confirm to add FloRo to your device',
+    ];
+  }
+
+  function renderModalSteps(items) {
+    modalSteps.innerHTML = '';
+    items.forEach((text) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      modalSteps.appendChild(li);
+    });
+  }
+
+  function openInstallModal(mode) {
+    modal.classList.remove('hidden');
+
+    if (mode === 'android' && deferredPrompt) {
+      modalTitle.textContent = 'Install FloRo';
+      modalDesc.textContent = 'Add FloRo Controller to your home screen for quick access.';
+      renderModalSteps(['Tap Install below', 'Confirm in the browser prompt']);
+      modalSteps.classList.add('hidden');
+      modalAction.classList.remove('hidden');
+      modalAction.textContent = 'Install';
+      return;
+    }
+
+    modalSteps.classList.remove('hidden');
+    modalAction.classList.add('hidden');
+
+    if (mode === 'ios') {
+      modalTitle.textContent = 'Add to Home Screen';
+      modalDesc.textContent = 'iOS does not support automatic install. Follow these steps in Safari:';
+      renderModalSteps(iosStepItems());
+      return;
+    }
+
+    modalTitle.textContent = 'Install FloRo';
+    modalDesc.textContent = 'Add FloRo Controller to your home screen:';
+    renderModalSteps(genericStepItems());
+  }
+
+  function closeInstallModal() {
+    modal.classList.add('hidden');
+  }
+
+  async function triggerInstall() {
+    if (!deferredPrompt) {
+      openInstallModal(isIOS() ? 'ios' : 'generic');
+      return;
+    }
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       log('User installed FloRo Controller app.', 'success');
+      updateHeaderButton();
     }
-    bannerEl.classList.add('hidden');
+    hideBanner();
     deferredPrompt = null;
+    closeInstallModal();
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    updateHeaderButton();
+    if (!isDismissed()) {
+      showAndroidBanner();
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    log('FloRo Controller installed.', 'success');
+    hideBanner();
+    deferredPrompt = null;
+    updateHeaderButton();
+  });
+
+  btnInstall.addEventListener('click', () => {
+    if (isIOS() && !deferredPrompt) {
+      openInstallModal('ios');
+      return;
+    }
+    triggerInstall();
   });
 
   btnDismiss.addEventListener('click', () => {
-    localStorage.setItem('floro_install_dismissed', '1');
-    bannerEl.classList.add('hidden');
+    localStorage.setItem(DISMISS_KEY, '1');
+    hideBanner();
+    log('Install banner dismissed. Tap the header download icon anytime to install.', 'info');
   });
+
+  headerBtn?.addEventListener('click', () => {
+    if (deferredPrompt) {
+      openInstallModal('android');
+      return;
+    }
+    openInstallModal(isIOS() ? 'ios' : 'generic');
+  });
+
+  modalClose.addEventListener('click', closeInstallModal);
+  modalAction.addEventListener('click', triggerInstall);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeInstallModal();
+  });
+
+  updateHeaderButton();
+
+  if (!isStandalone() && isIOS() && !isDismissed()) {
+    showIOSBanner();
+  }
+}
+
+/** @deprecated Use setupPwaInstall */
+export function setupInstallBanner(opts) {
+  setupPwaInstall(opts);
 }
 
 export function setupFavoriteModal({ modal, input, btnConfirm, btnCancel, onConfirm }) {
