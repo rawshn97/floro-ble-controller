@@ -285,6 +285,7 @@ window.setPowerState = function (on) {
   isPoweredOn = on;
   updatePowerUI(on);
   haptic(on ? 'light' : 'heavy');
+  if (!ble.isConnected) return;
   if (on) {
     syncSceneToSign();
   } else {
@@ -407,7 +408,18 @@ modeSearch.addEventListener('input', (e) => {
 function loadFavorites() {
   const stored = localStorage.getItem('floro_favorites');
   if (stored) {
-    favorites = JSON.parse(stored);
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        favorites = parsed;
+      } else {
+        throw new Error('Invalid favorites data');
+      }
+    } catch {
+      favorites = [...defaultFavorites];
+      saveFavorites();
+      log('Preset data was corrupted — restored defaults.', 'info');
+    }
   } else {
     favorites = [...defaultFavorites];
     saveFavorites();
