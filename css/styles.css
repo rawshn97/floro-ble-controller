@@ -199,7 +199,7 @@ body.sheet-open {
   gap: 12px;
   max-width: 500px;
   margin: 0 auto;
-  padding: 8px 16px;
+  padding: 6px 16px;
   min-height: var(--toolbar-height);
 }
 
@@ -221,9 +221,39 @@ body.sheet-open {
   font-weight: 500;
 }
 
-.ios-switch-wrap.compact {
-  min-width: 51px;
-  min-height: 36px;
+.power-icon-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-power-icon {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  flex-shrink: 0;
+  background: var(--fill-tertiary);
+  color: var(--label-tertiary);
+  border-radius: var(--radius-md);
+  transition: background var(--spring), color var(--spring), box-shadow var(--spring), transform var(--spring);
+}
+
+.btn-power-icon.is-active {
+  color: var(--label-primary);
+  background: var(--fill-primary);
+}
+
+#power-btn-on.is-active {
+  color: #ffe566;
+  background: rgba(255, 229, 102, 0.18);
+  box-shadow: 0 0 0 1px rgba(255, 229, 102, 0.35), 0 0 12px rgba(255, 229, 102, 0.15);
+}
+
+#power-btn-off.is-active {
+  color: var(--label-secondary);
+  background: var(--fill-primary);
+  box-shadow: 0 0 0 1px var(--separator);
 }
 
 /* ── Main ── */
@@ -231,7 +261,7 @@ body.sheet-open {
 .app-main {
   max-width: 500px;
   margin: 0 auto;
-  padding: 12px 16px calc(20px + var(--safe-bottom));
+  padding: 8px 16px calc(16px + var(--safe-bottom));
 }
 
 .compat-banner {
@@ -259,13 +289,12 @@ body.sheet-open {
 
 .view-stage {
   position: relative;
-  min-height: 280px;
 }
 
 .view-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   opacity: 0;
   transform: translateX(16px);
   pointer-events: none;
@@ -325,7 +354,18 @@ body.sheet-open {
 .slider-row {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.slider-stepper-row {
+  display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.slider-stepper-row .ios-slider {
+  flex: 1;
+  min-width: 0;
 }
 
 .slider-header {

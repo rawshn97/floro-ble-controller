@@ -42,7 +42,8 @@ const solidControls = document.getElementById('solid-controls');
 const colorPanel = document.getElementById('color-panel');
 const animControls = document.getElementById('anim-controls');
 const animationPanel = document.getElementById('animation-panel');
-const powerToggle = document.getElementById('power-toggle');
+const powerBtnOn = document.getElementById('power-btn-on');
+const powerBtnOff = document.getElementById('power-btn-off');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
@@ -292,15 +293,26 @@ window.setPowerState = function (on) {
   }
 };
 
-if (powerToggle) {
-  powerToggle.addEventListener('change', (e) => {
-    setPowerState(e.target.checked);
+if (powerBtnOn) {
+  powerBtnOn.addEventListener('click', () => {
+    if (!isPoweredOn) setPowerState(true);
+  });
+}
+
+if (powerBtnOff) {
+  powerBtnOff.addEventListener('click', () => {
+    if (isPoweredOn) setPowerState(false);
   });
 }
 
 function updatePowerUI(on) {
-  if (powerToggle) {
-    powerToggle.checked = on;
+  if (powerBtnOn) {
+    powerBtnOn.classList.toggle('is-active', on);
+    powerBtnOn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  if (powerBtnOff) {
+    powerBtnOff.classList.toggle('is-active', !on);
+    powerBtnOff.setAttribute('aria-pressed', !on ? 'true' : 'false');
   }
 
   if (on) {
@@ -327,29 +339,57 @@ function syncBrightnessSliders(val) {
   valBrightnessAnim.textContent = label;
 }
 
-function onBrightnessInput(val) {
+window.stepBrightness = function (delta) {
+  if (!isPoweredOn) return;
+  const next = Math.min(8, Math.max(1, lastBrightnessVal + delta));
+  if (next === lastBrightnessVal) return;
+  haptic('light');
+  onBrightnessInput(next, { immediate: true });
+};
+
+window.stepSpeed = function (delta) {
+  if (!isPoweredOn) return;
+  const next = Math.min(100, Math.max(0, lastSpeedVal + delta));
+  if (next === lastSpeedVal) return;
+  haptic('light');
+  onSpeedInput(next, { immediate: true });
+};
+
+function onBrightnessInput(val, { immediate = false } = {}) {
   lastBrightnessVal = val;
   syncBrightnessSliders(val);
   if (bTimeout) clearTimeout(bTimeout);
-  bTimeout = setTimeout(() => {
+  const send = () => {
     if (isPoweredOn) ble.sendBrightness(val);
-  }, 120);
+  };
+  if (immediate) {
+    send();
+  } else {
+    bTimeout = setTimeout(send, 120);
+  }
 }
 
 let bTimeout = null;
 sliderBrightness.addEventListener('input', (e) => onBrightnessInput(parseInt(e.target.value, 10)));
 sliderBrightnessAnim.addEventListener('input', (e) => onBrightnessInput(parseInt(e.target.value, 10)));
 
-let sTimeout = null;
-sliderSpeed.addEventListener('input', (e) => {
-  const val = parseInt(e.target.value, 10);
+function onSpeedInput(val, { immediate = false } = {}) {
   lastSpeedVal = val;
+  sliderSpeed.value = val;
   valSpeed.textContent = `${val}%`;
   if (sTimeout) clearTimeout(sTimeout);
-  sTimeout = setTimeout(() => {
+  const send = () => {
     if (ble.isConnected && isPoweredOn) ble.sendSpeed(val);
-  }, 120);
-});
+  };
+  if (immediate) {
+    send();
+  } else {
+    sTimeout = setTimeout(send, 120);
+  }
+}
+
+let sTimeout = null;
+sliderSpeed.addEventListener('input', (e) => onSpeedInput(parseInt(e.target.value, 10)));
 
 window.selectSwatch = function (btn, r, g, b) {
   document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));

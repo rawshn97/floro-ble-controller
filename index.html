@@ -49,10 +49,24 @@
     </div>
     <div id="power-strip" class="power-strip disabled-control">
       <span class="power-strip-label">Power</span>
-      <label class="ios-switch-wrap compact" aria-label="Toggle sign power">
-        <input type="checkbox" id="power-toggle" class="ios-switch" checked>
-        <span class="ios-switch-track"></span>
-      </label>
+      <div class="power-icon-btns" role="group" aria-label="Sign power">
+        <button id="power-btn-off" class="btn btn-power-icon" type="button" aria-label="Power off" aria-pressed="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.2 4.7 3 6.1V18h8v-2.9c1.8-1.4 3-3.6 3-6.1a7 7 0 0 0-7-7z"></path>
+          </svg>
+        </button>
+        <button id="power-btn-on" class="btn btn-power-icon is-active" type="button" aria-label="Power on" aria-pressed="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z" fill="currentColor" stroke="none"></path>
+            <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"></path>
+            <path d="M12 2v-1M4.2 4.2l.7.7M19.8 4.2l-.7.7M2 12h1M21 12h1" stroke="currentColor" stroke-width="1.5"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -70,7 +84,11 @@
             <span class="control-label">Brightness</span>
             <span class="slider-val" id="val-brightness">8 / 8</span>
           </div>
-          <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+          <div class="slider-stepper-row">
+            <button class="btn btn-step" type="button" onclick="stepBrightness(-1)" aria-label="Decrease brightness">−</button>
+            <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+            <button class="btn btn-step" type="button" onclick="stepBrightness(1)" aria-label="Increase brightness">+</button>
+          </div>
         </div>
       </div>
 
@@ -106,7 +124,11 @@
             <span class="control-label">Brightness</span>
             <span class="slider-val" id="val-brightness-anim">8 / 8</span>
           </div>
-          <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+          <div class="slider-stepper-row">
+            <button class="btn btn-step" type="button" onclick="stepBrightness(-1)" aria-label="Decrease brightness">−</button>
+            <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+            <button class="btn btn-step" type="button" onclick="stepBrightness(1)" aria-label="Increase brightness">+</button>
+          </div>
         </div>
         <div class="card-divider"></div>
         <div class="slider-row">
@@ -114,7 +136,11 @@
             <span class="control-label">Speed</span>
             <span class="slider-val" id="val-speed">50%</span>
           </div>
-          <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
+          <div class="slider-stepper-row">
+            <button class="btn btn-step" type="button" onclick="stepSpeed(-1)" aria-label="Decrease speed">−</button>
+            <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
+            <button class="btn btn-step" type="button" onclick="stepSpeed(1)" aria-label="Increase speed">+</button>
+          </div>
         </div>
       </div>
 
