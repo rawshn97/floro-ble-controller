@@ -1,3 +1,12 @@
+/**
+ * Neon Attack APK (libapp.so / classes.dex) prefixes UART writes with a leading newline.
+ * Example dex string: "n M= " → "\nM=32;\n"
+ */
+export function wrapWireCommand(body) {
+  const cmd = body.trim().endsWith(';') ? body.trim() : `${body.trim()};`;
+  return `\n${cmd}\n`;
+}
+
 /** Build wire-format color command (green/blue swapped for FloRo LED wiring). */
 export function colorCommand(r, g, b) {
   return `C=${r},${b},${g};`;

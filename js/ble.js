@@ -1,4 +1,4 @@
-import { colorCommand } from './protocol.js';
+import { colorCommand, wrapWireCommand } from './protocol.js';
 
 const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -62,12 +62,12 @@ export class FloroBleController {
   }
 
   _commandPrefix(str) {
-    const match = str.match(/^([A-Z])=/);
+    const match = str.match(/(?:^|\n)([A-Z]+)=/);
     return match ? match[1] : null;
   }
 
   enqueue(str, label = 'Command') {
-    const processed = str.endsWith('\n') ? str : `${str}\n`;
+    const processed = wrapWireCommand(str);
     const prefix = this._commandPrefix(processed);
 
     if (prefix) {

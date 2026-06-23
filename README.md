@@ -52,7 +52,7 @@ Commands are sent as ASCII strings over the Nordic UART Service (NUS):
 
 On connect and whenever you change color or animation, the app sends brightness, speed, color, and mode in sequence — the mode command must come last to activate flow effects.
 
-Each command is terminated with a newline.
+Each command is wrapped with a leading and trailing newline (per Neon Attack APK: `\nM=32;\n`).
 
 **Service UUID:** `6e400001-b5a3-f393-e0a9-e50e24dcca9e`  
 **Write characteristic:** `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
