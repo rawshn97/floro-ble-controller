@@ -13,6 +13,10 @@
 
 The app should feel like a polished physical remote: compact, confident, mode-driven, with infrastructure (connection, logs, install) tucked away until needed. Every pixel on the main surface earns its place by controlling the sign.
 
+### The memorable thing
+
+**The UI glows the color on the sign.** Default accent is FloRo pink (`#ff007f`), but when the user picks a solid neon color, `updateNeonThemeColor()` retints `--accent`, slider values, swatch rings, and control-card borders to match. The remote feels physically linked to the light it controls.
+
 ## Information Architecture
 
 One control surface at a time. No scrolling past unrelated modes.
@@ -82,9 +86,16 @@ Infrastructure lives here, not on the main surface:
 | Install App | PWA install flow |
 | About | App name + version |
 
-### Auto-reconnect
+## Layout Regions
 
-On load, if BLE is supported and a previously paired device exists, attempt `reconnectLast()` automatically. Show "Connecting…" in the status chip; fall back to offline state on failure.
+| Region | CSS / ID | Behavior |
+|--------|----------|----------|
+| **Header** | `.app-header` | Sticky top chrome: brand, status chip, settings menu. Frosted black blur, 48px min height + safe-area top. |
+| **Mode toolbar** | `.mode-toolbar` | Sticky below header: Solid \| Animation segmented control + Power switch. Stays visible while view scrolls. |
+| **View stage** | `.view-stage` | Single active panel (`#solid-view` or `#animation-view`). 280px min height; horizontal slide transition between modes. |
+| **Sheets** | `.sheet-overlay` + `.modal-sheet` | Bottom sheets for settings, install, and save-favorite. Backdrop blur; body scroll locked via `body.sheet-open`. |
+
+Main content (`.app-main`) is max-width 500px, centered, with optional compat banner above the view stage.
 
 ## Aesthetic Direction
 
@@ -218,6 +229,21 @@ Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure whit
 - Selected: white border + accent glow ring
 - Custom palette hidden behind disclosure — never compete with presets on first glance
 
+### Palette disclosure (`palette-disclosure`)
+
+- Collapsed by default (`palette-body.is-collapsed`)
+- Chevron rotates 180° when expanded; `aria-expanded` toggles with state
+- Opens custom HSL picker (2D saturation/lightness, hue strip, HSL sliders, hex input, recent colors)
+- Light haptic on toggle
+
+### Favorites (`fav-chip`)
+
+- Pill chips in a scrollable grid (max-height 180px) under "Quick Presets"
+- Tap label to apply mode; tap × to remove
+- Active chip: `--accent-muted` fill + accent ring when mode matches current selection
+- "Add" uses `btn-text`; opens save-favorite sheet with prefilled name
+- Persisted in `localStorage` (`floro_favorites`)
+
 ### Settings sheet (`modal-sheet`)
 
 - Bottom sheet on mobile; centered card on ≥600px
@@ -240,7 +266,42 @@ Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure whit
 | `btn-text` | Add favorite (accent text, no fill) |
 | `btn-step` | ± mode stepper (44×44px) |
 
-## Anti-Patterns
+## Interaction Patterns
+
+### Haptics
+
+`haptic()` in `js/ui.js` uses `navigator.vibrate` when available:
+
+| Trigger | Intensity |
+|---------|-----------|
+| Swatch tap, mode change, sheet open, connect success, favorite save | Light (15ms) |
+| Power off | Heavy (50ms) |
+
+No haptic spam on slider drag; values update visually in real time.
+
+### Auto-reconnect
+
+On load, `tryAutoReconnect()` in `js/app.js` runs if Web Bluetooth is supported, `ble.canReconnect()` is true, and a last device exists. Status chip shows `chip-connecting` / "Connecting…"; success runs `onConnected()`, failure resets to offline. Settings sheet exposes manual **Reconnect to {name}** when auto-connect is unavailable or failed.
+
+### Solid-from-color tap
+
+When the user is in Animation mode and picks a swatch or commits a custom color, `applyColorSelection()`:
+
+1. Switches the view to Solid (animated panel transition)
+2. Sets BLE mode to 1 (solid color) without a redundant mode write
+3. Sends the full scene (brightness, speed, color, mode)
+
+Tapping **Solid** in the toolbar also forces mode 1 if an animation was active. Tapping **Animation** restores `lastAnimationMode` if currently on solid (mode 1).
+
+### View transitions
+
+Solid ↔ Animation uses 280ms opacity + horizontal translate. Only one panel receives pointer events at a time (`is-active` / `is-exiting` classes).
+
+### Disabled controls
+
+When power is off, all control cards get `disabled-control` (45% opacity, no interaction). Brightness labels read "OFF". Power strip in toolbar is enabled only when connected.
+
+## Do / Don't (Anti-Patterns)
 
 Do **not** introduce these — they break the premium-remote feel:
 
@@ -257,10 +318,16 @@ Do **not** introduce these — they break the premium-remote feel:
 | Modal stacks (sheet on sheet on sheet) | One overlay at a time; use sequential sheets |
 | Light theme | Breaks neon-on-dark premium aesthetic |
 
-## PWA / Deployment
+## Deployment
 
-- **Production URL:** `https://rawshn.com/sign-controller/`
-- **Hosting:** Static files on Vercel project `ble_controller` (`blecontroller.vercel.app`), proxied via `rawshn-portfolio` rewrites
+| URL | Role |
+|-----|------|
+| `https://rawshn.com/sign-controller/` | Public production URL (canonical for users) |
+| `https://blecontroller.vercel.app/` | Direct Vercel deployment of this repo |
+
+**Subdirectory routing:** `rawshn-portfolio/vercel.json` rewrites `/sign-controller` and `/sign-controller/:path*` to `blecontroller.vercel.app`. Asset paths stay relative (`./`) so the same build works at both URLs.
+
+### PWA notes
 - **Asset paths:** Relative (`./`) — works under subdirectory proxy without code changes
 - **Service worker:** `./sw.js`, cache name bumped on asset changes
 - **Manifest:** `start_url: "./"`, `scope: "./"` — resolves to `/sign-controller/` when served via rewrite
