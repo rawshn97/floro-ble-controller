@@ -344,7 +344,6 @@ function syncBrightnessSliders(val) {
 }
 
 function stepBrightness(delta) {
-  if (!ble.isConnected || !isPoweredOn) return;
   const next = Math.min(8, Math.max(1, lastBrightnessVal + delta));
   if (next === lastBrightnessVal) return;
   haptic('light');
@@ -352,7 +351,6 @@ function stepBrightness(delta) {
 }
 
 function stepSpeed(delta) {
-  if (!ble.isConnected || !isPoweredOn) return;
   const next = Math.min(100, Math.max(0, lastSpeedVal + delta));
   if (next === lastSpeedVal) return;
   haptic('light');
@@ -360,15 +358,18 @@ function stepSpeed(delta) {
 }
 
 function bindStepperButtons() {
-  document.querySelectorAll('[data-step-brightness]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      stepBrightness(Number(btn.dataset.stepBrightness));
-    });
-  });
-  document.querySelectorAll('[data-step-speed]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      stepSpeed(Number(btn.dataset.stepSpeed));
-    });
+  document.addEventListener('click', (e) => {
+    const brightnessBtn = e.target.closest('[data-step-brightness]');
+    if (brightnessBtn) {
+      e.preventDefault();
+      stepBrightness(Number(brightnessBtn.getAttribute('data-step-brightness')));
+      return;
+    }
+    const speedBtn = e.target.closest('[data-step-speed]');
+    if (speedBtn) {
+      e.preventDefault();
+      stepSpeed(Number(speedBtn.getAttribute('data-step-speed')));
+    }
   });
 }
 
@@ -377,7 +378,7 @@ function onBrightnessInput(val, { immediate = false } = {}) {
   syncBrightnessSliders(val);
   if (bTimeout) clearTimeout(bTimeout);
   const send = () => {
-    if (isPoweredOn) ble.sendBrightness(val);
+    if (ble.isConnected && isPoweredOn) ble.sendBrightness(val);
   };
   if (immediate) {
     send();

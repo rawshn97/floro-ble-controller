@@ -311,43 +311,32 @@ body.sheet-open {
 
 .view-stage {
   position: relative;
-  display: grid;
 }
 
 .view-panel {
-  grid-area: 1 / 1;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 10px;
   width: 100%;
   min-width: 0;
-  opacity: 0;
-  transform: translateX(16px);
-  pointer-events: none;
-  transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
-.view-panel:not(.is-active):not(.is-exiting) {
-  visibility: hidden;
+.view-panel[hidden] {
+  display: none !important;
 }
 
 .view-panel.is-active {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
+  display: flex;
 }
 
 .view-panel.is-exiting {
-  opacity: 0;
-  transform: translateX(-16px);
-  pointer-events: none;
+  display: flex;
   position: absolute;
-  inset: 0;
-  width: 100%;
-}
-
-.view-panel.is-active:not(.is-exiting) {
-  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* ── Control cards ── */
@@ -416,6 +405,11 @@ body.sheet-open {
 .disabled-control {
   opacity: 0.45;
   pointer-events: none;
+}
+
+.disabled-control .btn-step,
+.disabled-control .ios-slider {
+  pointer-events: auto;
 }
 
 /* ── Segmented control ── */

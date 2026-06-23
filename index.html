@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <script>
+    window.__floroDeferredInstall = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.__floroDeferredInstall = e;
+    });
+  </script>
+  <script>
     (function () {
       var p = location.pathname;
       if (p !== '/' && !p.endsWith('/')) p += '/';

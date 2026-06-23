@@ -96,15 +96,19 @@ export function setDisplayView(
   segAnimation.classList.toggle('active', !isSolid);
   segAnimation.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
 
-  if (!animate || viewTransitionLock) {
+  const applyView = () => {
     solidView.classList.toggle('is-active', isSolid);
     solidView.hidden = !isSolid;
     solidView.inert = !isSolid;
-    solidView.style.visibility = isSolid ? 'visible' : 'hidden';
     animationView.classList.toggle('is-active', !isSolid);
     animationView.hidden = isSolid;
     animationView.inert = isSolid;
-    animationView.style.visibility = isSolid ? 'hidden' : 'visible';
+    solidView.classList.remove('is-exiting');
+    animationView.classList.remove('is-exiting');
+  };
+
+  if (!animate || viewTransitionLock) {
+    applyView();
     return;
   }
 
@@ -114,24 +118,16 @@ export function setDisplayView(
   outgoing.classList.remove('is-active');
   outgoing.classList.add('is-exiting');
   outgoing.inert = true;
+  outgoing.hidden = true;
+
   incoming.hidden = false;
   incoming.inert = false;
-  incoming.style.visibility = 'visible';
+  incoming.classList.add('is-active');
 
-  const finish = () => {
-    outgoing.hidden = true;
-    outgoing.inert = true;
-    outgoing.style.visibility = 'hidden';
+  window.setTimeout(() => {
     outgoing.classList.remove('is-exiting');
-    incoming.classList.add('is-active');
-    incoming.inert = false;
-    incoming.style.visibility = 'visible';
     viewTransitionLock = false;
-  };
-
-  window.requestAnimationFrame(() => {
-    window.setTimeout(finish, 280);
-  });
+  }, 280);
 }
 
 export function setupPaletteToggle(toggleBtn, bodyEl) {
@@ -253,8 +249,8 @@ export function setupPwaInstall({
   modalAction,
   log,
 }) {
-  const DISMISS_KEY = 'floro_install_dismissed';
-  let deferredPrompt = null;
+  const DISMISS_KEY = 'floro_install_dismissed_v2';
+  let deferredPrompt = window.__floroDeferredInstall || null;
 
   function isStandalone() {
     return (
@@ -385,8 +381,13 @@ export function setupPwaInstall({
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    window.__floroDeferredInstall = e;
     showBanner();
   });
+
+  if (deferredPrompt) {
+    showBanner();
+  }
 
   window.addEventListener('appinstalled', () => {
     log('FloRo Controller installed.', 'success');
