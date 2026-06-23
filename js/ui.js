@@ -99,8 +99,10 @@ export function setDisplayView(
   if (!animate || viewTransitionLock) {
     solidView.classList.toggle('is-active', isSolid);
     solidView.hidden = !isSolid;
+    solidView.inert = !isSolid;
     animationView.classList.toggle('is-active', !isSolid);
     animationView.hidden = isSolid;
+    animationView.inert = isSolid;
     return;
   }
 
@@ -109,12 +111,16 @@ export function setDisplayView(
   viewTransitionLock = true;
   outgoing.classList.remove('is-active');
   outgoing.classList.add('is-exiting');
+  outgoing.inert = true;
   incoming.hidden = false;
+  incoming.inert = false;
 
   const finish = () => {
     outgoing.hidden = true;
+    outgoing.inert = true;
     outgoing.classList.remove('is-exiting');
     incoming.classList.add('is-active');
+    incoming.inert = false;
     viewTransitionLock = false;
   };
 
@@ -126,10 +132,19 @@ export function setDisplayView(
 export function setupPaletteToggle(toggleBtn, bodyEl) {
   if (!toggleBtn || !bodyEl) return;
 
+  const syncPaletteA11y = (expanded) => {
+    bodyEl.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    bodyEl.inert = !expanded;
+  };
+
+  syncPaletteA11y(false);
+
   toggleBtn.addEventListener('click', () => {
     const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-    toggleBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-    bodyEl.classList.toggle('is-collapsed', expanded);
+    const nextExpanded = !expanded;
+    toggleBtn.setAttribute('aria-expanded', nextExpanded ? 'true' : 'false');
+    bodyEl.classList.toggle('is-collapsed', !nextExpanded);
+    syncPaletteA11y(nextExpanded);
     haptic('light');
   });
 }
