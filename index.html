@@ -2,22 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      var p = location.pathname;
+      if (p !== '/' && !p.endsWith('/')) p += '/';
+      if (p !== '/') {
+        var b = document.createElement('base');
+        b.href = p;
+        document.head.appendChild(b);
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FloRo">
-  <link rel="apple-touch-icon" href="logo.png">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="apple-touch-icon" href="./logo.png">
+  <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
 
 <header class="app-header">
   <div class="app-header-inner">
     <div class="header-brand">
-      <img src="logo.png" alt="" class="header-logo" onerror="this.src='floro.png';">
+      <img src="./logo.png" alt="" class="header-logo" onerror="this.src='./floro.png';">
       <span class="header-title">FloRo</span>
     </div>
     <button id="status-chip" class="status-chip chip-offline" type="button" aria-label="Connection status">
@@ -221,6 +232,6 @@
   <button id="btn-dismiss-install" type="button"></button>
 </div>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="./js/app.js"></script>
 </body>
 </html>
