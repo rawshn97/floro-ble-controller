@@ -45,14 +45,14 @@ Commands are sent as ASCII strings over the Nordic UART Service (NUS):
 
 | Command | Example | Description |
 |---------|---------|-------------|
-| Brightness | `B=8;` | Level 0 (off) through 8 |
-| Speed | `S=50;` | Animation speed 0–100% |
-| Color | `C=255,0,128;` | RGB values (green/blue channels swapped for physical LED wiring) |
-| Mode | `M=32;` | Flow/animation mode 1–200 (mode 1 = solid color) |
+| Brightness | `B=8;\n` | Level 0 (off) through 8 |
+| Speed | `S=50;\n` | Animation speed 0–100% |
+| Color | `C=255,0,128;\n` | RGB values (green/blue channels swapped for physical LED wiring) |
+| Mode | `M32\n` | Flow/animation mode 1–200. **No** `=` or `;` (Neon Attack `demo111` sends `M` + number + newline) |
 
-On connect and whenever you change color or animation, the app sends brightness, speed, color, and mode in sequence — the mode command must come last to activate flow effects.
+Reverse-engineered from **Neon Attack** (`com.oytechnology.Neon_Attack` v5.0.3). The animation picker builds `M{mode}\n` (not `M={mode};`). Dashboard presets also use `SEN={n};\r\n`, `P0;\n` / `P1;\n`, and `M16\r\n` for special effects.
 
-Each command is wrapped with a leading and trailing newline (per Neon Attack APK: `\nM=32;\n`).
+On connect and whenever you change color or animation, the app sends brightness, speed, and color, waits 250ms, then sends the mode command last. Writes use GATT **write with response** when supported.
 
 **Service UUID:** `6e400001-b5a3-f393-e0a9-e50e24dcca9e`  
 **Write characteristic:** `6e400002-b5a3-f393-e0a9-e50e24dcca9e`

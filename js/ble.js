@@ -8,6 +8,8 @@ const STORAGE_KEY_LAST_DEVICE = 'floro_last_device';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 250;
 const WRITE_GAP_MS = 120;
+/** Neon Attack demo111 delays 250ms before sending mode after color/state changes. */
+const MODE_DELAY_MS = 250;
 
 export class FloroBleController {
   constructor({ onLog, onConnectionChange, onDisconnect }) {
@@ -62,8 +64,10 @@ export class FloroBleController {
   }
 
   _commandPrefix(str) {
-    const match = str.match(/(?:^|\n)([A-Z]+)=/);
-    return match ? match[1] : null;
+    const kv = str.match(/^([A-Z]+)=/);
+    if (kv) return kv[1];
+    if (/^M\d/i.test(str)) return 'M';
+    return null;
   }
 
   enqueue(str, label = 'Command') {
@@ -118,10 +122,10 @@ export class FloroBleController {
           throw new Error('Bluetooth connection lost');
         }
 
-        if (this.characteristic.properties.writeWithoutResponse) {
-          await this.characteristic.writeValueWithoutResponse(bytes);
-        } else {
+        if (this.characteristic.properties.writeWithResponse) {
           await this.characteristic.writeValueWithResponse(bytes);
+        } else {
+          await this.characteristic.writeValueWithoutResponse(bytes);
         }
         return;
       } catch (error) {
@@ -236,11 +240,11 @@ export class FloroBleController {
   }
 
   sendBrightness(val) {
-    return this.sendAscii(`B=${val};`, `Brightness set to ${val}`);
+    return this.sendAscii(`B=${val}`, `Brightness set to ${val}`);
   }
 
   sendSpeed(val) {
-    return this.sendAscii(`S=${val};`, `Speed set to ${val}%`);
+    return this.sendAscii(`S=${val}`, `Speed set to ${val}%`);
   }
 
   sendColor(r, g, b, label) {
@@ -248,15 +252,16 @@ export class FloroBleController {
   }
 
   sendMode(mode) {
-    return this.sendAscii(`M=${mode};`, `Set Animation Mode ${mode}`);
+    return this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
   }
 
-  /** Push full sign state — mode must be sent after color to enable flow effects. */
+  /** Push full sign state — mode is sent last after a short delay (matches Neon Attack app). */
   async sendScene({ brightness, speed, r, g, b, mode }) {
-    await this.sendAscii(`B=${brightness};`, `Brightness ${brightness}`);
-    await this.sendAscii(`S=${speed};`, `Speed ${speed}%`);
-    await this.sendAscii(colorCommand(r, g, b), 'Color');
-    await this.sendAscii(`M=${mode};`, `Flow mode ${mode}`);
+    await this.sendAscii(`B=${brightness}`, `Brightness ${brightness}`);
+    await this.sendAscii(`S=${speed}`, `Speed ${speed}%`);
+    await this.sendAscii(colorCommand(r, g, b).trimEnd(), 'Color');
+    await new Promise((r) => setTimeout(r, MODE_DELAY_MS));
+    await this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
   }
 }
 

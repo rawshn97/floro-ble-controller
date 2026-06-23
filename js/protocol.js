@@ -1,20 +1,35 @@
-/**
- * Neon Attack APK (libapp.so / classes.dex) prefixes UART writes with a leading newline.
- * Example dex string: "n M= " → "\nM=32;\n"
- */
-export function wrapWireCommand(body) {
-  const cmd = body.trim().endsWith(';') ? body.trim() : `${body.trim()};`;
-  return `\n${cmd}\n`;
-}
-
 /** Build wire-format color command (green/blue swapped for FloRo LED wiring). */
 export function colorCommand(r, g, b) {
-  return `C=${r},${b},${g};`;
+  return `C=${r},${b},${g};\n`;
 }
 
-/** Full scene — firmware applies brightness, speed, color, then activates flow mode. */
+/** key=value commands from floro_page.dart (B=, S=, C=) terminate with ;\\n */
+export function kvCommand(key, value) {
+  return `${key}=${value};\n`;
+}
+
+/**
+ * Animation mode (Neon Attack demo111): interpolate "M" + mode + "\\n".
+ * No equals sign or semicolon — e.g. M32\\n not M=32;
+ */
+export function modeCommand(mode) {
+  return `M${mode}\n`;
+}
+
+/** Normalize a command body to the wire bytes the firmware expects. */
+export function wrapWireCommand(body) {
+  const trimmed = body.trim();
+  if (/^M\d+$/i.test(trimmed)) {
+    return `${trimmed}\n`;
+  }
+  if (trimmed.endsWith(';\n')) return trimmed;
+  if (trimmed.endsWith(';')) return `${trimmed}\n`;
+  return `${trimmed};\n`;
+}
+
+/** Full scene — brightness, speed, color, then mode. */
 export function buildSceneCommand({ brightness, speed, r, g, b, mode }) {
-  return `B=${brightness};S=${speed};${colorCommand(r, g, b)}M=${mode};`;
+  return `${kvCommand('B', brightness)}${kvCommand('S', speed)}${colorCommand(r, g, b)}${modeCommand(mode)}`;
 }
 
 export function hexToRgb(hex) {
