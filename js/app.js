@@ -1,4 +1,5 @@
 import { FloroBleController, isBleSupported } from './ble.js';
+import { createColorPicker } from './color-picker.js';
 import { hexToRgb } from './protocol.js';
 import {
   createLogger,
@@ -40,7 +41,7 @@ const sliderBrightness = document.getElementById('slider-brightness');
 const valBrightness = document.getElementById('val-brightness');
 const sliderSpeed = document.getElementById('slider-speed');
 const valSpeed = document.getElementById('val-speed');
-const colorPicker = document.getElementById('color-picker');
+const customColorPickerRoot = document.getElementById('custom-color-picker');
 const animDropdown = document.getElementById('anim-dropdown');
 const modeSearch = document.getElementById('mode-search');
 const favoritesGrid = document.getElementById('favorites-grid');
@@ -60,6 +61,19 @@ let favorites = [];
 
 const log = createLogger(consoleBody);
 const wakeLock = new WakeLockManager(log);
+
+const colorPicker = createColorPicker({
+  root: customColorPickerRoot,
+  initialHex: activeColor,
+  onColorChange: (hex) => {
+    activeColor = updateNeonThemeColor(hex, panels);
+    document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+  },
+  onColorCommit: () => {
+    haptic('light');
+    syncColorToSign();
+  },
+});
 
 const ble = new FloroBleController({
   onLog: log,
@@ -117,7 +131,7 @@ function updateReconnectButton() {
 async function syncSceneToSign({ includeMode } = {}) {
   if (!ble.isConnected) return;
 
-  const { r, g, b } = hexToRgb(colorPicker.value);
+  const { r, g, b } = hexToRgb(colorPicker.getHex());
   await ble.sendScene({
     brightness: isPoweredOn ? lastBrightnessVal : 0,
     speed: lastSpeedVal,
@@ -245,25 +259,8 @@ sliderSpeed.addEventListener('input', (e) => {
 window.selectSwatch = function (btn, r, g, b) {
   document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
   btn.classList.add('selected');
-
-  const hex = rgbToHex(r, g, b);
-  activeColor = updateNeonThemeColor(hex, panels);
-  colorPicker.value = hex;
-  haptic('light');
-  syncColorToSign();
+  colorPicker.setHex(rgbToHex(r, g, b), { commit: true });
 };
-
-let colorTimeout = null;
-colorPicker.addEventListener('input', (e) => {
-  const hexColor = e.target.value;
-  activeColor = updateNeonThemeColor(hexColor, panels);
-  document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
-
-  if (colorTimeout) clearTimeout(colorTimeout);
-  colorTimeout = setTimeout(() => {
-    syncColorToSign();
-  }, 150);
-});
 
 function setMode(mode) {
   activeModeVal = mode;
