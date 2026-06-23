@@ -53,6 +53,7 @@ const panels = [powerPanel, controlsPanel, colorPanel, animationPanel];
 
 let isPoweredOn = true;
 let lastBrightnessVal = 8;
+let lastSpeedVal = 50;
 let activeColor = '#ff0000';
 let activeModeVal = 32;
 let favorites = [];
@@ -119,7 +120,7 @@ async function syncSceneToSign() {
   const { r, g, b } = hexToRgb(colorPicker.value);
   await ble.sendScene({
     brightness: isPoweredOn ? lastBrightnessVal : 0,
-    speed: sliderSpeed.value,
+    speed: lastSpeedVal,
     r,
     g,
     b,
@@ -226,10 +227,13 @@ sliderBrightness.addEventListener('input', (e) => {
 
 let sTimeout = null;
 sliderSpeed.addEventListener('input', (e) => {
-  const val = e.target.value;
+  const val = parseInt(e.target.value, 10);
+  lastSpeedVal = val;
   valSpeed.textContent = `${val}%`;
   if (sTimeout) clearTimeout(sTimeout);
-  sTimeout = setTimeout(() => ble.sendSpeed(val), 120);
+  sTimeout = setTimeout(() => {
+    if (ble.isConnected && isPoweredOn) ble.sendSpeed(val);
+  }, 120);
 });
 
 window.selectSwatch = function (btn, r, g, b) {
@@ -263,7 +267,9 @@ function setMode(mode) {
   } else {
     animDropdown.value = mode;
   }
-  syncSceneToSign();
+  if (ble.isConnected && isPoweredOn) {
+    ble.sendMode(mode);
+  }
   highlightActiveFavorite();
   haptic('light');
 }
@@ -354,6 +360,7 @@ btnDisconnect.addEventListener('click', disconnectDevice);
 
 filterAnimationOptions(animDropdown, '', activeModeVal);
 animDropdown.value = activeModeVal;
+lastSpeedVal = parseInt(sliderSpeed.value, 10);
 loadFavorites();
 updateReconnectButton();
 setupCompatBanner(compatBanner, log);

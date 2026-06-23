@@ -75,7 +75,9 @@ export class FloroBleController {
     const prefix = this._commandPrefix(processed);
 
     if (prefix) {
+      const superseded = this.queue.filter((item) => item.prefix === prefix);
       this.queue = this.queue.filter((item) => item.prefix !== prefix);
+      superseded.forEach((item) => item.resolve(true));
     }
 
     return new Promise((resolve, reject) => {
