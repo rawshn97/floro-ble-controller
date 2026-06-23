@@ -29,8 +29,12 @@ Open `http://localhost:8080` (or your HTTPS URL), click **Scan & Connect Sign**,
 
 ### Deploy to Vercel
 
+**Canonical URL:** `https://rawshn.com/sign-controller/` via [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) (`public/sign-controller/` git submodule). Push to `main` on this repo, bump the submodule pointer in the portfolio repo, and redeploy portfolio.
+
+**Direct mirror (optional):** from this repo root:
+
 ```bash
-npx vercel
+vercel --prod
 ```
 
 The included `vercel.json` sets the Bluetooth permissions policy header. No build step is required — static files only.

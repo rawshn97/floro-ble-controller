@@ -323,9 +323,9 @@ Do **not** introduce these — they break the premium-remote feel:
 | URL | Role |
 |-----|------|
 | `https://rawshn.com/sign-controller/` | Public production URL (canonical for users) |
-| `https://blecontroller.vercel.app/` | Direct Vercel deployment of this repo |
+| `https://blecontroller.vercel.app/` | Direct Vercel deployment (optional mirror) |
 
-**Subdirectory routing:** `rawshn-portfolio/vercel.json` rewrites `/sign-controller` and `/sign-controller/:path*` to `blecontroller.vercel.app`. Asset paths stay relative (`./`) so the same build works at both URLs.
+**Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com`. Asset paths stay relative (`./`) so the same files work at both URLs. Optional: point the `ble_controller` Vercel project at the portfolio repo with Root Directory `public/sign-controller` so both domains deploy from the same folder.
 
 ### PWA notes
 - **Asset paths:** Relative (`./`) — works under subdirectory proxy without code changes
