@@ -100,9 +100,11 @@ export function setDisplayView(
     solidView.classList.toggle('is-active', isSolid);
     solidView.hidden = !isSolid;
     solidView.inert = !isSolid;
+    solidView.style.visibility = isSolid ? 'visible' : 'hidden';
     animationView.classList.toggle('is-active', !isSolid);
     animationView.hidden = isSolid;
     animationView.inert = isSolid;
+    animationView.style.visibility = isSolid ? 'hidden' : 'visible';
     return;
   }
 
@@ -114,13 +116,16 @@ export function setDisplayView(
   outgoing.inert = true;
   incoming.hidden = false;
   incoming.inert = false;
+  incoming.style.visibility = 'visible';
 
   const finish = () => {
     outgoing.hidden = true;
     outgoing.inert = true;
+    outgoing.style.visibility = 'hidden';
     outgoing.classList.remove('is-exiting');
     incoming.classList.add('is-active');
     incoming.inert = false;
+    incoming.style.visibility = 'visible';
     viewTransitionLock = false;
   };
 
@@ -237,7 +242,6 @@ export function setupPwaInstall({
   bannerEl,
   bannerTitle,
   bannerSubtitle,
-  iosStepsEl,
   btnInstall,
   btnDismiss,
   settingsBtn,
@@ -272,6 +276,36 @@ export function setupPwaInstall({
 
   function hideBanner() {
     bannerEl?.classList.add('hidden');
+    bannerEl?.setAttribute('aria-hidden', 'true');
+  }
+
+  function showBanner() {
+    if (!bannerEl || isStandalone() || isDismissed()) return;
+    bannerEl.classList.remove('hidden');
+    bannerEl.setAttribute('aria-hidden', 'false');
+
+    if (bannerTitle) {
+      bannerTitle.textContent = 'Install FloRo';
+    }
+
+    if (bannerSubtitle) {
+      bannerSubtitle.textContent =
+        isIOS() && !deferredPrompt
+          ? 'Tap Share, then Add to Home Screen for one-tap access.'
+          : 'Add FloRo Controller to your home screen for quick access.';
+    }
+
+    if (btnInstall) {
+      if (deferredPrompt) {
+        btnInstall.classList.remove('hidden');
+        btnInstall.textContent = 'Install';
+      } else if (isIOS()) {
+        btnInstall.classList.remove('hidden');
+        btnInstall.textContent = 'How to install';
+      } else {
+        btnInstall.classList.add('hidden');
+      }
+    }
   }
 
   function iosStepItems() {
@@ -351,6 +385,7 @@ export function setupPwaInstall({
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    showBanner();
   });
 
   window.addEventListener('appinstalled', () => {
@@ -390,6 +425,10 @@ export function setupPwaInstall({
 
   if (settingsBtn && isStandalone()) {
     settingsBtn.closest('.settings-section')?.classList.add('hidden');
+  }
+
+  if (!isStandalone() && !isDismissed() && isIOS()) {
+    showBanner();
   }
 }
 

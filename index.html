@@ -81,9 +81,9 @@
             <span class="slider-val" id="val-brightness">8 / 8</span>
           </div>
           <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" onclick="stepBrightness(-1)" aria-label="Decrease brightness">−</button>
+            <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
             <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-            <button class="btn btn-step" type="button" onclick="stepBrightness(1)" aria-label="Increase brightness">+</button>
+            <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
           </div>
         </div>
       </div>
@@ -121,9 +121,9 @@
             <span class="slider-val" id="val-brightness-anim">8 / 8</span>
           </div>
           <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" onclick="stepBrightness(-1)" aria-label="Decrease brightness">−</button>
+            <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
             <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-            <button class="btn btn-step" type="button" onclick="stepBrightness(1)" aria-label="Increase brightness">+</button>
+            <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
           </div>
         </div>
         <div class="card-divider"></div>
@@ -133,9 +133,9 @@
             <span class="slider-val" id="val-speed">50%</span>
           </div>
           <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" onclick="stepSpeed(-1)" aria-label="Decrease speed">−</button>
+            <button class="btn btn-step" type="button" data-step-speed="-1" aria-label="Decrease speed">−</button>
             <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
-            <button class="btn btn-step" type="button" onclick="stepSpeed(1)" aria-label="Increase speed">+</button>
+            <button class="btn btn-step" type="button" data-step-speed="1" aria-label="Increase speed">+</button>
           </div>
         </div>
       </div>
@@ -244,12 +244,18 @@
   </div>
 </div>
 
-<div id="install-banner" class="hidden" aria-hidden="true">
-  <span id="install-banner-title"></span>
-  <span id="install-banner-subtitle"></span>
-  <ol id="install-ios-steps"></ol>
-  <button id="btn-install" type="button"></button>
-  <button id="btn-dismiss-install" type="button"></button>
+<div id="install-banner" class="install-banner hidden" role="region" aria-label="Install FloRo app">
+  <div class="install-banner-card">
+    <img src="./logo.png" alt="" class="install-banner-icon" onerror="this.src='./floro.png';">
+    <div class="install-banner-content">
+      <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
+      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for quick access.</p>
+      <div class="install-banner-actions">
+        <button id="btn-install" class="btn btn-primary install-banner-action" type="button">Install</button>
+        <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action" type="button">Not now</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="./js/app.js"></script>

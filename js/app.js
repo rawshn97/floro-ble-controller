@@ -64,7 +64,8 @@ const consoleBody = document.getElementById('console-body');
 const compatBanner = document.getElementById('compat-banner');
 const appVersionEl = document.getElementById('app-version');
 
-const panels = [powerStrip, solidControls, colorPanel, animControls, animationPanel];
+const controlPanels = [solidControls, colorPanel, animControls, animationPanel];
+const themePanels = [powerStrip, ...controlPanels];
 
 let isPoweredOn = true;
 let lastBrightnessVal = 8;
@@ -87,7 +88,7 @@ const colorPicker = createColorPicker({
   root: customColorPickerRoot,
   initialHex: activeColor,
   onColorChange: (hex) => {
-    activeColor = updateNeonThemeColor(hex, panels);
+    activeColor = updateNeonThemeColor(hex, themePanels);
     document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
   },
   onColorCommit: () => {
@@ -124,7 +125,13 @@ function setConnectionState(state, name = '') {
 }
 
 function enablePanels(enabled) {
-  panels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
+  controlPanels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
+  setPowerStripEnabled(enabled);
+}
+
+function setPowerStripEnabled(enabled) {
+  if (!powerStrip) return;
+  powerStrip.classList.toggle('disabled-control', !enabled);
 }
 
 function resetUI() {
@@ -294,7 +301,14 @@ window.setPowerState = function (on) {
 };
 
 if (powerBtn) {
-  powerBtn.addEventListener('click', () => {
+  powerBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!ble.isConnected) {
+      haptic('heavy');
+      log('Connect to your sign before using power.', 'info');
+      return;
+    }
     setPowerState(!isPoweredOn);
   });
 }
@@ -306,20 +320,19 @@ function updatePowerUI(on) {
     powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
   }
 
+  syncControlPanelsEnabled();
+
   if (on) {
-    solidControls.classList.remove('disabled-control');
-    colorPanel.classList.remove('disabled-control');
-    animControls.classList.remove('disabled-control');
-    animationPanel.classList.remove('disabled-control');
     syncBrightnessSliders(lastBrightnessVal);
   } else {
-    solidControls.classList.add('disabled-control');
-    colorPanel.classList.add('disabled-control');
-    animControls.classList.add('disabled-control');
-    animationPanel.classList.add('disabled-control');
     valBrightness.textContent = 'OFF';
     valBrightnessAnim.textContent = 'OFF';
   }
+}
+
+function syncControlPanelsEnabled() {
+  const enabled = ble.isConnected && isPoweredOn;
+  controlPanels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
 }
 
 function syncBrightnessSliders(val) {
@@ -330,21 +343,34 @@ function syncBrightnessSliders(val) {
   valBrightnessAnim.textContent = label;
 }
 
-window.stepBrightness = function (delta) {
-  if (!isPoweredOn) return;
+function stepBrightness(delta) {
+  if (!ble.isConnected || !isPoweredOn) return;
   const next = Math.min(8, Math.max(1, lastBrightnessVal + delta));
   if (next === lastBrightnessVal) return;
   haptic('light');
   onBrightnessInput(next, { immediate: true });
-};
+}
 
-window.stepSpeed = function (delta) {
-  if (!isPoweredOn) return;
+function stepSpeed(delta) {
+  if (!ble.isConnected || !isPoweredOn) return;
   const next = Math.min(100, Math.max(0, lastSpeedVal + delta));
   if (next === lastSpeedVal) return;
   haptic('light');
   onSpeedInput(next, { immediate: true });
-};
+}
+
+function bindStepperButtons() {
+  document.querySelectorAll('[data-step-brightness]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      stepBrightness(Number(btn.dataset.stepBrightness));
+    });
+  });
+  document.querySelectorAll('[data-step-speed]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      stepSpeed(Number(btn.dataset.stepSpeed));
+    });
+  });
+}
 
 function onBrightnessInput(val, { immediate = false } = {}) {
   lastBrightnessVal = val;
@@ -394,7 +420,7 @@ animDropdown.addEventListener('change', (e) => {
   setMode(parseInt(e.target.value, 10));
 });
 
-window.stepMode = function (delta) {
+window.stepMode = function stepMode(delta) {
   let mode = parseInt(animDropdown.value, 10) + delta;
   if (mode < 1) mode = 200;
   if (mode > 200) mode = 1;
@@ -524,7 +550,6 @@ setupPwaInstall({
   bannerEl: document.getElementById('install-banner'),
   bannerTitle: document.getElementById('install-banner-title'),
   bannerSubtitle: document.getElementById('install-banner-subtitle'),
-  iosStepsEl: document.getElementById('install-ios-steps'),
   btnInstall: document.getElementById('btn-install'),
   btnDismiss: document.getElementById('btn-dismiss-install'),
   settingsBtn: document.getElementById('btn-settings-install'),
@@ -579,6 +604,11 @@ async function tryAutoReconnect() {
     btnReconnect.disabled = false;
   }
 }
+
+bindStepperButtons();
+setPowerStripEnabled(false);
+syncControlPanelsEnabled();
+updatePowerUI(isPoweredOn);
 
 log('System ready.', 'info');
 tryAutoReconnect();
