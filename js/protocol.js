@@ -38,9 +38,13 @@ export function buildSceneCommand({ brightness, speed, r, g, b, mode }) {
 }
 
 export function hexToRgb(hex) {
+  const normalized = typeof hex === 'string' ? hex.trim() : '';
+  if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+    return { r: 255, g: 0, b: 0 };
+  }
   return {
-    r: parseInt(hex.substring(1, 3), 16),
-    g: parseInt(hex.substring(3, 5), 16),
-    b: parseInt(hex.substring(5, 7), 16),
+    r: parseInt(normalized.substring(1, 3), 16),
+    g: parseInt(normalized.substring(3, 5), 16),
+    b: parseInt(normalized.substring(5, 7), 16),
   };
 }
