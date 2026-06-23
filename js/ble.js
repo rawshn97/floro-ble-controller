@@ -1,4 +1,4 @@
-import { colorCommand, wrapWireCommand } from './protocol.js';
+import { colorCommand, uiSpeedToBle, wrapWireCommand } from './protocol.js';
 
 const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -246,7 +246,8 @@ export class FloroBleController {
   }
 
   sendSpeed(val) {
-    return this.sendAscii(`S=${val}`, `Speed set to ${val}%`);
+    const wire = uiSpeedToBle(val);
+    return this.sendAscii(`S=${wire}`, `Speed set to ${val}%`);
   }
 
   sendColor(r, g, b, label) {
@@ -260,7 +261,7 @@ export class FloroBleController {
   /** Push full sign state — mode is sent last after a short delay (matches Neon Attack app). */
   async sendScene({ brightness, speed, r, g, b, mode }) {
     await this.sendAscii(`B=${brightness}`, `Brightness ${brightness}`);
-    await this.sendAscii(`S=${speed}`, `Speed ${speed}%`);
+    await this.sendAscii(`S=${uiSpeedToBle(speed)}`, `Speed ${speed}%`);
     await this.sendAscii(colorCommand(r, g, b).trimEnd(), 'Color');
     await new Promise((r) => setTimeout(r, MODE_DELAY_MS));
     await this.sendAscii(`M${mode}`, `Flow mode ${mode}`);

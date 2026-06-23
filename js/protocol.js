@@ -8,6 +8,11 @@ export function kvCommand(key, value) {
   return `${key}=${value};\n`;
 }
 
+/** Map UI speed (0% slow, 100% fast) to sign wire value (higher = slower). */
+export function uiSpeedToBle(uiSpeed) {
+  return 100 - uiSpeed;
+}
+
 /**
  * Animation mode (Neon Attack demo111): interpolate "M" + mode + "\\n".
  * No equals sign or semicolon — e.g. M32\\n not M=32;

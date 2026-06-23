@@ -46,7 +46,7 @@ Commands are sent as ASCII strings over the Nordic UART Service (NUS):
 | Command | Example | Description |
 |---------|---------|-------------|
 | Brightness | `B=8;\n` | Level 0 (off) through 8 |
-| Speed | `S=50;\n` | Animation speed 0–100% |
+| Speed | `S=50;\n` | Animation speed on the sign (higher = slower). The UI shows 0-100% where 100% is fastest; the app sends `S={100 - ui%}` |
 | Color | `C=255,0,128;\n` | RGB values (green/blue channels swapped for physical LED wiring) |
 | Mode | `M32\n` | Flow/animation mode 1–200. **No** `=` or `;` (Neon Attack `demo111` sends `M` + number + newline) |
 
