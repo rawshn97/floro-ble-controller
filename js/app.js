@@ -160,6 +160,39 @@ function syncRemotePanels() {
   animControls?.classList.toggle('hidden', isSolid);
 }
 
+let colorLiveTimeout = null;
+let colorPickNeedsModeSend = false;
+
+function prepareSolidModeForColorPick() {
+  if (activeModeVal === 1) return;
+  displayView = 'solid';
+  setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
+  syncRemotePanels();
+  setMode(1, { sendBle: false });
+  ble.bumpSceneGeneration();
+  persistScene();
+  colorPickNeedsModeSend = true;
+}
+
+function sendColorToSignLive(hex, { immediate = false } = {}) {
+  if (colorLiveTimeout) clearTimeout(colorLiveTimeout);
+  const send = () => {
+    colorLiveTimeout = null;
+    if (!ble.isConnected || !isPoweredOn) return;
+    const { r, g, b } = hexToRgb(hex);
+    ble.sendColor(r, g, b, 'Color');
+    if (colorPickNeedsModeSend) {
+      colorPickNeedsModeSend = false;
+      ble.sendMode(1);
+    }
+  };
+  if (immediate) {
+    send();
+  } else {
+    colorLiveTimeout = setTimeout(send, 120);
+  }
+}
+
 const colorPicker = createColorPicker({
   root: customColorPickerRoot,
   initialHex: activeColor,
@@ -168,8 +201,16 @@ const colorPicker = createColorPicker({
     updatePreviewChrome();
     document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
     persistScene();
+    prepareSolidModeForColorPick();
+    sendColorToSignLive(hex);
   },
-  onColorCommit: () => {
+  onColorCommit: (hex) => {
+    colorPickNeedsModeSend = false;
+    if (colorLiveTimeout) {
+      clearTimeout(colorLiveTimeout);
+      colorLiveTimeout = null;
+    }
+    sendColorToSignLive(hex, { immediate: true });
     haptic('light');
     applyColorSelection();
   },

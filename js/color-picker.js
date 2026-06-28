@@ -187,15 +187,20 @@ export function createColorPicker({ root, initialHex = '#ff0000', onColorChange,
   const hexInput = root.querySelector('.hex-input');
   const recentGrid = root.querySelector('.recent-swatches');
 
+  function flushCommit() {
+    if (commitTimer) {
+      clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+    pushRecent(currentHex);
+    recent = loadRecent();
+    renderRecent();
+    onColorCommit?.(currentHex);
+  }
+
   function scheduleCommit() {
     if (commitTimer) clearTimeout(commitTimer);
-    commitTimer = setTimeout(() => {
-      commitTimer = null;
-      pushRecent(currentHex);
-      recent = loadRecent();
-      renderRecent();
-      onColorCommit?.(currentHex);
-    }, 150);
+    commitTimer = setTimeout(flushCommit, 150);
   }
 
   function updateFromHsl({ commit = true } = {}) {
@@ -287,6 +292,7 @@ export function createColorPicker({ root, initialHex = '#ff0000', onColorChange,
     } catch {
       /* already released */
     }
+    flushCommit();
   }
 
   pick2d.addEventListener('pointerdown', onPointerDown);
