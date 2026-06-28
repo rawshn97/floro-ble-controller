@@ -459,6 +459,8 @@ export function setupPwaInstall({
       return;
     }
 
+    const compactViewport = window.matchMedia('(max-height: 850px)').matches;
+
     if (!isMobile()) {
       if (isDismissed()) {
         hideBannerFully();
@@ -468,8 +470,8 @@ export function setupPwaInstall({
       return;
     }
 
-    // Mobile: always show Install (compact bar after dismiss)
-    showBanner({ compact: isDismissed() });
+    // Mobile: compact bar on short viewports or after dismiss
+    showBanner({ compact: isDismissed() || compactViewport });
   }
 
   const ANDROID_FALLBACK_DELAY_MS = 2500;
