@@ -30,6 +30,8 @@ One control surface at a time. No scrolling past unrelated modes.
 │                                     │
 │   ONE view panel (Solid OR Anim)    │  scrollable
 │                                     │
+├─────────────────────────────────────┤
+│ Install dock (mobile / first visit) │  bottom shell
 └─────────────────────────────────────┘
          ⋮ / status chip tap
               ↓
@@ -46,7 +48,7 @@ One control surface at a time. No scrolling past unrelated modes.
 
 | Element | Role |
 |---------|------|
-| Brand (logo + "FloRo") | Identity anchor; always visible |
+| Brand (Neon Attack logo + "FloRo" + byline) | Identity anchor; official Neon Attack mark with FloRo product name |
 | Status chip | Compact connection state; tap opens settings |
 | Menu button (⋮) | Opens settings sheet |
 
@@ -55,7 +57,7 @@ One control surface at a time. No scrolling past unrelated modes.
 | Element | Role |
 |---------|------|
 | Segmented control | Solid \| Animation — switches the single active view |
-| Power strip | Global on/off toggle; always reachable |
+| Power strip | Global on/off toggle; always reachable. Uses IEC-style power symbol (vertical stem + arc), not a generic switch glyph |
 
 ### Solid view (`#solid-view`)
 
@@ -71,9 +73,11 @@ Shown when Animation is selected. Contains only animation controls:
 
 1. Brightness slider (mirrors solid; same wire value)
 2. Speed slider (0–100% UI, inverted for wire protocol)
-3. Search field for mode filtering
-4. Mode select row (stepper + dropdown)
-5. Quick Presets (favorites grid)
+3. **Mode hero** — large mode number + friendly name (`js/mode-names.js`)
+4. Stepper row (+/−) with compact readout between buttons
+5. Search field for mode filtering (name or number)
+6. Scrollable **mode list** (replaces native dropdown; hidden `<select>` kept for fallback)
+7. Quick Presets (favorites grid with mode number badges)
 
 ### Settings sheet (`#settings-sheet`)
 
@@ -93,6 +97,7 @@ Infrastructure lives here, not on the main surface:
 | **Header** | `.app-header` | Sticky top chrome: brand, status chip, settings menu. Frosted black blur, 48px min height + safe-area top. |
 | **Mode toolbar** | `.mode-toolbar` | Sticky below header: Solid \| Animation segmented control + Power switch. Stays visible while view scrolls. |
 | **View stage** | `.view-stage` | Single active panel (`#solid-view` or `#animation-view`). 280px min height; horizontal slide transition between modes. |
+| **Install dock** | `#install-banner.install-dock` | Bottom of `.app-shell` flex column (not floating overlay). Mobile: always shows Install until standalone; dismiss collapses to compact bar. |
 | **Sheets** | `.sheet-overlay` + `.modal-sheet` | Bottom sheets for settings, install, and save-favorite. Backdrop blur; body scroll locked via `body.sheet-open`. |
 
 Main content (`.app-main`) is max-width 500px, centered, with optional compat banner above the view stage.
@@ -239,9 +244,10 @@ Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure whit
 ### Favorites (`fav-chip`)
 
 - Pill chips in a scrollable grid (max-height 180px) under "Quick Presets"
+- Each chip shows **mode number** (accent pill) + label
 - Tap label to apply mode; tap × to remove
 - Active chip: `--accent-muted` fill + accent ring when mode matches current selection
-- "Add" uses `btn-text`; opens save-favorite sheet with prefilled name
+- "Add" uses `btn-text`; opens save-favorite sheet with prefilled name from `mode-names.js`
 - Persisted in `localStorage` (`floro_favorites`)
 
 ### Settings sheet (`modal-sheet`)
@@ -328,17 +334,12 @@ Do **not** introduce these — they break the premium-remote feel:
 **Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com`. Asset paths stay relative (`./`) so the same files work at both URLs. Optional: point the `ble_controller` Vercel project at the portfolio repo with Root Directory `public/sign-controller` so both domains deploy from the same folder.
 
 ### PWA notes
-- **Asset paths:** Relative (`./`) — works under subdirectory proxy without code changes
-- **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]` (matches Health Hub PWA spec)
-- **Viewport:** `viewport-fit=cover` in `index.html`; `theme_color` / `background_color` `#0b0f19`
-- **Icons:** `icons/icon-192.png`, `icons/icon-512.png` (maskable), `icons/apple-touch-icon.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `./sw.js` with `skipWaiting` + `clientsClaim`; cache name bumped on asset changes
-- **Manifest:** `start_url: "./"`, `scope: "./"`, `id: "./"` — resolves to `/sign-controller/` when served via portfolio rewrite
-- **Install prompt:** Banner + Settings sheet (no Web Share Target; BLE controller only)
-  - **Android fallback:** If `beforeinstallprompt` does not fire within 2.5s, banner still appears with menu-based install instructions (Install button hidden until prompt arrives)
-  - **iOS:** Banner on load with "How to install" modal (Share → Add to Home Screen)
-  - **Dismiss TTL:** `floro_install_dismissed_v3` stores dismiss timestamp; banner suppressed for 7 days, then eligible again
-  - **Standalone:** Install section hidden when already installed (`display-mode: standalone|minimal-ui` or `navigator.standalone`)
+- **Asset paths:** `manifest.json` uses absolute `/sign-controller/` paths (matches Health Hub `/coach/` pattern for standalone install). Page assets use `./` with `<base href>` for subdirectory resolution.
+- **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]`
+- **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
+- **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
+- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v22`
+- **Install prompt:** Bottom install dock; mobile Install always visible until standalone; Android 2.5s fallback
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
 ## File Map
@@ -347,12 +348,14 @@ Do **not** introduce these — they break the premium-remote feel:
 |------|----------------------|
 | `index.html` | IA structure, ARIA roles, component markup |
 | `css/styles.css` | All visual tokens, component styles, motion |
-| `js/ui.js` | View transitions, sheet behavior, chip states, theme color |
-| `js/app.js` | Mode logic, auto-reconnect, disabled-control toggling |
+| `js/ui.js` | View transitions, sheet behavior, chip states, theme color, install dock, mode list filter |
+| `js/app.js` | Mode logic, auto-reconnect, disabled-control toggling, mode list rendering |
+| `js/mode-names.js` | Curated friendly names for modes 1–200 |
 | `js/color-picker.js` | Custom HSL palette widget |
-| `manifest.json` | PWA identity |
-| `icons/` | Install / home-screen icons |
+| `manifest.json` | PWA identity (`/sign-controller/` absolute scope for portfolio install) |
+| `icons/` | Install / home-screen icons (from Neon Attack `logo.png`) |
 | `sw.js` | Offline cache |
+| `logo.png` | Neon Attack official mark (header + icon source) |
 | `scripts/generate-icons.mjs` | Regenerate icons from `logo.png` |
 
 ## Decisions Log
@@ -368,3 +371,11 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-23 | Activity log in settings only | Debug visibility without polluting main remote surface |
 | 2026-06-23 | Deploy at `/sign-controller/` via portfolio rewrite | Keeps rawshn.com namespace clean; separate Vercel project for static PWA |
 | 2026-06-29 | Android install banner fallback + 7-day dismiss TTL | `beforeinstallprompt` is unreliable on some Android builds; fallback banner + timed dismiss prevents permanent hide after accidental tap |
+| 2026-06-29 | Bottom install dock in app shell | Matches Coach PWA pattern: persistent mobile Install, not a dismissible floating chip |
+| 2026-06-29 | Standalone PWA paths (absolute manifest + scoped SW) | `start_url`/`scope`/`id` = `/sign-controller/` like Health Hub `/coach/`; SW uses `__FLORO_PWA_BASE` |
+| 2026-06-29 | Neon Attack logo in header + PWA icons | Official `logo.png` branding with FloRo title and `#ff007f` accent; icons regenerated from same source |
+| 2026-06-29 | Animation picker IA redesign | Mode hero + searchable scrollable list with number + name; dropdown hidden (a11y fallback only) |
+| 2026-06-29 | `js/mode-names.js` curated placeholders | 200 memorable names (mode 1 = Solid Color); APK strings not in repo, replace when available |
+| 2026-06-29 | IEC power icon in toolbar | Universal power symbol (stem + arc) instead of toggle metaphor |
+| 2026-06-30 | Mobile install dock always shows Install | Compact bar after **Not now** keeps Install one tap away; Android 2.5s fallback matches Health Hub |
+| 2026-06-30 | `mobile-web-app-capable` meta tag | Matches Coach PWA head tags alongside `apple-mobile-web-app-capable` for broader standalone support |

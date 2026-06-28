@@ -1,3 +1,5 @@
+import { formatModeLabel, getModeName, MODE_COUNT } from './mode-names.js';
+
 export const APP_VERSION = '2.0.0';
 
 export function createLogger(consoleBody) {
@@ -367,7 +369,19 @@ export function setupPwaInstall({
       return;
     }
 
+    // Mobile: always show Install (compact bar after dismiss)
     showBanner({ compact: isDismissed() });
+  }
+
+  const ANDROID_FALLBACK_DELAY_MS = 2500;
+
+  function scheduleAndroidFallback() {
+    if (isStandalone() || !isAndroid() || deferredPrompt) return;
+    window.setTimeout(() => {
+      if (!deferredPrompt && !isStandalone()) {
+        refreshInstallDock();
+      }
+    }, ANDROID_FALLBACK_DELAY_MS);
   }
 
   function iosStepItems() {
@@ -465,6 +479,7 @@ export function setupPwaInstall({
   });
 
   refreshInstallDock();
+  scheduleAndroidFallback();
 
   window.addEventListener('appinstalled', () => {
     log('FloRo Controller installed.', 'success');
@@ -519,7 +534,8 @@ export function setupFavoriteModal({ modal, input, btnConfirm, btnCancel, onConf
 
   window.openFavoriteModal = (mode) => {
     pendingMode = mode;
-    input.value = `Mode ${mode}`;
+    const label = getModeName(mode);
+    input.value = label;
     modal.classList.remove('hidden');
     input.focus();
     input.select();
@@ -556,29 +572,39 @@ export function setupFavoriteModal({ modal, input, btnConfirm, btnCancel, onConf
   });
 }
 
-export function filterAnimationOptions(selectEl, query, selectedValue) {
+export function filterAnimationOptions(selectEl, query, selectedValue, listEl, heroEls) {
   const q = query.trim().toLowerCase();
-  const current = selectedValue ?? selectEl.value;
+  const current = Number(selectedValue ?? selectEl?.value ?? 1);
 
-  selectEl.innerHTML = '';
-  for (let i = 1; i <= 200; i++) {
-    const label = i === 1 ? 'Mode 1 - Solid Color' : `Animation Mode ${i}`;
-    const matches = !q || label.toLowerCase().includes(q) || String(i).includes(q);
-    if (!matches) continue;
+  if (selectEl) {
+    selectEl.innerHTML = '';
+    for (let i = 1; i <= MODE_COUNT; i++) {
+      const label = formatModeLabel(i);
+      const matches = !q || label.toLowerCase().includes(q) || String(i).includes(q);
+      if (!matches) continue;
 
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = label;
-    selectEl.appendChild(opt);
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = label;
+      selectEl.appendChild(opt);
+    }
+
+    if (selectEl.options.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = current;
+      opt.textContent = formatModeLabel(current);
+      selectEl.appendChild(opt);
+    }
+
+    const hasCurrent = Array.from(selectEl.options).some((o) => o.value === String(current));
+    selectEl.value = hasCurrent ? String(current) : selectEl.options[0]?.value || '1';
   }
 
-  if (selectEl.options.length === 0) {
-    const opt = document.createElement('option');
-    opt.value = current;
-    opt.textContent = `Animation Mode ${current}`;
-    selectEl.appendChild(opt);
+  if (listEl && window.__floroModeNames?.renderModeList) {
+    window.__floroModeNames.renderModeList(listEl, { query: q, activeMode: current });
   }
 
-  const hasCurrent = Array.from(selectEl.options).some((o) => o.value === String(current));
-  selectEl.value = hasCurrent ? current : selectEl.options[0].value;
+  if (heroEls && window.__floroModeNames?.updateModeHero) {
+    window.__floroModeNames.updateModeHero(heroEls, current);
+  }
 }

@@ -1,5 +1,11 @@
 import { FloroBleController, isBleSupported } from './ble.js';
 import { createColorPicker } from './color-picker.js';
+import {
+  formatModeLabel,
+  getModeName,
+  listModes,
+  MODE_COUNT,
+} from './mode-names.js';
 import { hexToRgb } from './protocol.js';
 import {
   APP_VERSION,
@@ -19,14 +25,14 @@ import {
 } from './ui.js';
 
 const defaultFavorites = [
-  { mode: 32, label: 'Pattern 32' },
-  { mode: 34, label: 'Pattern 34' },
-  { mode: 35, label: 'Pattern 35' },
-  { mode: 38, label: 'Pattern 38' },
-  { mode: 50, label: 'Pattern 50' },
-  { mode: 66, label: 'Pattern 66' },
-  { mode: 102, label: 'Pattern 102' },
-  { mode: 108, label: 'Pattern 108' },
+  { mode: 32, label: getModeName(32) },
+  { mode: 34, label: getModeName(34) },
+  { mode: 35, label: getModeName(35) },
+  { mode: 38, label: getModeName(38) },
+  { mode: 50, label: getModeName(50) },
+  { mode: 66, label: getModeName(66) },
+  { mode: 102, label: getModeName(102) },
+  { mode: 108, label: getModeName(108) },
 ];
 
 const btnConnect = document.getElementById('btn-connect');
@@ -58,7 +64,19 @@ const valSpeed = document.getElementById('val-speed');
 const customColorPickerRoot = document.getElementById('custom-color-picker');
 const animDropdown = document.getElementById('anim-dropdown');
 const modeSearch = document.getElementById('mode-search');
+const modeList = document.getElementById('mode-list');
 const favoritesGrid = document.getElementById('favorites-grid');
+const animModeHeroNum = document.getElementById('anim-mode-hero-num');
+const animModeHeroName = document.getElementById('anim-mode-hero-name');
+const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
+const animStepperReadout = document.getElementById('anim-stepper-readout');
+
+const modeHeroEls = {
+  num: animModeHeroNum,
+  name: animModeHeroName,
+  meta: animModeHeroMeta,
+  readout: animStepperReadout,
+};
 
 const consoleBody = document.getElementById('console-body');
 const compatBanner = document.getElementById('compat-banner');
@@ -187,12 +205,82 @@ function syncDisplayViewWithMode() {
   }
 }
 
+function renderModeList(listEl, { query = '', activeMode = 1 } = {}) {
+  if (!listEl) return;
+
+  const modes = listModes({ query, limit: MODE_COUNT });
+  listEl.innerHTML = '';
+
+  if (modes.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'mode-list-empty';
+    empty.textContent = 'No modes match your search.';
+    listEl.appendChild(empty);
+    return;
+  }
+
+  modes.forEach(({ mode, name, label }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `mode-list-item${mode === activeMode ? ' is-active' : ''}`;
+    btn.setAttribute('role', 'option');
+    btn.setAttribute('aria-selected', mode === activeMode ? 'true' : 'false');
+    btn.dataset.mode = String(mode);
+
+    const num = document.createElement('span');
+    num.className = 'mode-list-num';
+    num.textContent = String(mode).padStart(3, '0');
+
+    const copy = document.createElement('span');
+    copy.className = 'mode-list-copy';
+
+    const title = document.createElement('span');
+    title.className = 'mode-list-name';
+    title.textContent = name;
+
+    const subtitle = document.createElement('span');
+    subtitle.className = 'mode-list-sub';
+    subtitle.textContent = mode === 1 ? 'Solid color on sign' : label;
+
+    copy.appendChild(title);
+    copy.appendChild(subtitle);
+
+    btn.appendChild(num);
+    btn.appendChild(copy);
+    btn.addEventListener('click', () => setMode(mode));
+    listEl.appendChild(btn);
+  });
+
+  const activeItem = listEl.querySelector('.mode-list-item.is-active');
+  activeItem?.scrollIntoView({ block: 'nearest' });
+}
+
+function updateModeHero(heroEls, mode) {
+  const num = Number(mode);
+  if (heroEls.num) heroEls.num.textContent = String(num);
+  if (heroEls.name) heroEls.name.textContent = getModeName(num);
+  if (heroEls.meta) heroEls.meta.textContent = `Mode ${num} of ${MODE_COUNT}`;
+  if (heroEls.readout) heroEls.readout.textContent = formatModeLabel(num);
+}
+
+window.__floroModeNames = {
+  formatModeLabel,
+  getModeName,
+  renderModeList,
+  updateModeHero,
+};
+
+function refreshAnimationPicker(mode = activeModeVal) {
+  filterAnimationOptions(animDropdown, modeSearch.value, mode, modeList, modeHeroEls);
+}
+
 function updateModeDropdown(mode) {
   if (modeSearch.value) {
-    modeSearch.value = '';
-    filterAnimationOptions(animDropdown, '', mode);
+    refreshAnimationPicker(mode);
   } else {
-    animDropdown.value = mode;
+    animDropdown.value = String(mode);
+    renderModeList(modeList, { activeMode: mode });
+    updateModeHero(modeHeroEls, mode);
   }
 }
 
@@ -430,13 +518,19 @@ animDropdown.addEventListener('change', (e) => {
 
 window.stepMode = function stepMode(delta) {
   let mode = parseInt(animDropdown.value, 10) + delta;
-  if (mode < 1) mode = 200;
-  if (mode > 200) mode = 1;
+  if (mode < 1) mode = MODE_COUNT;
+  if (mode > MODE_COUNT) mode = 1;
   setMode(mode);
 };
 
-modeSearch.addEventListener('input', (e) => {
-  filterAnimationOptions(animDropdown, e.target.value, activeModeVal);
+modeSearch.addEventListener('input', () => {
+  refreshAnimationPicker(activeModeVal);
+});
+
+modeList?.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  e.preventDefault();
+  stepMode(e.key === 'ArrowUp' ? -1 : 1);
 });
 
 function loadFavorites() {
@@ -452,7 +546,7 @@ function loadFavorites() {
     } catch {
       favorites = [...defaultFavorites];
       saveFavorites();
-      log('Preset data was corrupted — restored defaults.', 'info');
+      log('Preset data was corrupted. Restored defaults.', 'info');
     }
   } else {
     favorites = [...defaultFavorites];
@@ -472,9 +566,16 @@ function renderFavorites() {
     chip.className = `fav-chip ${fav.mode === activeModeVal ? 'active' : ''}`;
     chip.setAttribute('data-mode', fav.mode);
 
+    const numSpan = document.createElement('span');
+    numSpan.className = 'fav-chip-num';
+    numSpan.textContent = String(fav.mode);
+
     const labelSpan = document.createElement('span');
+    labelSpan.className = 'fav-chip-label';
     labelSpan.textContent = fav.label;
     labelSpan.addEventListener('click', () => setMode(fav.mode));
+
+    chip.appendChild(numSpan);
     chip.appendChild(labelSpan);
 
     const removeBtn = document.createElement('span');
@@ -535,8 +636,8 @@ statusChip.addEventListener('click', () => {
   window.openSettingsSheet?.();
 });
 
-filterAnimationOptions(animDropdown, '', lastAnimationMode);
-animDropdown.value = lastAnimationMode;
+filterAnimationOptions(animDropdown, '', lastAnimationMode, modeList, modeHeroEls);
+animDropdown.value = String(lastAnimationMode);
 displayView = 'solid';
 setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid', { animate: false });
 lastSpeedVal = parseInt(sliderSpeed.value, 10);
@@ -586,7 +687,8 @@ setupFavoriteModal({
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then(
+    const pwaBase = window.__FLORO_PWA_BASE || './';
+    navigator.serviceWorker.register(`${pwaBase}sw.js`, { scope: pwaBase }).then(
       (reg) => console.log('ServiceWorker registered:', reg.scope),
       (err) => console.warn('ServiceWorker registration failed:', err)
     );

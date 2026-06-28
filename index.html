@@ -18,12 +18,14 @@
         b.href = p;
         document.head.appendChild(b);
       }
+      window.__FLORO_PWA_BASE = p.indexOf('/sign-controller') === 0 ? '/sign-controller/' : './';
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b0f19">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FloRo">
@@ -39,8 +41,11 @@
 <header class="app-header">
   <div class="app-header-inner">
     <div class="header-brand">
-      <img src="./logo.png" alt="FloRo" class="header-logo" onerror="this.src='./floro.png';">
-      <span class="header-title">FloRo</span>
+      <img src="./logo.png" alt="Neon Attack" class="header-logo" width="32" height="32">
+      <div class="header-brand-text">
+        <span class="header-title">FloRo</span>
+        <span class="header-byline">Neon Attack</span>
+      </div>
     </div>
     <button id="status-chip" class="status-chip chip-offline" type="button" aria-label="Connection status">
       <span class="status-chip-dot" aria-hidden="true"></span>
@@ -144,16 +149,28 @@
       </div>
 
       <div id="animation-panel" class="control-card disabled-control">
-        <div class="search-wrap">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="search" id="mode-search" class="ios-search" placeholder="Search modes…" autocomplete="off">
+        <div class="anim-mode-hero" id="anim-mode-hero" aria-live="polite">
+          <span class="anim-mode-hero-num" id="anim-mode-hero-num">32</span>
+          <div class="anim-mode-hero-copy">
+            <span class="anim-mode-hero-name" id="anim-mode-hero-name">Counter Spin</span>
+            <span class="anim-mode-hero-meta" id="anim-mode-hero-meta">Mode 32 of 200</span>
+          </div>
         </div>
 
         <div class="animation-select-row">
           <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
-          <select id="anim-dropdown" class="ios-select anim-dropdown"></select>
+          <div class="anim-stepper-readout" id="anim-stepper-readout" aria-hidden="true">32 · Counter Spin</div>
           <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
         </div>
+
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="search" id="mode-search" class="ios-search" placeholder="Search by name or number" autocomplete="off" aria-controls="mode-list" aria-label="Search animation modes">
+        </div>
+
+        <p class="anim-list-eyebrow">All modes</p>
+        <div id="mode-list" class="mode-list" role="listbox" aria-label="Animation modes" tabindex="0"></div>
+        <select id="anim-dropdown" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
 
         <div class="fav-header-row">
           <span class="fav-section-label">Quick Presets</span>
@@ -172,7 +189,7 @@
 
 <footer id="install-banner" class="install-dock hidden" role="region" aria-label="Install FloRo app">
   <div class="install-banner-card">
-    <img src="./icons/icon-192.png" alt="" class="install-banner-icon" onerror="this.src='./logo.png';">
+    <img src="./logo.png" alt="" class="install-banner-icon" width="48" height="48">
     <div class="install-banner-content">
       <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
       <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for quick access.</p>

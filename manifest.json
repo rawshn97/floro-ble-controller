@@ -1,10 +1,10 @@
 {
-  "id": "./",
   "name": "FloRo Sign Controller",
   "short_name": "FloRo",
   "description": "Control your FloRo neon sign over Bluetooth",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/sign-controller/",
+  "scope": "/sign-controller/",
+  "id": "/sign-controller/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
@@ -12,19 +12,19 @@
   "theme_color": "#0b0f19",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "/sign-controller/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "/sign-controller/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "/sign-controller/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
