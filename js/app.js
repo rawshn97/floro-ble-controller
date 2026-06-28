@@ -1,5 +1,6 @@
 import { FloroBleController, isBleSupported } from './ble.js';
 import { createColorPicker } from './color-picker.js';
+import { describeBleError } from './errors.js';
 import {
   formatModeLabel,
   getModeName,
@@ -46,6 +47,9 @@ const savedScene = loadSceneState();
 const btnConnect = document.getElementById('btn-connect');
 const btnReconnect = document.getElementById('btn-reconnect');
 const btnDisconnect = document.getElementById('btn-disconnect');
+const btnConnectMain = document.getElementById('btn-connect-main');
+const btnReconnectMain = document.getElementById('btn-reconnect-main');
+const connectPrompt = document.getElementById('connect-prompt');
 const deviceNameEl = document.getElementById('device-name');
 const connectionStatus = document.getElementById('connection-status');
 const statusChip = document.getElementById('status-chip');
@@ -184,6 +188,7 @@ const ble = new FloroBleController({
       enablePanels(true);
       wakeLock.acquire();
       setConnectionState('connected', name);
+      updateConnectPrompt();
     } else {
       persistSceneNow();
       resetUI();
@@ -197,6 +202,26 @@ const ble = new FloroBleController({
 function setConnectionState(state, name = '') {
   connectionState = state;
   updateConnectionChip(statusChip, statusChipText, state, name, ble.lastDeviceInfo);
+  updateConnectPrompt();
+}
+
+function updateConnectPrompt() {
+  if (!connectPrompt) return;
+
+  if (!isBleSupported() || ble.isConnected || connectionState === 'connecting') {
+    connectPrompt.classList.add('hidden');
+    return;
+  }
+
+  connectPrompt.classList.remove('hidden');
+
+  const last = ble.lastDeviceInfo;
+  if (btnReconnectMain && ble.canReconnect() && last) {
+    btnReconnectMain.textContent = `Reconnect to ${last.name}`;
+    btnReconnectMain.classList.remove('hidden');
+  } else {
+    btnReconnectMain?.classList.add('hidden');
+  }
 }
 
 function enablePanels(enabled) {
@@ -234,6 +259,7 @@ function updateReconnectButton() {
   } else {
     btnReconnect.classList.add('hidden');
   }
+  updateConnectPrompt();
 }
 
 async function syncSceneToSign({ includeMode, mode: modeOverride } = {}) {
@@ -424,7 +450,7 @@ async function onConnected() {
 
 async function connectDevice() {
   if (!isBleSupported()) {
-    log('Web Bluetooth is not available.', 'error');
+    log('Web Bluetooth is not available. Use Chrome or Edge on desktop/Android over HTTPS.', 'error');
     return;
   }
 
@@ -432,19 +458,20 @@ async function connectDevice() {
     setConnectionState('connecting');
     btnConnect.disabled = true;
     btnReconnect.disabled = true;
+    btnConnectMain && (btnConnectMain.disabled = true);
+    btnReconnectMain && (btnReconnectMain.disabled = true);
     await ble.connectNew();
     await onConnected();
     haptic('light');
   } catch (error) {
-    if (error.name !== 'NotFoundError') {
-      log(`Connection error: ${error.message}`, 'error');
-    } else {
-      log('Scan cancelled.', 'info');
-    }
+    const { message, level } = describeBleError(error, 'connection');
+    log(message, level);
     resetUI();
   } finally {
     btnConnect.disabled = false;
     btnReconnect.disabled = false;
+    btnConnectMain && (btnConnectMain.disabled = false);
+    btnReconnectMain && (btnReconnectMain.disabled = false);
   }
 }
 
@@ -455,15 +482,20 @@ async function reconnectDevice() {
     setConnectionState('connecting');
     btnConnect.disabled = true;
     btnReconnect.disabled = true;
+    btnConnectMain && (btnConnectMain.disabled = true);
+    btnReconnectMain && (btnReconnectMain.disabled = true);
     await ble.reconnectLast();
     await onConnected();
     haptic('light');
   } catch (error) {
-    log(`Reconnect error: ${error.message}`, 'error');
+    const { message, level } = describeBleError(error, 'connection');
+    log(message, level);
     resetUI();
   } finally {
     btnConnect.disabled = false;
     btnReconnect.disabled = false;
+    btnConnectMain && (btnConnectMain.disabled = false);
+    btnReconnectMain && (btnReconnectMain.disabled = false);
   }
 }
 
@@ -789,6 +821,8 @@ function applySavedSceneToUI() {
 btnConnect.addEventListener('click', connectDevice);
 btnReconnect.addEventListener('click', reconnectDevice);
 btnDisconnect.addEventListener('click', disconnectDevice);
+btnConnectMain?.addEventListener('click', connectDevice);
+btnReconnectMain?.addEventListener('click', reconnectDevice);
 
 modeSegSolid.addEventListener('click', () => {
   if (displayView === 'solid' && activeModeVal === 1) return;
@@ -912,7 +946,8 @@ async function tryAutoReconnect() {
     await ble.reconnectLast();
     await onConnected();
   } catch (error) {
-    log(`Auto-connect failed: ${error.message}`, 'error');
+    const { message, level } = describeBleError(error, 'connection');
+    log(message, level);
     resetUI();
   } finally {
     btnConnect.disabled = false;
@@ -924,6 +959,7 @@ bindStepperButtons();
 setPowerStripEnabled(false);
 syncControlPanelsEnabled();
 updatePowerUI(isPoweredOn);
+updateConnectPrompt();
 
 log('System ready.', 'info');
 tryAutoReconnect();

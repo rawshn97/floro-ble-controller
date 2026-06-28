@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify required static assets
+        run: |
+          test -f index.html
+          test -f manifest.webmanifest
+          test -f sw.js
+          test -f js/errors.js
+          grep -q 'manifest.webmanifest' index.html
+          grep -q 'floro-controller-v31' sw.js
+
+      - name: Regenerate PWA icons
+        run: node scripts/generate-icons.mjs
+
+      - name: Check icon outputs exist
+        run: |
+          test -f icons/icon-192.png
+          test -f icons/icon-512.png
+          test -f icons/apple-touch-icon.png

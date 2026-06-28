@@ -1,6 +1,6 @@
 import { formatModeLabel, getModeName, MODE_COUNT } from './mode-names.js';
 
-export const APP_VERSION = '2.0.0';
+export const APP_VERSION = '2.1.0';
 
 export function createLogger(consoleBody) {
   return function log(message, type = 'info') {
@@ -72,11 +72,7 @@ export function updateConnectionChip(chipEl, textEl, state, name = '', lastDevic
     return;
   }
 
-  if (lastDevice?.name) {
-    textEl.textContent = 'Tap to connect';
-  } else {
-    textEl.textContent = 'Offline';
-  }
+  textEl.textContent = 'Tap to connect';
 }
 
 let viewTransitionLock = false;

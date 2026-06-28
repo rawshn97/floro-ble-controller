@@ -29,6 +29,8 @@ Bottom-first remote layout. Primary controls live in the thumb zone; header is s
 │   Preview (optional, low emphasis)  │  flex; hidden on short screens
 │                                     │
 ├─────────────────────────────────────┤
+│ CONNECT PROMPT (offline only)       │  Scan & Connect + optional Reconnect
+├─────────────────────────────────────┤
 │ REMOTE DOCK (thumb zone)            │
 │  [Solid | Animation]  [Power]       │
 │  Brightness (+ Speed on Anim)       │
@@ -326,11 +328,11 @@ Do **not** introduce these — they break the premium-remote feel:
 **Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com`. Asset paths stay relative (`./`) so the same files work at both URLs. Optional: point the `ble_controller` Vercel project at the portfolio repo with Root Directory `public/sign-controller` so both domains deploy from the same folder.
 
 ### PWA notes
-- **Asset paths:** `manifest.json` uses absolute `/sign-controller/` paths (matches Health Hub `/coach/` pattern for standalone install). Page assets use `./` with `<base href>` for subdirectory resolution.
+- **Asset paths:** `manifest.webmanifest` uses absolute `/sign-controller/` paths (matches Health Hub `/coach/` pattern for standalone install). Page assets use `./` with `<base href>` for subdirectory resolution.
 - **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]`
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v30`
+- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v31`
 - **Install prompt:** Bottom install dock; mobile Install always visible until standalone; Android 2.5s fallback
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
@@ -345,7 +347,8 @@ Do **not** introduce these — they break the premium-remote feel:
 | `js/app.js` | Mode logic, auto-reconnect, remote dock, color presets |
 | `js/mode-names.js` | Curated friendly names for modes 1–200 |
 | `js/color-picker.js` | Custom HSL palette widget |
-| `manifest.json` | PWA identity (`/sign-controller/` absolute scope for portfolio install) |
+| `js/errors.js` | User-facing BLE error messages for activity log |
+| `manifest.webmanifest` | PWA identity (`/sign-controller/` absolute scope for portfolio install) |
 | `icons/` | Install / home-screen icons (from Neon Attack `logo.png`) |
 | `sw.js` | Offline cache |
 | `logo.png` | Neon Attack official mark (header + icon source) |

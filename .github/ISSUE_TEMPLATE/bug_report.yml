@@ -1,0 +1,81 @@
+name: Bug report
+description: Something broken in the FloRo Sign Controller PWA
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Include browser and sign details so we can reproduce BLE issues.
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome (desktop)
+        - Edge (desktop)
+        - Chrome (Android)
+        - Edge (Android)
+        - Safari (iOS)
+        - Firefox
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL where the bug happened
+      placeholder: https://rawshn.com/sign-controller/ or http://localhost:8080
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ble
+    attributes:
+      label: Were you connected to a FloRo sign?
+      options:
+        - Yes, connected
+        - No, offline / could not connect
+        - Not applicable (UI-only issue)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open app
+        2. Tap Scan & Connect
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Activity log (Settings > Activity Log)
+      description: Copy lines from the in-app log after the bug occurs.
+      placeholder: "[12:34:56 PM] Connection lost. Tap Reconnect or Scan & Connect."
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Sign model, OS version, screenshots, etc.

@@ -10,38 +10,53 @@ A progressive web app for controlling FloRo neon signs over **Web Bluetooth**. C
 
 ## Quick start
 
-### Local development
-
-Serve the folder over HTTPS or localhost. Examples:
+### Local development (golden path)
 
 ```bash
-# Python (localhost only)
+git clone https://github.com/ItsRRM97/floro-ble-controller.git
+cd floro-ble-controller
 python3 -m http.server 8080
+```
 
-# npx serve
-npx serve .
+Open [http://localhost:8080](http://localhost:8080), tap **Scan & Connect** on the main screen (or in Settings), and select your FloRo device in the browser picker.
 
-# npx with local HTTPS (recommended for mobile testing)
+No build step or npm install required.
+
+### Mobile testing (optional)
+
+Web Bluetooth on a phone needs HTTPS (localhost works on desktop only). To test on Android:
+
+```bash
+python3 -m http.server 8080 &
 npx local-ssl-proxy --source 8443 --target 8080
 ```
 
-Open `http://localhost:8080` (or your HTTPS URL), click **Scan & Connect Sign**, and select your FloRo device.
+Open `https://<your-lan-ip>:8443` in Chrome or Edge on the phone.
 
-### Deploy to Vercel
+Other serve options (`npx serve`, etc.) work the same way as long as the origin is secure.
 
-**Canonical URL:** `https://rawshn.com/sign-controller/` via [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) (`public/sign-controller/` git submodule). Push to `main` on this repo, bump the submodule pointer in the portfolio repo, and redeploy portfolio.
+## Deploy
 
-**Direct mirror (optional):** from this repo root:
+**Production URL:** [https://rawshn.com/sign-controller/](https://rawshn.com/sign-controller/)
 
-```bash
-vercel --prod
-```
+### Canonical deploy (recommended)
 
-The included `vercel.json` sets the Bluetooth permissions policy header. No build step is required — static files only.
+This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/sign-controller/`.
 
-### Deploy to GitHub Pages
+1. Push changes to `main` on this repo
+2. In the portfolio repo, bump the submodule pointer for `public/sign-controller/`
+3. Redeploy the portfolio (Vercel)
 
-Push the repo and enable Pages from the default branch root. Ensure the site URL uses HTTPS.
+The portfolio build serves these static files at `/sign-controller/` with the correct PWA scope and Bluetooth permissions header.
+
+### Alternative deploys
+
+| Method | When to use |
+|--------|-------------|
+| `vercel --prod` from this repo root | Standalone mirror (e.g. `blecontroller.vercel.app`) |
+| GitHub Pages | Fork/standalone hosting; enable Pages from default branch root over HTTPS |
+
+`vercel.json` sets `Permissions-Policy: bluetooth=(self)`. No build step is required.
 
 ## BLE protocol
 
@@ -71,10 +86,12 @@ On connect and whenever you change color or animation, the app sends brightness,
 │   ├── ble.js          # BLE connection, command queue, reconnect
 │   ├── color-picker.js # Custom HSL color picker widget
 │   ├── protocol.js     # Hex/RGB helpers and wire-format constants
+│   ├── errors.js       # User-facing BLE error messages
 │   └── ui.js           # View transitions, sheets, PWA install, wake lock, haptics
 ├── icons/              # PWA icons (192, 512, apple-touch)
 ├── sw.js               # Service worker (offline caching)
-├── manifest.json       # PWA manifest
+├── manifest.webmanifest # PWA manifest
+├── CHANGELOG.md        # Release notes (version + SW cache bumps)
 ├── scripts/
 │   └── generate-icons.mjs
 ├── DESIGN.md           # Design system and IA reference

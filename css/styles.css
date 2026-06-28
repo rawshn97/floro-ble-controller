@@ -499,6 +499,32 @@ body.sheet-open {
   font-size: 13px;
 }
 
+.connect-prompt {
+  flex-shrink: 0;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px 8px;
+}
+
+.connect-prompt.hidden {
+  display: none;
+}
+
+.connect-prompt-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--label-secondary);
+  text-align: center;
+}
+
+.connect-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* ── View panels ── */
 
 .view-stage {

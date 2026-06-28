@@ -1,3 +1,4 @@
+import { describeBleError } from './errors.js';
 import { colorCommand, uiSpeedToBle, wrapWireCommand } from './protocol.js';
 
 const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
@@ -106,7 +107,8 @@ export class FloroBleController {
         }
       } catch (error) {
         item.reject(error);
-        this.onLog(`Command failed: ${error.message}`, 'error');
+        const { message, level } = describeBleError(error, 'command');
+        this.onLog(message, level);
         break;
       }
     }
