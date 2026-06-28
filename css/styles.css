@@ -1,7 +1,7 @@
 /* FloRo Controller v2 — compact iOS 16 dark */
 
 :root {
-  --bg-primary: #000000;
+  --bg-primary: #0b0f19;
   --bg-grouped: #1c1c1e;
   --bg-secondary: #2c2c2e;
   --bg-tertiary: #3a3a3c;
@@ -47,11 +47,11 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background: var(--bg-primary);
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg-primary);
   color: var(--label-primary);
@@ -60,6 +60,15 @@ body {
   line-height: 1.35;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 body.sheet-open {
@@ -74,8 +83,9 @@ body.sheet-open {
   position: sticky;
   top: 0;
   z-index: 60;
+  flex-shrink: 0;
   padding-top: var(--safe-top);
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(11, 15, 25, 0.92);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 0.5px solid var(--separator);
@@ -187,7 +197,8 @@ body.sheet-open {
   position: sticky;
   top: calc(var(--safe-top) + var(--header-height));
   z-index: 55;
-  background: rgba(0, 0, 0, 0.72);
+  flex-shrink: 0;
+  background: rgba(11, 15, 25, 0.92);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 0.5px solid var(--separator);
@@ -232,58 +243,45 @@ body.sheet-open {
   align-items: center;
   justify-content: center;
   background: var(--fill-tertiary);
-  color: var(--label-tertiary);
+  color: var(--label-secondary);
   border-radius: var(--radius-md);
+  border: 0.5px solid transparent;
   pointer-events: auto;
-  transition: background var(--spring), color var(--spring), box-shadow var(--spring), transform var(--spring), opacity var(--spring);
+  transition: background var(--spring), color var(--spring), box-shadow var(--spring), border-color var(--spring), transform var(--spring), opacity var(--spring);
 }
 
 .power-remote-btn .power-icon {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  transition: opacity var(--spring), transform var(--spring);
-}
-
-.power-remote-btn .power-icon-off {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.power-remote-btn .power-icon-on {
-  opacity: 0;
-  transform: scale(0.88);
+  display: block;
+  flex-shrink: 0;
 }
 
 .power-remote-btn.is-on {
-  color: #ffe566;
-  background: rgba(255, 229, 102, 0.18);
-  box-shadow: 0 0 0 1px rgba(255, 229, 102, 0.35), 0 0 14px rgba(255, 229, 102, 0.2);
-}
-
-.power-remote-btn.is-on .power-icon-off {
-  opacity: 0;
-  transform: scale(0.88);
-}
-
-.power-remote-btn.is-on .power-icon-on {
-  opacity: 1;
-  transform: scale(1);
+  color: var(--system-green);
+  background: var(--system-green-muted);
+  border-color: rgba(48, 209, 88, 0.35);
+  box-shadow: 0 0 12px rgba(48, 209, 88, 0.18);
 }
 
 .power-remote-btn:not(.is-on) {
+  opacity: 0.85;
+}
+
+.power-remote-btn.is-unavailable {
+  opacity: 0.45;
   color: var(--label-tertiary);
-  background: var(--fill-tertiary);
-  box-shadow: none;
-  opacity: 0.72;
 }
 
 /* ── Main ── */
 
 .app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-width: 500px;
+  width: 100%;
   margin: 0 auto;
-  padding: 8px 16px calc(16px + var(--safe-bottom));
+  padding: 8px 16px 12px;
 }
 
 .compat-banner {
@@ -1176,30 +1174,60 @@ input[type="range"]::-webkit-slider-thumb {
   line-height: 1.6;
 }
 
-.install-banner {
-  position: fixed;
-  bottom: calc(12px + var(--safe-bottom));
-  left: 0;
-  right: 0;
-  z-index: 70;
-  padding: 0 16px;
-  pointer-events: none;
+.install-dock {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 16px calc(12px + var(--safe-bottom));
+  background: linear-gradient(to top, var(--bg-primary) 70%, transparent);
+}
+
+.install-dock.is-compact {
+  padding-top: 0;
+}
+
+.install-dock.is-compact .install-banner-card {
+  padding: 10px 12px;
+  gap: 10px;
+  align-items: center;
+}
+
+.install-dock.is-compact .install-banner-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-dock.is-compact .install-banner-icon,
+.install-dock.is-compact .install-banner-subtitle,
+.install-dock.is-compact .install-banner-title {
+  display: none;
+}
+
+.install-dock.is-compact .install-banner-actions {
+  margin-top: 0;
+  width: 100%;
+}
+
+.install-dock.is-compact .install-banner-action-primary {
+  flex: 1;
+}
+
+.install-dock.is-compact .install-banner-action-dismiss {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding-inline: 12px;
 }
 
 .install-banner-card {
-  pointer-events: auto;
-  max-width: 500px;
-  margin: 0 auto;
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(28, 28, 30, 0.94);
+  background: rgba(28, 28, 30, 0.96);
   border: 0.5px solid rgba(255, 0, 127, 0.35);
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 0, 127, 0.12);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 0, 127, 0.1);
 }
 
 .install-banner-icon {

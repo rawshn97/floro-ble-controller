@@ -92,13 +92,15 @@ On connect and whenever you change color or animation, the app sends brightness,
 
 ## PWA install behavior
 
-| Platform | Banner | Install button |
-|----------|--------|----------------|
-| **Android (Chrome/Edge)** | Shows after 2.5s if `beforeinstallprompt` has not fired; subtitle explains ⋮ menu path | Visible when browser prompt is available; hidden on fallback-only banner |
-| **iOS (Safari)** | Shows on load with Share → Add to Home Screen steps | "How to install" opens step-by-step modal |
-| **Desktop** | Hidden (not a mobile install target) | Use browser install icon if offered |
+The install dock is anchored to the bottom of the app shell (not a floating overlay). On mobile, an **Install** button stays visible until the app is installed, even after tapping **Not now** (which collapses to a compact bar).
 
-Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v3`). The banner stays hidden for **7 days**, then may appear again. Settings > **Install App** always works regardless of dismiss state. After install (standalone mode), the install section hides automatically.
+| Platform | Dock | Install button |
+|----------|------|----------------|
+| **Android (Chrome/Edge)** | Bottom dock when not installed | Always visible; opens native prompt when available, otherwise step-by-step modal (⋮ menu path) |
+| **iOS (Safari)** | Bottom dock when not installed | **How to install** opens Share → Add to Home Screen steps |
+| **Desktop** | Hidden after dismiss (7-day TTL) | Use browser install icon or Settings > Install App |
+
+Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v3`). On mobile the dock collapses but **Install** remains; on desktop the dock hides for **7 days**. Settings > **Install App** always works. After install (standalone mode), the dock hides automatically.
 
 ## Assets
 

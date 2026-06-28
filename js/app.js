@@ -318,6 +318,7 @@ function updatePowerUI(on) {
     const connected = ble.isConnected;
     const visualOn = connected && on;
     powerBtn.classList.toggle('is-on', visualOn);
+    powerBtn.classList.toggle('is-unavailable', !connected);
     powerBtn.setAttribute('aria-pressed', visualOn ? 'true' : 'false');
     if (!connected) {
       powerBtn.setAttribute('aria-label', 'Power');

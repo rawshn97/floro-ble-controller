@@ -34,6 +34,8 @@
 </head>
 <body>
 
+<div class="app-shell">
+
 <header class="app-header">
   <div class="app-header-inner">
     <div class="header-brand">
@@ -58,18 +60,10 @@
     </div>
     <div id="power-strip" class="power-strip disabled-control">
       <span class="power-strip-label">Power</span>
-      <button id="power-btn" class="btn power-remote-btn" type="button" aria-label="Power" aria-pressed="false">
-        <svg class="power-icon power-icon-off" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 18h6"></path>
-          <path d="M10 22h4"></path>
-          <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.2 4.7 3 6.1V18h8v-2.9c1.8-1.4 3-3.6 3-6.1a7 7 0 0 0-7-7z"></path>
-        </svg>
-        <svg class="power-icon power-icon-on" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M9 18h6"></path>
-          <path d="M10 22h4"></path>
-          <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z" fill="currentColor" stroke="none"></path>
-          <path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.1V18H8v-2.9A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"></path>
-          <path d="M12 2v-1M4.2 4.2l.7.7M19.8 4.2l-.7.7M2 12h1M21 12h1" stroke="currentColor" stroke-width="1.5"></path>
+      <button id="power-btn" class="btn power-remote-btn is-unavailable" type="button" aria-label="Power" aria-pressed="false">
+        <svg class="power-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 3v6"></path>
+          <path d="M7.05 5.64a8 8 0 1 0 9.9 0"></path>
         </svg>
       </button>
     </div>
@@ -176,6 +170,22 @@
 
 </main>
 
+<footer id="install-banner" class="install-dock hidden" role="region" aria-label="Install FloRo app">
+  <div class="install-banner-card">
+    <img src="./icons/icon-192.png" alt="" class="install-banner-icon" onerror="this.src='./logo.png';">
+    <div class="install-banner-content">
+      <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
+      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for quick access.</p>
+      <div class="install-banner-actions">
+        <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary" type="button">Install</button>
+        <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action install-banner-action-dismiss" type="button">Not now</button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</div>
+
 <div id="settings-sheet" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
   <div class="sheet-backdrop" data-close-sheet></div>
   <div class="modal-sheet settings-sheet">
@@ -249,20 +259,6 @@
     <div class="sheet-actions sheet-actions-row">
       <button id="favorite-modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
       <button id="favorite-modal-confirm" class="btn btn-primary" type="button">Save</button>
-    </div>
-  </div>
-</div>
-
-<div id="install-banner" class="install-banner hidden" role="region" aria-label="Install FloRo app">
-  <div class="install-banner-card">
-    <img src="./icons/icon-192.png" alt="" class="install-banner-icon" onerror="this.src='./logo.png';">
-    <div class="install-banner-content">
-      <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
-      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for quick access.</p>
-      <div class="install-banner-actions">
-        <button id="btn-install" class="btn btn-primary install-banner-action" type="button">Install</button>
-        <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action" type="button">Not now</button>
-      </div>
     </div>
   </div>
 </div>
