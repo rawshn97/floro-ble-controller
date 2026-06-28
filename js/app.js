@@ -211,7 +211,8 @@ function resetUI() {
   connectionStatus.className = 'status-pill';
   btnConnect.classList.remove('hidden');
   btnDisconnect.classList.add('hidden');
-  enablePanels(false);
+  setPowerStripEnabled(false);
+  syncControlPanelsEnabled();
   updateReconnectButton();
   setConnectionState('offline');
 }
@@ -504,8 +505,8 @@ function updatePowerUI(on) {
 }
 
 function syncControlPanelsEnabled() {
-  const enabled = ble.isConnected && isPoweredOn;
-  controlPanels.forEach((p) => p?.classList.toggle('disabled-control', !enabled));
+  const locked = ble.isConnected && !isPoweredOn;
+  controlPanels.forEach((p) => p?.classList.toggle('disabled-control', locked));
 }
 
 function syncBrightnessSliders(val) {
