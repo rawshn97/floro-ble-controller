@@ -1,8 +1,8 @@
-const CACHE_NAME = 'floro-controller-v28';
+const CACHE_NAME = 'floro-controller-v29';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json',
+  './manifest.webmanifest',
   './css/styles.css',
   './js/app.js',
   './js/ble.js',
@@ -15,12 +15,13 @@ const ASSETS = [
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
   './logo.png',
-  './floro.png',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(ASSETS.map((url) => cache.add(url))).then(() => self.skipWaiting())
+    )
   );
 });
 
@@ -47,7 +48,12 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match('./index.html'));
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return caches.match(event.request);
+        });
     })
   );
 });

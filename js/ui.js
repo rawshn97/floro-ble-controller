@@ -666,7 +666,10 @@ export function filterAnimationOptions(selectEl, query, selectedValue, listEl, h
     }
 
     const hasCurrent = Array.from(selectEl.options).some((o) => o.value === String(current));
-    selectEl.value = hasCurrent ? String(current) : selectEl.options[0]?.value || '1';
+    const nextValue = hasCurrent ? String(current) : selectEl.options[0]?.value || '1';
+    if (selectEl.value !== nextValue) {
+      selectEl.value = nextValue;
+    }
   }
 
   if (listEl && window.__floroModeNames?.renderModeList) {

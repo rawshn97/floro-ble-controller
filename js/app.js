@@ -238,11 +238,11 @@ function updateReconnectButton() {
   }
 }
 
-async function syncSceneToSign({ includeMode } = {}) {
+async function syncSceneToSign({ includeMode, mode: modeOverride } = {}) {
   if (!ble.isConnected) return;
 
   const { r, g, b } = hexToRgb(colorPicker.getHex());
-  const mode = getBleMode();
+  const mode = modeOverride ?? getBleMode();
   await ble.sendScene({
     brightness: isPoweredOn ? lastBrightnessVal : 0,
     speed: lastSpeedVal,
@@ -335,9 +335,15 @@ window.__floroModeNames = {
 
 function refreshAnimationPicker(mode = activeModeVal) {
   const query = modeSearchSheet?.value || modeSearch?.value || '';
-  filterAnimationOptions(animDropdown, query, mode, modeListSheet || modeList, modeHeroEls);
-  if (modeListSheet) {
-    renderModeList(modeListSheet, { query, activeMode: mode });
+  const pickerMode = displayView === 'solid' ? 1 : mode;
+  suppressModeDropdownChange = true;
+  try {
+    filterAnimationOptions(animDropdown, query, pickerMode, modeListSheet || modeList, modeHeroEls);
+    if (modeListSheet) {
+      renderModeList(modeListSheet, { query, activeMode: pickerMode });
+    }
+  } finally {
+    suppressModeDropdownChange = false;
   }
 }
 
@@ -355,6 +361,10 @@ function updateModeDropdown(mode) {
 }
 
 function setMode(mode, { sendBle = true } = {}) {
+  if (sceneRestoreInFlight) {
+    sendBle = false;
+  }
+
   activeModeVal = mode;
   if (mode > 1) {
     lastAnimationMode = mode;
@@ -411,7 +421,8 @@ async function restoreSceneToSign() {
     sliderSpeed.value = lastSpeedVal;
     valSpeed.textContent = `${lastSpeedVal}%`;
     updatePreviewChrome();
-    await syncSceneToSign();
+    const modeForSign = getBleMode();
+    await syncSceneToSign({ includeMode: true, mode: modeForSign });
   })();
 
   try {
@@ -788,10 +799,11 @@ function applySavedSceneToUI() {
   syncBrightnessSliders(lastBrightnessVal);
   sliderSpeed.value = lastSpeedVal;
   valSpeed.textContent = `${lastSpeedVal}%`;
-  setAnimDropdownValue(activeModeVal);
+  const uiMode = displayView === 'solid' ? 1 : activeModeVal;
+  setAnimDropdownValue(uiMode);
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, displayView, { animate: false });
   syncRemotePanels();
-  updateModeDropdown(activeModeVal);
+  updateModeDropdown(uiMode);
   updatePreviewChrome();
 }
 
@@ -908,16 +920,6 @@ document.getElementById('btn-save-color-preset')?.addEventListener('click', () =
   const hex = colorPicker.getHex();
   window.openColorPresetModal?.(`Color ${hex.toUpperCase()}`);
 });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    const pwaBase = window.__FLORO_PWA_BASE || './';
-    navigator.serviceWorker.register(`${pwaBase}sw.js`, { scope: pwaBase }).then(
-      (reg) => console.log('ServiceWorker registered:', reg.scope),
-      (err) => console.warn('ServiceWorker registration failed:', err)
-    );
-  });
-}
 
 async function tryAutoReconnect() {
   if (!isBleSupported() || !ble.canReconnect() || !ble.lastDeviceInfo) return;
