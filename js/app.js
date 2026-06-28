@@ -315,9 +315,15 @@ if (powerBtn) {
 
 function updatePowerUI(on) {
   if (powerBtn) {
-    powerBtn.classList.toggle('is-on', on);
-    powerBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
+    const connected = ble.isConnected;
+    const visualOn = connected && on;
+    powerBtn.classList.toggle('is-on', visualOn);
+    powerBtn.setAttribute('aria-pressed', visualOn ? 'true' : 'false');
+    if (!connected) {
+      powerBtn.setAttribute('aria-label', 'Power');
+    } else {
+      powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
+    }
   }
 
   syncControlPanelsEnabled();
