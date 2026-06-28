@@ -64,18 +64,21 @@ On connect and whenever you change color or animation, the app sends brightness,
 ## Project structure
 
 ```
-├── index.html          # App shell
+├── index.html          # App shell (early beforeinstallprompt capture, base href for subpaths)
 ├── css/styles.css      # Styles
 ├── js/
-│   ├── app.js          # UI wiring and app state
+│   ├── app.js          # UI wiring, mode logic, auto-reconnect
 │   ├── ble.js          # BLE connection, command queue, reconnect
-│   └── ui.js           # Console, modals, wake lock, haptics
+│   ├── color-picker.js # Custom HSL color picker widget
+│   ├── protocol.js     # Hex/RGB helpers and wire-format constants
+│   └── ui.js           # View transitions, sheets, PWA install, wake lock, haptics
 ├── icons/              # PWA icons (192, 512, apple-touch)
 ├── sw.js               # Service worker (offline caching)
 ├── manifest.json       # PWA manifest
 ├── scripts/
 │   └── generate-icons.mjs
-└── vercel.json         # Deploy config
+├── DESIGN.md           # Design system and IA reference
+└── vercel.json         # Deploy config (Bluetooth permissions policy)
 ```
 
 ## Features
@@ -85,12 +88,23 @@ On connect and whenever you change color or animation, the app sends brightness,
 - **Wake lock** — Keeps the screen on while connected
 - **Favorites** — Save animation modes to localStorage with custom names
 - **Offline PWA** — Installable app with cached assets via service worker
+- **Smart install prompts** — Platform-aware banner (iOS steps, Android menu fallback when `beforeinstallprompt` is delayed), 7-day dismiss TTL, Settings > Install App anytime
+
+## PWA install behavior
+
+| Platform | Banner | Install button |
+|----------|--------|----------------|
+| **Android (Chrome/Edge)** | Shows after 2.5s if `beforeinstallprompt` has not fired; subtitle explains ⋮ menu path | Visible when browser prompt is available; hidden on fallback-only banner |
+| **iOS (Safari)** | Shows on load with Share → Add to Home Screen steps | "How to install" opens step-by-step modal |
+| **Desktop** | Hidden (not a mobile install target) | Use browser install icon if offered |
+
+Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v3`). The banner stays hidden for **7 days**, then may appear again. Settings > **Install App** always works regardless of dismiss state. After install (standalone mode), the install section hides automatically.
 
 ## Assets
 
 Add `logo.png` (512×512) and/or `floro.png` to the project root for the header. PWA install icons live in `icons/` (regenerate with `node scripts/generate-icons.mjs` after updating `logo.png`). The app falls back gracefully if images are missing.
 
-**Add to Home Screen** on Android (Chrome/Edge) for standalone PWA access. iOS: Safari Share, then Add to Home Screen. Use Settings > Install App anytime after dismissing the banner.
+**Add to Home Screen** on Android (Chrome/Edge) for standalone PWA access. iOS: Safari Share, then Add to Home Screen. If you dismiss the banner, it stays away for 7 days; use Settings > Install App anytime.
 
 ## License
 

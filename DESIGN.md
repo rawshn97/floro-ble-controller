@@ -335,6 +335,10 @@ Do **not** introduce these — they break the premium-remote feel:
 - **Service worker:** `./sw.js` with `skipWaiting` + `clientsClaim`; cache name bumped on asset changes
 - **Manifest:** `start_url: "./"`, `scope: "./"`, `id: "./"` — resolves to `/sign-controller/` when served via portfolio rewrite
 - **Install prompt:** Banner + Settings sheet (no Web Share Target; BLE controller only)
+  - **Android fallback:** If `beforeinstallprompt` does not fire within 2.5s, banner still appears with menu-based install instructions (Install button hidden until prompt arrives)
+  - **iOS:** Banner on load with "How to install" modal (Share → Add to Home Screen)
+  - **Dismiss TTL:** `floro_install_dismissed_v3` stores dismiss timestamp; banner suppressed for 7 days, then eligible again
+  - **Standalone:** Install section hidden when already installed (`display-mode: standalone|minimal-ui` or `navigator.standalone`)
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
 ## File Map
@@ -363,3 +367,4 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-23 | Auto-reconnect on load | Remote should "just work" when sign is in range |
 | 2026-06-23 | Activity log in settings only | Debug visibility without polluting main remote surface |
 | 2026-06-23 | Deploy at `/sign-controller/` via portfolio rewrite | Keeps rawshn.com namespace clean; separate Vercel project for static PWA |
+| 2026-06-29 | Android install banner fallback + 7-day dismiss TTL | `beforeinstallprompt` is unreliable on some Android builds; fallback banner + timed dismiss prevents permanent hide after accidental tap |
