@@ -249,12 +249,16 @@ export function setupPwaInstall({
   modalAction,
   log,
 }) {
-  const DISMISS_KEY = 'floro_install_dismissed_v2';
+  const DISMISS_KEY = 'floro_install_dismissed_v3';
+  const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const ANDROID_FALLBACK_DELAY_MS = 2500;
   let deferredPrompt = window.__floroDeferredInstall || null;
+  let androidFallbackTimer = null;
 
   function isStandalone() {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches ||
       window.navigator.standalone === true
     );
   }
@@ -266,8 +270,35 @@ export function setupPwaInstall({
     );
   }
 
+  function isAndroid() {
+    return /android/i.test(navigator.userAgent);
+  }
+
+  function readDismissedAt() {
+    try {
+      const raw = localStorage.getItem(DISMISS_KEY);
+      if (!raw) return null;
+      const ts = Number(raw);
+      return Number.isFinite(ts) ? ts : Date.now();
+    } catch {
+      return null;
+    }
+  }
+
   function isDismissed() {
-    return localStorage.getItem(DISMISS_KEY) === '1';
+    const dismissedAt = readDismissedAt();
+    if (dismissedAt === null) return false;
+    return Date.now() - dismissedAt < DISMISS_TTL_MS;
+  }
+
+  function installHelpText() {
+    if (isIOS() && !deferredPrompt) {
+      return 'Tap Share, then Add to Home Screen for one-tap access.';
+    }
+    if (isAndroid() && !deferredPrompt) {
+      return 'Tap the menu (⋮), then Install app or Add to Home screen for one-tap access.';
+    }
+    return 'Add FloRo Controller to your home screen for quick access.';
   }
 
   function hideBanner() {
@@ -285,10 +316,7 @@ export function setupPwaInstall({
     }
 
     if (bannerSubtitle) {
-      bannerSubtitle.textContent =
-        isIOS() && !deferredPrompt
-          ? 'Tap Share, then Add to Home Screen for one-tap access.'
-          : 'Add FloRo Controller to your home screen for quick access.';
+      bannerSubtitle.textContent = installHelpText();
     }
 
     if (btnInstall) {
@@ -380,6 +408,10 @@ export function setupPwaInstall({
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
+    if (androidFallbackTimer) {
+      window.clearTimeout(androidFallbackTimer);
+      androidFallbackTimer = null;
+    }
     deferredPrompt = e;
     window.__floroDeferredInstall = e;
     showBanner();
@@ -387,6 +419,11 @@ export function setupPwaInstall({
 
   if (deferredPrompt) {
     showBanner();
+  } else if (!isStandalone() && !isDismissed() && isAndroid()) {
+    androidFallbackTimer = window.setTimeout(() => {
+      androidFallbackTimer = null;
+      showBanner();
+    }, ANDROID_FALLBACK_DELAY_MS);
   }
 
   window.addEventListener('appinstalled', () => {
@@ -404,7 +441,11 @@ export function setupPwaInstall({
   });
 
   btnDismiss?.addEventListener('click', () => {
-    localStorage.setItem(DISMISS_KEY, '1');
+    try {
+      localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    } catch {
+      /* ignore storage failures */
+    }
     hideBanner();
     log('Install prompt dismissed. Use Settings to install anytime.', 'info');
   });
