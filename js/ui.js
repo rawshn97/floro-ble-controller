@@ -429,12 +429,8 @@ export function setupPwaInstall({
     }
 
     if (btnInstall) {
-      if (deferredPrompt) {
-        btnInstall.classList.remove('hidden');
-        btnInstall.textContent = 'Install';
-      } else {
-        btnInstall.classList.add('hidden');
-      }
+      btnInstall.classList.remove('hidden');
+      btnInstall.textContent = 'Install';
     }
 
     if (btnDismiss) {
@@ -568,8 +564,9 @@ export function setupPwaInstall({
     window.__floroDeferredInstall = null;
   });
 
-  btnInstall?.addEventListener('click', () => {
-    triggerNativeInstall();
+  btnInstall?.addEventListener('click', async () => {
+    if (await triggerNativeInstall()) return;
+    openManualInstallHelp();
   });
 
   btnDismiss?.addEventListener('click', () => {

@@ -92,12 +92,12 @@ On connect and whenever you change color or animation, the app sends brightness,
 
 ## PWA install behavior
 
-The install prompt is a floating bottom card (`#install-banner.install-prompt`), not a dock inside the remote control shell. It sits above the safe area with logo, title, platform-specific instructions, and a **Not now** dismiss button.
+The install prompt is a floating bottom card (`#install-banner.install-prompt`), not a dock inside the remote control shell. It sits above the safe area with logo, title, platform-specific instructions, an always-tappable **Install** button, and a **Not now** dismiss button.
 
 | Platform | Banner | Install button in banner |
 |----------|--------|--------------------------|
-| **Android (Chrome/Edge)** | Floating card after ~2.5s fallback (or when `beforeinstallprompt` fires) | Shown only when the native install prompt is available; otherwise instructions point to Chrome menu → Install app (not Add to Home screen) |
-| **iOS (Safari)** | Floating card on first visit | Hidden; subtitle explains Share → Add to Home Screen |
+| **Android (Chrome/Edge)** | Floating card after ~2.5s fallback (or when `beforeinstallprompt` fires) | Always visible; native install dialog when available, otherwise opens step-by-step modal (Chrome menu → Install app) |
+| **iOS (Safari)** | Floating card on first visit | Always visible; opens Add to Home Screen steps modal |
 | **Desktop** | Hidden until `beforeinstallprompt` or Settings > Install App | Native **Install** when available; otherwise modal with steps |
 
 Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v4`) and hides the banner for **7 days**. Settings > **Install App** always works (native prompt or step-by-step modal). After install (standalone mode), the banner hides automatically.
