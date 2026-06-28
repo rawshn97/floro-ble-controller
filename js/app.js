@@ -8,14 +8,21 @@ import {
 } from './mode-names.js';
 import { hexToRgb } from './protocol.js';
 import {
+  flushSceneSave,
+  loadSceneState,
+  scheduleSceneSave,
+} from './state.js';
+import {
   APP_VERSION,
   createLogger,
   filterAnimationOptions,
   haptic,
   rgbToHex,
   setDisplayView,
+  setupColorPresetModal,
   setupCompatBanner,
   setupFavoriteModal,
+  setupModePickerSheet,
   setupPaletteToggle,
   setupPwaInstall,
   setupSettingsSheet,
@@ -24,16 +31,17 @@ import {
   WakeLockManager,
 } from './ui.js';
 
+const FAVORITES_KEY = 'floro_favorites';
+const COLOR_PRESETS_KEY = 'floro_color_presets';
+
 const defaultFavorites = [
   { mode: 32, label: getModeName(32) },
   { mode: 34, label: getModeName(34) },
   { mode: 35, label: getModeName(35) },
   { mode: 38, label: getModeName(38) },
-  { mode: 50, label: getModeName(50) },
-  { mode: 66, label: getModeName(66) },
-  { mode: 102, label: getModeName(102) },
-  { mode: 108, label: getModeName(108) },
 ];
+
+const savedScene = loadSceneState();
 
 const btnConnect = document.getElementById('btn-connect');
 const btnReconnect = document.getElementById('btn-reconnect');
@@ -43,6 +51,7 @@ const connectionStatus = document.getElementById('connection-status');
 const statusChip = document.getElementById('status-chip');
 const statusChipText = document.getElementById('status-chip-text');
 
+const remoteDock = document.getElementById('remote-dock');
 const powerStrip = document.getElementById('power-strip');
 const solidControls = document.getElementById('solid-controls');
 const colorPanel = document.getElementById('color-panel');
@@ -54,6 +63,8 @@ const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
 const solidView = document.getElementById('solid-view');
 const animationView = document.getElementById('animation-view');
+const solidPreviewSwatch = document.getElementById('solid-preview-swatch');
+const animPreviewName = document.getElementById('anim-preview-name');
 
 const sliderBrightness = document.getElementById('slider-brightness');
 const sliderBrightnessAnim = document.getElementById('slider-brightness-anim');
@@ -64,8 +75,11 @@ const valSpeed = document.getElementById('val-speed');
 const customColorPickerRoot = document.getElementById('custom-color-picker');
 const animDropdown = document.getElementById('anim-dropdown');
 const modeSearch = document.getElementById('mode-search');
+const modeSearchSheet = document.getElementById('mode-search-sheet');
 const modeList = document.getElementById('mode-list');
+const modeListSheet = document.getElementById('mode-list-sheet');
 const favoritesGrid = document.getElementById('favorites-grid');
+const colorPresetsRow = document.getElementById('color-presets-row');
 const animModeHeroNum = document.getElementById('anim-mode-hero-num');
 const animModeHeroName = document.getElementById('anim-mode-hero-name');
 const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
@@ -83,23 +97,59 @@ const compatBanner = document.getElementById('compat-banner');
 const appVersionEl = document.getElementById('app-version');
 
 const controlPanels = [solidControls, colorPanel, animControls, animationPanel];
-const themePanels = [powerStrip, ...controlPanels];
+const themePanels = [remoteDock, powerStrip, ...controlPanels];
 
-let isPoweredOn = true;
-let lastBrightnessVal = 8;
-let lastSpeedVal = 50;
-let activeColor = '#ff0000';
-let activeModeVal = 1;
-let lastAnimationMode = 32;
-let displayView = 'solid';
+let isPoweredOn = savedScene.isPoweredOn;
+let lastBrightnessVal = savedScene.brightness;
+let lastSpeedVal = savedScene.speed;
+let activeColor = savedScene.color;
+let activeModeVal = savedScene.activeMode;
+let lastAnimationMode = savedScene.lastAnimationMode;
+let displayView = savedScene.displayView;
 let favorites = [];
+let colorPresets = [];
 let connectionState = 'offline';
 
 const log = createLogger(consoleBody);
 const wakeLock = new WakeLockManager(log);
 
+function getSceneSnapshot() {
+  return {
+    displayView,
+    isPoweredOn,
+    brightness: lastBrightnessVal,
+    speed: lastSpeedVal,
+    color: activeColor,
+    activeMode: activeModeVal,
+    lastAnimationMode,
+  };
+}
+
+function persistScene() {
+  scheduleSceneSave(getSceneSnapshot);
+}
+
+function persistSceneNow() {
+  flushSceneSave(getSceneSnapshot);
+}
+
 if (appVersionEl) {
   appVersionEl.textContent = `v${APP_VERSION}`;
+}
+
+function updatePreviewChrome() {
+  if (solidPreviewSwatch) {
+    solidPreviewSwatch.style.background = activeColor;
+  }
+  if (animPreviewName) {
+    animPreviewName.textContent = getModeName(activeModeVal);
+  }
+}
+
+function syncRemotePanels() {
+  const isSolid = displayView === 'solid';
+  solidControls?.classList.toggle('hidden', !isSolid);
+  animControls?.classList.toggle('hidden', isSolid);
 }
 
 const colorPicker = createColorPicker({
@@ -107,7 +157,9 @@ const colorPicker = createColorPicker({
   initialHex: activeColor,
   onColorChange: (hex) => {
     activeColor = updateNeonThemeColor(hex, themePanels);
+    updatePreviewChrome();
     document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+    persistScene();
   },
   onColorCommit: () => {
     haptic('light');
@@ -129,6 +181,7 @@ const ble = new FloroBleController({
       wakeLock.acquire();
       setConnectionState('connected', name);
     } else {
+      persistSceneNow();
       resetUI();
     }
   },
@@ -143,7 +196,7 @@ function setConnectionState(state, name = '') {
 }
 
 function enablePanels(enabled) {
-  controlPanels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
+  controlPanels.forEach((p) => p?.classList.toggle('disabled-control', !enabled));
   setPowerStripEnabled(enabled);
 }
 
@@ -202,6 +255,7 @@ function syncDisplayViewWithMode() {
   if (target !== displayView) {
     displayView = target;
     setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, target);
+    syncRemotePanels();
   }
 }
 
@@ -261,6 +315,7 @@ function updateModeHero(heroEls, mode) {
   if (heroEls.name) heroEls.name.textContent = getModeName(num);
   if (heroEls.meta) heroEls.meta.textContent = `Mode ${num} of ${MODE_COUNT}`;
   if (heroEls.readout) heroEls.readout.textContent = formatModeLabel(num);
+  updatePreviewChrome();
 }
 
 window.__floroModeNames = {
@@ -271,17 +326,18 @@ window.__floroModeNames = {
 };
 
 function refreshAnimationPicker(mode = activeModeVal) {
-  filterAnimationOptions(animDropdown, modeSearch.value, mode, modeList, modeHeroEls);
+  const query = modeSearchSheet?.value || modeSearch?.value || '';
+  filterAnimationOptions(animDropdown, query, mode, modeListSheet || modeList, modeHeroEls);
+  if (modeListSheet) {
+    renderModeList(modeListSheet, { query, activeMode: mode });
+  }
 }
 
 function updateModeDropdown(mode) {
-  if (modeSearch.value) {
-    refreshAnimationPicker(mode);
-  } else {
-    animDropdown.value = String(mode);
-    renderModeList(modeList, { activeMode: mode });
-    updateModeHero(modeHeroEls, mode);
-  }
+  animDropdown.value = String(mode);
+  renderModeList(modeList, { activeMode: mode });
+  renderModeList(modeListSheet, { activeMode: mode, query: modeSearchSheet?.value || '' });
+  updateModeHero(modeHeroEls, mode);
 }
 
 function setMode(mode, { sendBle = true } = {}) {
@@ -293,6 +349,7 @@ function setMode(mode, { sendBle = true } = {}) {
   updateModeDropdown(mode);
   highlightActiveFavorite();
   syncDisplayViewWithMode();
+  persistScene();
 
   if (!sendBle) return;
 
@@ -309,20 +366,39 @@ async function applyColorSelection() {
   if (switchingFromAnimation) {
     displayView = 'solid';
     setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
+    syncRemotePanels();
     setMode(1, { sendBle: false });
     ble.bumpSceneGeneration();
+    persistScene();
     await syncSceneToSign({ includeMode: true });
     return;
   }
 
+  persistScene();
   await syncColorToSign();
 }
 
-async function onConnected() {
-  isPoweredOn = true;
-  updatePowerUI(true);
-  log(`Applying flow mode ${activeModeVal}…`, 'info');
+async function restoreSceneToSign() {
+  syncDisplayViewWithMode();
+  syncRemotePanels();
+  updateModeDropdown(activeModeVal);
+  colorPicker.setHex(activeColor, { commit: false });
+  updateNeonThemeColor(activeColor, themePanels);
+  syncBrightnessSliders(lastBrightnessVal);
+  sliderSpeed.value = lastSpeedVal;
+  valSpeed.textContent = `${lastSpeedVal}%`;
+  updatePreviewChrome();
   await syncSceneToSign();
+}
+
+async function onConnected() {
+  updatePowerUI(isPoweredOn);
+  log(`Restoring saved pattern (mode ${activeModeVal})…`, 'info');
+  if (isPoweredOn) {
+    await restoreSceneToSign();
+  } else {
+    await ble.sendBrightness(0);
+  }
 }
 
 async function connectDevice() {
@@ -371,6 +447,7 @@ async function reconnectDevice() {
 }
 
 function disconnectDevice() {
+  persistSceneNow();
   ble.disconnect();
   wakeLock.release();
   haptic('light');
@@ -379,10 +456,11 @@ function disconnectDevice() {
 window.setPowerState = function (on) {
   isPoweredOn = on;
   updatePowerUI(on);
+  persistScene();
   haptic(on ? 'light' : 'heavy');
   if (!ble.isConnected) return;
   if (on) {
-    syncSceneToSign();
+    restoreSceneToSign();
   } else {
     ble.sendBrightness(0);
   }
@@ -427,7 +505,7 @@ function updatePowerUI(on) {
 
 function syncControlPanelsEnabled() {
   const enabled = ble.isConnected && isPoweredOn;
-  controlPanels.forEach((p) => p.classList.toggle('disabled-control', !enabled));
+  controlPanels.forEach((p) => p?.classList.toggle('disabled-control', !enabled));
 }
 
 function syncBrightnessSliders(val) {
@@ -471,6 +549,7 @@ function bindStepperButtons() {
 function onBrightnessInput(val, { immediate = false } = {}) {
   lastBrightnessVal = val;
   syncBrightnessSliders(val);
+  persistScene();
   if (bTimeout) clearTimeout(bTimeout);
   const send = () => {
     if (ble.isConnected && isPoweredOn) ble.sendBrightness(val);
@@ -490,6 +569,7 @@ function onSpeedInput(val, { immediate = false } = {}) {
   lastSpeedVal = val;
   sliderSpeed.value = val;
   valSpeed.textContent = `${val}%`;
+  persistScene();
   if (sTimeout) clearTimeout(sTimeout);
   const send = () => {
     if (ble.isConnected && isPoweredOn) ble.sendSpeed(val);
@@ -523,40 +603,26 @@ window.stepMode = function stepMode(delta) {
   setMode(mode);
 };
 
-modeSearch.addEventListener('input', () => {
-  refreshAnimationPicker(activeModeVal);
-});
-
-modeList?.addEventListener('keydown', (e) => {
-  if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-  e.preventDefault();
-  stepMode(e.key === 'ArrowUp' ? -1 : 1);
-});
-
 function loadFavorites() {
-  const stored = localStorage.getItem('floro_favorites');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        favorites = parsed;
-      } else {
-        throw new Error('Invalid favorites data');
-      }
-    } catch {
-      favorites = [...defaultFavorites];
-      saveFavorites();
-      log('Preset data was corrupted. Restored defaults.', 'info');
-    }
-  } else {
+  const stored = localStorage.getItem(FAVORITES_KEY);
+  if (stored === null) {
     favorites = [...defaultFavorites];
     saveFavorites();
+  } else {
+    try {
+      const parsed = JSON.parse(stored);
+      favorites = Array.isArray(parsed) ? parsed : [...defaultFavorites];
+    } catch {
+      favorites = [];
+      saveFavorites();
+      log('Preset data was corrupted. Cleared favorites.', 'info');
+    }
   }
   renderFavorites();
 }
 
 function saveFavorites() {
-  localStorage.setItem('floro_favorites', JSON.stringify(favorites));
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
 }
 
 function renderFavorites() {
@@ -614,6 +680,86 @@ function removeFavorite(mode) {
   log(`Removed Mode ${mode} from presets.`, 'info');
 }
 
+function loadColorPresets() {
+  try {
+    const raw = localStorage.getItem(COLOR_PRESETS_KEY);
+    colorPresets = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(colorPresets)) colorPresets = [];
+  } catch {
+    colorPresets = [];
+  }
+  renderColorPresets();
+}
+
+function saveColorPresets() {
+  localStorage.setItem(COLOR_PRESETS_KEY, JSON.stringify(colorPresets));
+}
+
+function renderColorPresets() {
+  if (!colorPresetsRow) return;
+  colorPresetsRow.innerHTML = '';
+  if (colorPresets.length === 0) {
+    colorPresetsRow.classList.add('hidden');
+    return;
+  }
+  colorPresetsRow.classList.remove('hidden');
+
+  colorPresets.forEach((preset, index) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'color-preset-chip';
+    chip.setAttribute('aria-label', preset.label);
+
+    const swatch = document.createElement('span');
+    swatch.className = 'color-preset-swatch';
+    swatch.style.background = preset.hex;
+
+    const label = document.createElement('span');
+    label.className = 'color-preset-label';
+    label.textContent = preset.label;
+
+    chip.appendChild(swatch);
+    chip.appendChild(label);
+
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+      colorPicker.setHex(preset.hex, { commit: false });
+      activeColor = updateNeonThemeColor(preset.hex, themePanels);
+      updatePreviewChrome();
+      persistScene();
+      applyColorSelection();
+      haptic('light');
+    });
+
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'color-preset-remove';
+    removeBtn.textContent = '×';
+    removeBtn.setAttribute('role', 'button');
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      colorPresets.splice(index, 1);
+      saveColorPresets();
+      renderColorPresets();
+    });
+    chip.appendChild(removeBtn);
+
+    colorPresetsRow.appendChild(chip);
+  });
+}
+
+function applySavedSceneToUI() {
+  colorPicker.setHex(activeColor, { commit: false });
+  updateNeonThemeColor(activeColor, themePanels);
+  syncBrightnessSliders(lastBrightnessVal);
+  sliderSpeed.value = lastSpeedVal;
+  valSpeed.textContent = `${lastSpeedVal}%`;
+  animDropdown.value = String(activeModeVal);
+  setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, displayView, { animate: false });
+  syncRemotePanels();
+  updateModeDropdown(activeModeVal);
+  updatePreviewChrome();
+}
+
 btnConnect.addEventListener('click', connectDevice);
 btnReconnect.addEventListener('click', reconnectDevice);
 btnDisconnect.addEventListener('click', disconnectDevice);
@@ -622,6 +768,8 @@ modeSegSolid.addEventListener('click', () => {
   if (displayView === 'solid') return;
   displayView = 'solid';
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
+  syncRemotePanels();
+  persistScene();
   if (activeModeVal !== 1) setMode(1);
 });
 
@@ -629,6 +777,8 @@ modeSegAnimation.addEventListener('click', () => {
   if (displayView === 'animation') return;
   displayView = 'animation';
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'animation');
+  syncRemotePanels();
+  persistScene();
   if (activeModeVal === 1) setMode(lastAnimationMode);
 });
 
@@ -636,23 +786,37 @@ statusChip.addEventListener('click', () => {
   window.openSettingsSheet?.();
 });
 
-filterAnimationOptions(animDropdown, '', lastAnimationMode, modeList, modeHeroEls);
-animDropdown.value = String(lastAnimationMode);
-displayView = 'solid';
-setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid', { animate: false });
-lastSpeedVal = parseInt(sliderSpeed.value, 10);
+applySavedSceneToUI();
+for (let i = 1; i <= MODE_COUNT; i++) {
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = formatModeLabel(i);
+  animDropdown.appendChild(opt);
+}
+refreshAnimationPicker(activeModeVal);
 loadFavorites();
+loadColorPresets();
 updateReconnectButton();
 setupCompatBanner(compatBanner, log);
-setupPaletteToggle(
-  document.getElementById('palette-toggle'),
-  document.getElementById('palette-body')
-);
+
+setupPaletteToggle(document.getElementById('palette-toggle'), {
+  sheet: document.getElementById('palette-sheet'),
+  closeBtn: document.getElementById('btn-close-palette'),
+});
 
 setupSettingsSheet({
   sheet: document.getElementById('settings-sheet'),
   openBtn: document.getElementById('btn-menu'),
   closeBtn: document.getElementById('btn-close-settings'),
+});
+
+setupModePickerSheet({
+  sheet: document.getElementById('mode-picker-sheet'),
+  openBtn: document.getElementById('anim-mode-picker-btn'),
+  closeBtn: document.getElementById('btn-close-mode-picker'),
+  searchInput: modeSearchSheet,
+  listEl: modeListSheet,
+  onModeSelect: (mode) => setMode(mode),
 });
 
 setupPwaInstall({
@@ -683,6 +847,31 @@ setupFavoriteModal({
     log(`Added Mode ${mode} to presets.`, 'success');
     haptic('light');
   },
+});
+
+setupColorPresetModal({
+  modal: document.getElementById('color-preset-modal'),
+  input: document.getElementById('color-preset-name-input'),
+  btnConfirm: document.getElementById('color-preset-modal-confirm'),
+  btnCancel: document.getElementById('color-preset-modal-cancel'),
+  onConfirm: (name) => {
+    const hex = colorPicker.getHex();
+    if (colorPresets.some((p) => p.hex.toLowerCase() === hex.toLowerCase())) {
+      log('This color is already saved.', 'info');
+      return;
+    }
+    colorPresets.unshift({ hex, label: name });
+    if (colorPresets.length > 12) colorPresets = colorPresets.slice(0, 12);
+    saveColorPresets();
+    renderColorPresets();
+    log(`Saved color preset "${name}".`, 'success');
+    haptic('light');
+  },
+});
+
+document.getElementById('btn-save-color-preset')?.addEventListener('click', () => {
+  const hex = colorPicker.getHex();
+  window.openColorPresetModal?.(`Color ${hex.toUpperCase()}`);
 });
 
 if ('serviceWorker' in navigator) {
@@ -722,3 +911,6 @@ updatePowerUI(isPoweredOn);
 
 log('System ready.', 'info');
 tryAutoReconnect();
+
+window.addEventListener('pagehide', persistSceneNow);
+window.addEventListener('beforeunload', persistSceneNow);

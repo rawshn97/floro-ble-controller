@@ -1,11 +1,16 @@
 /**
- * Curated animation mode names for FloRo / Neon Attack signs.
- * Mode numbers map 1:1 to BLE M{mode} commands. Not extracted from APK in this
- * session; replace entries when official Neon Attack strings are available.
+ * Animation mode names for FloRo / Neon Attack signs.
+ * Mode numbers map 1:1 to BLE M{mode} commands.
+ *
+ * APK extraction (Neon Attack 5.0.3, com.oytechnology.Neon_Attack):
+ * - Official icon: assets/AppIcons/playstore.png (copied to logo.png + icons/)
+ * - Plain-text mode labels in libapp.so: "BLINK MODE", "VIBE MODE", "flaunt beat"
+ * - Full 200-name table is not stored as readable strings in Flutter AOT (libapp.so)
+ * Curated names below; official strings noted where mapped by convention.
  */
 const MODE_NAME_LIST = [
   'Solid Color',
-  'Steady Glow',
+  'Blink Mode',
   'Soft Pulse',
   'Slow Blink',
   'Quick Flash',
@@ -34,7 +39,7 @@ const MODE_NAME_LIST = [
   'Meteor Strike',
   'Laser Scan',
   'Radar Sweep',
-  'Clockwise Spin',
+  'Vibe Mode',
   'Counter Spin',
   'Spiral In',
   'Spiral Out',
@@ -106,7 +111,7 @@ const MODE_NAME_LIST = [
   'Quantum Leap',
   'Plasma Core',
   'Bass Drop',
-  'Beat Sync',
+  'flaunt beat',
   'Rhythm Ride',
   'Tempo Wave',
   'Cadence Flow',

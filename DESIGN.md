@@ -19,76 +19,64 @@ The app should feel like a polished physical remote: compact, confident, mode-dr
 
 ## Information Architecture
 
-One control surface at a time. No scrolling past unrelated modes.
+Bottom-first remote layout. Primary controls live in the thumb zone; header is status-only chrome.
 
 ```
 ┌─────────────────────────────────────┐
-│ Header: brand · status chip · ⋮    │  sticky
-├─────────────────────────────────────┤
-│ Toolbar: [Solid | Animation] · Power│  sticky
+│ Header: logo · status chip · ⋮    │  compact (~44px)
 ├─────────────────────────────────────┤
 │                                     │
-│   ONE view panel (Solid OR Anim)    │  scrollable
+│   Preview (optional, low emphasis)  │  flex; hidden on short screens
 │                                     │
 ├─────────────────────────────────────┤
-│ Install dock (mobile / first visit) │  bottom shell
+│ REMOTE DOCK (thumb zone)            │
+│  [Solid | Animation]  [Power]       │
+│  Brightness (+ Speed on Anim)       │
+│  Color grid OR mode picker + presets│
+│  [Custom color] [Save color preset] │
+├─────────────────────────────────────┤
+│ Install dock (when not standalone)  │
 └─────────────────────────────────────┘
          ⋮ / status chip tap
               ↓
 ┌─────────────────────────────────────┐
-│ Settings sheet (bottom modal)       │
-│  · Connection                       │
-│  · Activity Log                     │
-│  · Install App                      │
-│  · About                            │
+│ Settings sheet                      │
+│ Mode picker sheet (animation)       │
+│ Custom color sheet (solid)          │
 └─────────────────────────────────────┘
 ```
 
-### Header (`app-header`)
+### Header (`app-header-compact`)
 
 | Element | Role |
 |---------|------|
-| Brand (Neon Attack logo + "FloRo" + byline) | Identity anchor; official Neon Attack mark with FloRo product name |
-| Status chip | Compact connection state; tap opens settings |
+| Neon Attack logo + "FloRo" | Compact brand mark |
+| Status chip | Connection state; tap opens settings |
 | Menu button (⋮) | Opens settings sheet |
 
-### Mode toolbar (`mode-toolbar`)
+### Remote dock (`#remote-dock`)
 
 | Element | Role |
 |---------|------|
-| Segmented control | Solid \| Animation — switches the single active view |
-| Power strip | Global on/off toggle; always reachable. Uses IEC-style power symbol (vertical stem + arc), not a generic switch glyph |
+| Segmented control | Solid \| Animation |
+| Power button | IEC power symbol; global on/off |
+| Brightness slider | Always visible in dock |
+| Solid panel | 4×2 color grid filling thumb zone, color preset chips, custom color + save actions |
+| Animation panel | Speed slider, mode picker row (+/−), horizontal quick presets |
 
-### Solid view (`#solid-view`)
+Mode list and search live in `#mode-picker-sheet` (bottom sheet), not on the main scroll surface.
 
-Shown when Solid is selected. Contains only solid-color controls:
+### Solid view
 
-1. Brightness slider (1–8)
-2. Eight neon swatches (4×2 grid)
-3. Collapsible "Custom color" disclosure → HSL picker
+Preview swatch in upper area (hidden below 740px height). All controls in remote dock.
 
-### Animation view (`#animation-view`)
+### Animation view
 
-Shown when Animation is selected. Contains only animation controls:
-
-1. Brightness slider (mirrors solid; same wire value)
-2. Speed slider (0–100% UI, inverted for wire protocol)
-3. **Mode hero** — large mode number + friendly name (`js/mode-names.js`)
-4. Stepper row (+/−) with compact readout between buttons
-5. Search field for mode filtering (name or number)
-6. Scrollable **mode list** (replaces native dropdown; hidden `<select>` kept for fallback)
-7. Quick Presets (favorites grid with mode number badges)
+Mode hero is a tappable row opening the mode picker sheet. Quick presets scroll horizontally in the dock.
 
 ### Settings sheet (`#settings-sheet`)
 
-Infrastructure lives here, not on the main surface:
-
-| Section | Contents |
-|---------|----------|
-| Connection | Device name, status pill, Scan & Connect / Reconnect / Disconnect |
-| Activity Log | Monospace console (BLE writes, errors, auto-connect) |
-| Install App | PWA install flow |
-| About | App name + version |
+Infrastructure only: connection, activity log, install, about.
 
 ## Layout Regions
 
@@ -338,7 +326,7 @@ Do **not** introduce these — they break the premium-remote feel:
 - **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]`
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v22`
+- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v23`
 - **Install prompt:** Bottom install dock; mobile Install always visible until standalone; Android 2.5s fallback
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
@@ -349,7 +337,8 @@ Do **not** introduce these — they break the premium-remote feel:
 | `index.html` | IA structure, ARIA roles, component markup |
 | `css/styles.css` | All visual tokens, component styles, motion |
 | `js/ui.js` | View transitions, sheet behavior, chip states, theme color, install dock, mode list filter |
-| `js/app.js` | Mode logic, auto-reconnect, disabled-control toggling, mode list rendering |
+| `js/state.js` | Scene persistence (localStorage) |
+| `js/app.js` | Mode logic, auto-reconnect, remote dock, color presets |
 | `js/mode-names.js` | Curated friendly names for modes 1–200 |
 | `js/color-picker.js` | Custom HSL palette widget |
 | `manifest.json` | PWA identity (`/sign-controller/` absolute scope for portfolio install) |
@@ -378,4 +367,9 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-29 | `js/mode-names.js` curated placeholders | 200 memorable names (mode 1 = Solid Color); APK strings not in repo, replace when available |
 | 2026-06-29 | IEC power icon in toolbar | Universal power symbol (stem + arc) instead of toggle metaphor |
 | 2026-06-30 | Mobile install dock always shows Install | Compact bar after **Not now** keeps Install one tap away; Android 2.5s fallback matches Health Hub |
-| 2026-06-30 | `mobile-web-app-capable` meta tag | Matches Coach PWA head tags alongside `apple-mobile-web-app-capable` for broader standalone support |
+| 2026-06-30 | Bottom-first remote dock layout | Power, tabs, colors, and mode controls in thumb zone; no primary scroll on phone |
+| 2026-06-30 | Scene state persistence (`floro_scene_state`) | Restore tab, brightness, speed, color, mode on reconnect and power-on |
+| 2026-06-30 | Quick presets: 4 defaults, empty array respected | Deleted presets never respawn; only fresh install seeds defaults |
+| 2026-06-30 | Official Neon Attack icon from APK playstore.png | Header + PWA icons regenerated from APK asset |
+| 2026-06-30 | Mode picker + custom color as bottom sheets | Keeps main remote surface compact; lists scroll inside sheets only |
+| 2026-06-30 | Save color preset (`floro_color_presets`) | User-named custom colors on Solid tab |

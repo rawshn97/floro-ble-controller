@@ -38,14 +38,11 @@
 
 <div class="app-shell">
 
-<header class="app-header">
+<header class="app-header app-header-compact">
   <div class="app-header-inner">
     <div class="header-brand">
-      <img src="./logo.png" alt="Neon Attack" class="header-logo" width="32" height="32">
-      <div class="header-brand-text">
-        <span class="header-title">FloRo</span>
-        <span class="header-byline">Neon Attack</span>
-      </div>
+      <img src="./logo.png" alt="Neon Attack" class="header-logo" width="28" height="28">
+      <span class="header-title">FloRo</span>
     </div>
     <button id="status-chip" class="status-chip chip-offline" type="button" aria-label="Connection status">
       <span class="status-chip-dot" aria-hidden="true"></span>
@@ -57,14 +54,36 @@
   </div>
 </header>
 
-<div class="mode-toolbar">
-  <div class="mode-toolbar-inner">
+<main class="app-main">
+
+  <div id="compat-banner" class="compat-banner hidden"></div>
+
+  <div class="view-stage remote-view-stage">
+    <div id="solid-view" class="view-panel is-active" role="tabpanel" aria-labelledby="mode-seg-solid">
+      <div class="remote-preview remote-preview-solid" aria-hidden="true">
+        <span class="remote-preview-label">Solid color</span>
+        <span id="solid-preview-swatch" class="remote-preview-swatch"></span>
+      </div>
+    </div>
+
+    <div id="animation-view" class="view-panel" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
+      <div class="remote-preview remote-preview-animation" aria-hidden="true">
+        <span class="remote-preview-label">Animation</span>
+        <span id="anim-preview-name" class="remote-preview-mode">Counter Spin</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<section id="remote-dock" class="remote-dock" aria-label="Sign controls">
+
+  <div class="remote-toolbar">
     <div class="seg-control mode-seg-control" role="tablist" aria-label="Display mode">
       <button id="mode-seg-solid" class="seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view">Solid</button>
       <button id="mode-seg-animation" class="seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view">Animation</button>
     </div>
     <div id="power-strip" class="power-strip disabled-control">
-      <span class="power-strip-label">Power</span>
       <button id="power-btn" class="btn power-remote-btn is-unavailable" type="button" aria-label="Power" aria-pressed="false">
         <svg class="power-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <path d="M12 3v6"></path>
@@ -73,119 +92,102 @@
       </button>
     </div>
   </div>
-</div>
 
-<main class="app-main">
-
-  <div id="compat-banner" class="compat-banner hidden"></div>
-
-  <div class="view-stage">
-    <div id="solid-view" class="view-panel is-active" role="tabpanel" aria-labelledby="mode-seg-solid">
-
-      <div id="solid-controls" class="control-card disabled-control">
-        <div class="slider-row">
-          <div class="slider-header">
-            <span class="control-label">Brightness</span>
-            <span class="slider-val" id="val-brightness">8 / 8</span>
-          </div>
-          <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
-            <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-            <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
-          </div>
-        </div>
+  <div id="solid-controls" class="remote-panel disabled-control" data-view-panel="solid">
+    <div class="remote-slider-block">
+      <div class="slider-header">
+        <span class="control-label">Brightness</span>
+        <span class="slider-val" id="val-brightness">8 / 8</span>
       </div>
-
-      <div id="color-panel" class="control-card disabled-control">
-        <p class="card-eyebrow">Neon color</p>
-        <div class="color-swatches">
-          <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red" aria-label="Ruby Red"></button>
-          <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green" aria-label="Electric Green"></button>
-          <button class="swatch-btn" type="button" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue" aria-label="Neon Blue"></button>
-          <button class="swatch-btn" type="button" style="background: #ffff00;" onclick="selectSwatch(this, 255, 255, 0)" title="Sunny Yellow" aria-label="Sunny Yellow"></button>
-          <button class="swatch-btn" type="button" style="background: #ff00ff;" onclick="selectSwatch(this, 255, 0, 255)" title="Hot Pink" aria-label="Hot Pink"></button>
-          <button class="swatch-btn" type="button" style="background: #00ffff;" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan" aria-label="Ice Cyan"></button>
-          <button class="swatch-btn" type="button" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
-          <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
-        </div>
-
-        <button id="palette-toggle" class="palette-disclosure" type="button" aria-expanded="false" aria-controls="palette-body">
-          <span class="palette-disclosure-label">Custom color</span>
-          <svg class="palette-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div id="palette-body" class="palette-body is-collapsed">
-          <div id="custom-color-picker" class="custom-color-picker"></div>
-        </div>
+      <div class="slider-stepper-row">
+        <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
+        <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+        <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
       </div>
-
     </div>
 
-    <div id="animation-view" class="view-panel" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
-
-      <div id="anim-controls" class="control-card disabled-control">
-        <div class="slider-row">
-          <div class="slider-header">
-            <span class="control-label">Brightness</span>
-            <span class="slider-val" id="val-brightness-anim">8 / 8</span>
-          </div>
-          <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
-            <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-            <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
-          </div>
-        </div>
-        <div class="card-divider"></div>
-        <div class="slider-row">
-          <div class="slider-header">
-            <span class="control-label">Speed</span>
-            <span class="slider-val" id="val-speed">50%</span>
-          </div>
-          <div class="slider-stepper-row">
-            <button class="btn btn-step" type="button" data-step-speed="-1" aria-label="Decrease speed">−</button>
-            <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
-            <button class="btn btn-step" type="button" data-step-speed="1" aria-label="Increase speed">+</button>
-          </div>
-        </div>
+    <div id="color-panel" class="remote-color-zone">
+      <p class="card-eyebrow">Neon color</p>
+      <div class="color-swatches color-swatches-remote">
+        <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red" aria-label="Ruby Red"></button>
+        <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green" aria-label="Electric Green"></button>
+        <button class="swatch-btn" type="button" style="background: #0000ff;" onclick="selectSwatch(this, 0, 0, 255)" title="Neon Blue" aria-label="Neon Blue"></button>
+        <button class="swatch-btn" type="button" style="background: #ffff00;" onclick="selectSwatch(this, 255, 255, 0)" title="Sunny Yellow" aria-label="Sunny Yellow"></button>
+        <button class="swatch-btn" type="button" style="background: #ff00ff;" onclick="selectSwatch(this, 255, 0, 255)" title="Hot Pink" aria-label="Hot Pink"></button>
+        <button class="swatch-btn" type="button" style="background: #00ffff;" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan" aria-label="Ice Cyan"></button>
+        <button class="swatch-btn" type="button" style="background: #a855f7;" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
+        <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
       </div>
 
-      <div id="animation-panel" class="control-card disabled-control">
-        <div class="anim-mode-hero" id="anim-mode-hero" aria-live="polite">
-          <span class="anim-mode-hero-num" id="anim-mode-hero-num">32</span>
-          <div class="anim-mode-hero-copy">
-            <span class="anim-mode-hero-name" id="anim-mode-hero-name">Counter Spin</span>
-            <span class="anim-mode-hero-meta" id="anim-mode-hero-meta">Mode 32 of 200</span>
-          </div>
-        </div>
+      <div id="color-presets-row" class="color-presets-row hidden"></div>
 
-        <div class="animation-select-row">
-          <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
-          <div class="anim-stepper-readout" id="anim-stepper-readout" aria-hidden="true">32 · Counter Spin</div>
-          <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
-        </div>
-
-        <div class="search-wrap">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="search" id="mode-search" class="ios-search" placeholder="Search by name or number" autocomplete="off" aria-controls="mode-list" aria-label="Search animation modes">
-        </div>
-
-        <p class="anim-list-eyebrow">All modes</p>
-        <div id="mode-list" class="mode-list" role="listbox" aria-label="Animation modes" tabindex="0"></div>
-        <select id="anim-dropdown" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
-
-        <div class="fav-header-row">
-          <span class="fav-section-label">Quick Presets</span>
-          <button class="btn btn-text btn-add-fav" type="button" onclick="addCurrentToFavorites()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Add
-          </button>
-        </div>
-        <div id="favorites-grid" class="favorites-grid"></div>
+      <div class="remote-color-actions">
+        <button id="palette-toggle" class="btn btn-secondary btn-compact" type="button" aria-expanded="false" aria-controls="palette-sheet">
+          Custom color
+        </button>
+        <button id="btn-save-color-preset" class="btn btn-primary btn-compact" type="button">Save color preset</button>
       </div>
-
     </div>
   </div>
 
-</main>
+  <div id="anim-controls" class="remote-panel hidden disabled-control" data-view-panel="animation">
+    <div class="remote-dual-sliders">
+      <div class="remote-slider-block">
+        <div class="slider-header">
+          <span class="control-label">Brightness</span>
+          <span class="slider-val" id="val-brightness-anim">8 / 8</span>
+        </div>
+        <div class="slider-stepper-row">
+          <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
+          <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+          <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
+        </div>
+      </div>
+      <div class="remote-slider-block">
+        <div class="slider-header">
+          <span class="control-label">Speed</span>
+          <span class="slider-val" id="val-speed">50%</span>
+        </div>
+        <div class="slider-stepper-row">
+          <button class="btn btn-step" type="button" data-step-speed="-1" aria-label="Decrease speed">−</button>
+          <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
+          <button class="btn btn-step" type="button" data-step-speed="1" aria-label="Increase speed">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="animation-panel" class="remote-anim-zone">
+      <button id="anim-mode-picker-btn" class="anim-mode-picker-btn" type="button" aria-haspopup="dialog">
+        <span class="anim-mode-hero-num" id="anim-mode-hero-num">32</span>
+        <span class="anim-mode-picker-copy">
+          <span class="anim-mode-hero-name" id="anim-mode-hero-name">Counter Spin</span>
+          <span class="anim-mode-hero-meta" id="anim-mode-hero-meta">Mode 32 of 200</span>
+        </span>
+        <svg class="anim-mode-picker-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+
+      <div class="animation-select-row">
+        <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
+        <div class="anim-stepper-readout" id="anim-stepper-readout" aria-hidden="true">32 · Counter Spin</div>
+        <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
+      </div>
+
+      <div class="fav-header-row">
+        <span class="fav-section-label">Quick Presets</span>
+        <button class="btn btn-text btn-add-fav" type="button" onclick="addCurrentToFavorites()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add
+        </button>
+      </div>
+      <div id="favorites-grid" class="favorites-grid favorites-grid-remote"></div>
+    </div>
+
+    <select id="anim-dropdown" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+    <input type="search" id="mode-search" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    <div id="mode-list" class="visually-hidden" tabindex="-1" aria-hidden="true"></div>
+  </div>
+
+</section>
 
 <footer id="install-banner" class="install-dock hidden" role="region" aria-label="Install FloRo app">
   <div class="install-banner-card">
@@ -277,6 +279,44 @@
       <button id="favorite-modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
       <button id="favorite-modal-confirm" class="btn btn-primary" type="button">Save</button>
     </div>
+  </div>
+</div>
+
+<div id="color-preset-modal" class="sheet-overlay hidden">
+  <div class="sheet-backdrop" data-close-color-preset></div>
+  <div class="modal-sheet">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 class="sheet-title">Save color preset</h2>
+    <p class="sheet-desc">Name this custom color for quick access on the Solid tab.</p>
+    <input id="color-preset-name-input" class="ios-input modal-input" type="text" maxlength="32" autocomplete="off" placeholder="Preset name">
+    <div class="sheet-actions sheet-actions-row">
+      <button id="color-preset-modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
+      <button id="color-preset-modal-confirm" class="btn btn-primary" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="palette-sheet" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="palette-sheet-title">
+  <div class="sheet-backdrop" data-close-palette></div>
+  <div class="modal-sheet palette-sheet">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 id="palette-sheet-title" class="sheet-title">Custom color</h2>
+    <div id="custom-color-picker" class="custom-color-picker"></div>
+    <button id="btn-close-palette" class="btn btn-secondary btn-full" type="button">Done</button>
+  </div>
+</div>
+
+<div id="mode-picker-sheet" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="mode-picker-title">
+  <div class="sheet-backdrop" data-close-mode-picker></div>
+  <div class="modal-sheet mode-picker-sheet">
+    <div class="sheet-grabber" aria-hidden="true"></div>
+    <h2 id="mode-picker-title" class="sheet-title">Animation modes</h2>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="search" id="mode-search-sheet" class="ios-search" placeholder="Search by name or number" autocomplete="off" aria-controls="mode-list-sheet" aria-label="Search animation modes">
+    </div>
+    <div id="mode-list-sheet" class="mode-list mode-list-sheet" role="listbox" aria-label="Animation modes" tabindex="0"></div>
+    <button id="btn-close-mode-picker" class="btn btn-secondary btn-full" type="button">Done</button>
   </div>
 </div>
 

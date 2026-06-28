@@ -132,23 +132,122 @@ export function setDisplayView(
   }, 280);
 }
 
-export function setupPaletteToggle(toggleBtn, bodyEl) {
-  if (!toggleBtn || !bodyEl) return;
+export function setupPaletteToggle(toggleBtn, { sheet, closeBtn, backdropSelector } = {}) {
+  if (!toggleBtn) return;
 
-  const syncPaletteA11y = (expanded) => {
-    bodyEl.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    bodyEl.inert = !expanded;
+  const sheetEl = sheet || document.getElementById('palette-sheet');
+  const close = closeBtn || document.getElementById('btn-close-palette');
+  const backdrop = sheetEl?.querySelector(backdropSelector || '[data-close-palette]');
+
+  function openSheet() {
+    if (!sheetEl) return;
+    sheetEl.classList.remove('hidden');
+    document.body.classList.add('sheet-open');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    haptic('light');
+  }
+
+  function closeSheet() {
+    if (!sheetEl) return;
+    sheetEl.classList.add('hidden');
+    document.body.classList.remove('sheet-open');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  toggleBtn.addEventListener('click', openSheet);
+  close?.addEventListener('click', closeSheet);
+  backdrop?.addEventListener('click', closeSheet);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sheetEl && !sheetEl.classList.contains('hidden')) {
+      closeSheet();
+    }
+  });
+}
+
+export function setupModePickerSheet({
+  sheet,
+  openBtn,
+  closeBtn,
+  searchInput,
+  listEl,
+  onModeSelect,
+}) {
+  if (!sheet) return;
+
+  const backdrop = sheet.querySelector('[data-close-mode-picker]');
+
+  function open() {
+    sheet.classList.remove('hidden');
+    document.body.classList.add('sheet-open');
+    haptic('light');
+    searchInput?.focus();
+  }
+
+  function close() {
+    sheet.classList.add('hidden');
+    document.body.classList.remove('sheet-open');
+    if (searchInput) searchInput.value = '';
+  }
+
+  window.openModePickerSheet = open;
+
+  openBtn?.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
+  backdrop?.addEventListener('click', close);
+
+  searchInput?.addEventListener('input', () => {
+    const active = Number(document.getElementById('anim-dropdown')?.value || 1);
+    filterAnimationOptions(null, searchInput.value, active, listEl, {
+      num: document.getElementById('anim-mode-hero-num'),
+      name: document.getElementById('anim-mode-hero-name'),
+      meta: document.getElementById('anim-mode-hero-meta'),
+      readout: document.getElementById('anim-stepper-readout'),
+    });
+  });
+
+  listEl?.addEventListener('click', (e) => {
+    const item = e.target.closest('.mode-list-item');
+    if (!item) return;
+    const mode = parseInt(item.dataset.mode, 10);
+    if (!Number.isFinite(mode)) return;
+    onModeSelect?.(mode);
+    close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sheet.classList.contains('hidden')) close();
+  });
+}
+
+export function setupColorPresetModal({ modal, input, btnConfirm, btnCancel, onConfirm }) {
+  if (!modal) return;
+
+  window.openColorPresetModal = (defaultName = '') => {
+    input.value = defaultName;
+    modal.classList.remove('hidden');
+    input.focus();
+    input.select();
   };
 
-  syncPaletteA11y(false);
+  btnConfirm?.addEventListener('click', () => {
+    const name = input.value.trim();
+    if (!name) return;
+    onConfirm?.(name);
+    modal.classList.add('hidden');
+  });
 
-  toggleBtn.addEventListener('click', () => {
-    const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-    const nextExpanded = !expanded;
-    toggleBtn.setAttribute('aria-expanded', nextExpanded ? 'true' : 'false');
-    bodyEl.classList.toggle('is-collapsed', !nextExpanded);
-    syncPaletteA11y(nextExpanded);
-    haptic('light');
+  btnCancel?.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  modal.querySelector('[data-close-color-preset]')?.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnConfirm?.click();
+    if (e.key === 'Escape') btnCancel?.click();
   });
 }
 
