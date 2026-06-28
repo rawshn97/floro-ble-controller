@@ -295,6 +295,10 @@ Solid ↔ Animation uses 280ms opacity + horizontal translate. Only one panel re
 
 When power is off, all control cards get `disabled-control` (45% opacity, no interaction). Brightness labels read "OFF". Power strip in toolbar is enabled only when connected.
 
+### Power-on and reconnect restore
+
+On connect and when the user turns power on, `restoreSceneToSign()` sends brightness, speed, color, and the saved animation mode to the sign. The UI switches to the **Animation** tab with that mode pre-selected in the picker so the remote matches sign output (the sign firmware tends to show the last animation on power-on even when the saved UI tab was Solid).
+
 ## Do / Don't (Anti-Patterns)
 
 Do **not** introduce these — they break the premium-remote feel:
@@ -326,7 +330,7 @@ Do **not** introduce these — they break the premium-remote feel:
 - **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]`
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v23`
+- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v30`
 - **Install prompt:** Bottom install dock; mobile Install always visible until standalone; Android 2.5s fallback
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
@@ -369,6 +373,7 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-30 | Mobile install dock always shows Install | Compact bar after **Not now** keeps Install one tap away; Android 2.5s fallback matches Health Hub |
 | 2026-06-30 | Bottom-first remote dock layout | Power, tabs, colors, and mode controls in thumb zone; no primary scroll on phone |
 | 2026-06-30 | Scene state persistence (`floro_scene_state`) | Restore tab, brightness, speed, color, mode on reconnect and power-on |
+| 2026-06-30 | Power-on opens Animation tab | UI aligns with sign output on restore; avoids solid tab while sign animates |
 | 2026-06-30 | Quick presets: 4 defaults, empty array respected | Deleted presets never respawn; only fresh install seeds defaults |
 | 2026-06-30 | Official Neon Attack icon from APK playstore.png | Header + PWA icons regenerated from APK asset |
 | 2026-06-30 | Mode picker + custom color as bottom sheets | Keeps main remote surface compact; lists scroll inside sheets only |

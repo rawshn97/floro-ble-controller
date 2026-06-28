@@ -109,8 +109,6 @@ let displayView = savedScene.displayView;
 let favorites = [];
 let colorPresets = [];
 let connectionState = 'offline';
-let suppressModeDropdownChange = false;
-let sceneRestoreInFlight = null;
 
 const log = createLogger(consoleBody);
 const wakeLock = new WakeLockManager(log);
@@ -336,35 +334,20 @@ window.__floroModeNames = {
 function refreshAnimationPicker(mode = activeModeVal) {
   const query = modeSearchSheet?.value || modeSearch?.value || '';
   const pickerMode = displayView === 'solid' ? 1 : mode;
-  suppressModeDropdownChange = true;
-  try {
-    filterAnimationOptions(animDropdown, query, pickerMode, modeListSheet || modeList, modeHeroEls);
-    if (modeListSheet) {
-      renderModeList(modeListSheet, { query, activeMode: pickerMode });
-    }
-  } finally {
-    suppressModeDropdownChange = false;
+  filterAnimationOptions(animDropdown, query, pickerMode, modeListSheet || modeList, modeHeroEls);
+  if (modeListSheet) {
+    renderModeList(modeListSheet, { query, activeMode: pickerMode });
   }
 }
 
-function setAnimDropdownValue(mode) {
-  suppressModeDropdownChange = true;
-  animDropdown.value = String(mode);
-  suppressModeDropdownChange = false;
-}
-
 function updateModeDropdown(mode) {
-  setAnimDropdownValue(mode);
+  animDropdown.value = String(mode);
   renderModeList(modeList, { activeMode: mode });
   renderModeList(modeListSheet, { activeMode: mode, query: modeSearchSheet?.value || '' });
   updateModeHero(modeHeroEls, mode);
 }
 
 function setMode(mode, { sendBle = true } = {}) {
-  if (sceneRestoreInFlight) {
-    sendBle = false;
-  }
-
   activeModeVal = mode;
   if (mode > 1) {
     lastAnimationMode = mode;
@@ -402,39 +385,36 @@ async function applyColorSelection() {
   await syncColorToSign();
 }
 
+function alignUIForPowerOnRestore() {
+  const restoreMode = activeModeVal > 1 ? activeModeVal : lastAnimationMode;
+  activeModeVal = restoreMode;
+  lastAnimationMode = restoreMode;
+  displayView = 'animation';
+
+  setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'animation', { animate: false });
+  syncRemotePanels();
+  updateModeDropdown(restoreMode);
+  highlightActiveFavorite();
+  colorPicker.setHex(activeColor, { commit: false });
+  updateNeonThemeColor(activeColor, themePanels);
+  syncBrightnessSliders(lastBrightnessVal);
+  sliderSpeed.value = lastSpeedVal;
+  valSpeed.textContent = `${lastSpeedVal}%`;
+  updatePreviewChrome();
+  persistScene();
+
+  return restoreMode;
+}
+
 async function restoreSceneToSign() {
-  if (sceneRestoreInFlight) return sceneRestoreInFlight;
-
-  sceneRestoreInFlight = (async () => {
-    ble.bumpSceneGeneration();
-
-    if (displayView === 'solid' && activeModeVal !== 1) {
-      activeModeVal = 1;
-    }
-
-    syncDisplayViewWithMode();
-    syncRemotePanels();
-    updateModeDropdown(getBleMode());
-    colorPicker.setHex(activeColor, { commit: false });
-    updateNeonThemeColor(activeColor, themePanels);
-    syncBrightnessSliders(lastBrightnessVal);
-    sliderSpeed.value = lastSpeedVal;
-    valSpeed.textContent = `${lastSpeedVal}%`;
-    updatePreviewChrome();
-    const modeForSign = getBleMode();
-    await syncSceneToSign({ includeMode: true, mode: modeForSign });
-  })();
-
-  try {
-    await sceneRestoreInFlight;
-  } finally {
-    sceneRestoreInFlight = null;
-  }
+  ble.bumpSceneGeneration();
+  const restoreMode = alignUIForPowerOnRestore();
+  await syncSceneToSign({ includeMode: true, mode: restoreMode });
 }
 
 async function onConnected() {
   updatePowerUI(isPoweredOn);
-  log(`Restoring saved pattern (mode ${activeModeVal})…`, 'info');
+  log(`Restoring animation mode ${activeModeVal > 1 ? activeModeVal : lastAnimationMode}…`, 'info');
   if (isPoweredOn) {
     await restoreSceneToSign();
   } else {
@@ -638,7 +618,6 @@ window.selectSwatch = function (btn, r, g, b) {
 };
 
 animDropdown.addEventListener('change', (e) => {
-  if (suppressModeDropdownChange) return;
   setMode(parseInt(e.target.value, 10));
 });
 
@@ -800,7 +779,7 @@ function applySavedSceneToUI() {
   sliderSpeed.value = lastSpeedVal;
   valSpeed.textContent = `${lastSpeedVal}%`;
   const uiMode = displayView === 'solid' ? 1 : activeModeVal;
-  setAnimDropdownValue(uiMode);
+  animDropdown.value = String(uiMode);
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, displayView, { animate: false });
   syncRemotePanels();
   updateModeDropdown(uiMode);

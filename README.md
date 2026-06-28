@@ -87,6 +87,7 @@ On connect and whenever you change color or animation, the app sends brightness,
 - **Reconnect** — One-tap reconnect to the last paired sign (Chrome `getDevices()` API)
 - **Wake lock** — Keeps the screen on while connected
 - **Favorites** — Save animation modes to localStorage with custom names
+- **Scene restore** — Saves tab, brightness, speed, color, and mode to localStorage. On connect and power-on, the UI opens Animation with the last saved animation pre-selected so the remote matches what the sign displays.
 - **Offline PWA** — Installable app with cached assets via service worker
 - **Smart install prompts** — Platform-aware banner (iOS steps, Android menu fallback when `beforeinstallprompt` is delayed), 7-day dismiss TTL, Settings > Install App anytime
 
