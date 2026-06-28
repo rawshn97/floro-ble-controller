@@ -323,6 +323,8 @@ body.sheet-open {
   border-radius: 100px;
   background: var(--fill-tertiary);
   border: 0.5px solid transparent;
+  color: var(--label-primary);
+  font-family: inherit;
   cursor: pointer;
 }
 
@@ -348,7 +350,7 @@ body.sheet-open {
 }
 
 .color-preset-remove {
-  color: var(--label-tertiary);
+  color: var(--label-secondary);
   font-size: 14px;
   font-weight: 700;
   padding: 4px;
