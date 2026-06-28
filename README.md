@@ -92,15 +92,15 @@ On connect and whenever you change color or animation, the app sends brightness,
 
 ## PWA install behavior
 
-The install dock is anchored to the bottom of the app shell (not a floating overlay). On mobile, an **Install** button stays visible until the app is installed, even after tapping **Not now** (which collapses to a compact bar).
+The install prompt is a floating bottom card (`#install-banner.install-prompt`), not a dock inside the remote control shell. It sits above the safe area with logo, title, platform-specific instructions, and a **Not now** dismiss button.
 
-| Platform | Dock | Install button |
-|----------|------|----------------|
-| **Android (Chrome/Edge)** | Bottom dock when not installed | Always visible; opens native prompt when available, otherwise step-by-step modal (⋮ menu path) |
-| **iOS (Safari)** | Bottom dock when not installed | **How to install** opens Share → Add to Home Screen steps |
-| **Desktop** | Hidden after dismiss (7-day TTL) | Use browser install icon or Settings > Install App |
+| Platform | Banner | Install button in banner |
+|----------|--------|--------------------------|
+| **Android (Chrome/Edge)** | Floating card after ~2.5s fallback (or when `beforeinstallprompt` fires) | Shown only when the native install prompt is available; otherwise instructions point to Chrome menu → Install app (not Add to Home screen) |
+| **iOS (Safari)** | Floating card on first visit | Hidden; subtitle explains Share → Add to Home Screen |
+| **Desktop** | Hidden until `beforeinstallprompt` or Settings > Install App | Native **Install** when available; otherwise modal with steps |
 
-Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v3`). On mobile the dock collapses but **Install** remains; on desktop the dock hides for **7 days**. Settings > **Install App** always works. After install (standalone mode), the dock hides automatically.
+Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v4`) and hides the banner for **7 days**. Settings > **Install App** always works (native prompt or step-by-step modal). After install (standalone mode), the banner hides automatically.
 
 ## Assets
 
