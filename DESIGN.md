@@ -329,8 +329,12 @@ Do **not** introduce these — they break the premium-remote feel:
 
 ### PWA notes
 - **Asset paths:** Relative (`./`) — works under subdirectory proxy without code changes
-- **Service worker:** `./sw.js`, cache name bumped on asset changes
-- **Manifest:** `start_url: "./"`, `scope: "./"` — resolves to `/sign-controller/` when served via rewrite
+- **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]` (matches Health Hub PWA spec)
+- **Viewport:** `viewport-fit=cover` in `index.html`; `theme_color` / `background_color` `#0b0f19`
+- **Icons:** `icons/icon-192.png`, `icons/icon-512.png` (maskable), `icons/apple-touch-icon.png`; regenerate via `node scripts/generate-icons.mjs`
+- **Service worker:** `./sw.js` with `skipWaiting` + `clientsClaim`; cache name bumped on asset changes
+- **Manifest:** `start_url: "./"`, `scope: "./"`, `id: "./"` — resolves to `/sign-controller/` when served via portfolio rewrite
+- **Install prompt:** Banner + Settings sheet (no Web Share Target; BLE controller only)
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
 ## File Map
@@ -343,7 +347,9 @@ Do **not** introduce these — they break the premium-remote feel:
 | `js/app.js` | Mode logic, auto-reconnect, disabled-control toggling |
 | `js/color-picker.js` | Custom HSL palette widget |
 | `manifest.json` | PWA identity |
+| `icons/` | Install / home-screen icons |
 | `sw.js` | Offline cache |
+| `scripts/generate-icons.mjs` | Regenerate icons from `logo.png` |
 
 ## Decisions Log
 

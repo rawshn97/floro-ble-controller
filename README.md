@@ -70,8 +70,11 @@ On connect and whenever you change color or animation, the app sends brightness,
 │   ├── app.js          # UI wiring and app state
 │   ├── ble.js          # BLE connection, command queue, reconnect
 │   └── ui.js           # Console, modals, wake lock, haptics
+├── icons/              # PWA icons (192, 512, apple-touch)
 ├── sw.js               # Service worker (offline caching)
 ├── manifest.json       # PWA manifest
+├── scripts/
+│   └── generate-icons.mjs
 └── vercel.json         # Deploy config
 ```
 
@@ -85,7 +88,9 @@ On connect and whenever you change color or animation, the app sends brightness,
 
 ## Assets
 
-Add `logo.png` (512×512) and/or `floro.png` to the project root for the header and PWA icon. The app falls back gracefully if images are missing.
+Add `logo.png` (512×512) and/or `floro.png` to the project root for the header. PWA install icons live in `icons/` (regenerate with `node scripts/generate-icons.mjs` after updating `logo.png`). The app falls back gracefully if images are missing.
+
+**Add to Home Screen** on Android (Chrome/Edge) for standalone PWA access. iOS: Safari Share, then Add to Home Screen. Use Settings > Install App anytime after dismissing the banner.
 
 ## License
 
