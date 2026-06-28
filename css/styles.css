@@ -213,7 +213,12 @@ body.sheet-open {
 /* ── Remote dock (thumb zone) ── */
 
 .remote-dock {
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(100dvh - var(--header-height) - 72px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   z-index: 50;
   width: 100%;
   max-width: 500px;
@@ -248,6 +253,12 @@ body.sheet-open {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(100dvh - var(--header-height) - 160px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .remote-panel.hidden {
@@ -446,8 +457,9 @@ body.sheet-open {
 }
 
 .power-remote-btn.is-unavailable {
-  opacity: 0.45;
-  color: var(--label-tertiary);
+  opacity: 0.72;
+  color: var(--label-secondary);
+  border-color: var(--separator);
 }
 
 /* ── Main ── */
@@ -633,7 +645,12 @@ body.sheet-open {
 }
 
 .disabled-control .btn-step,
-.disabled-control .ios-slider {
+.disabled-control .ios-slider,
+.disabled-control .swatch-btn,
+.disabled-control .btn,
+.disabled-control .anim-mode-picker-btn,
+.disabled-control .fav-chip,
+.disabled-control .color-preset-chip {
   pointer-events: auto;
 }
 
@@ -1610,6 +1627,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .install-dock {
   flex-shrink: 0;
+  margin-top: auto;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
@@ -1707,9 +1725,15 @@ input[type="range"]::-webkit-slider-thumb {
   width: auto;
 }
 
-@media (max-height: 740px) {
-  .remote-preview {
+@media (max-width: 500px), (max-height: 850px) {
+  .remote-view-stage {
     display: none;
+  }
+
+  .app-main {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 0;
   }
 
   .remote-dock {
@@ -1722,6 +1746,18 @@ input[type="range"]::-webkit-slider-thumb {
 
   .card-eyebrow {
     margin-bottom: 6px;
+  }
+
+  .install-dock:not(.hidden):not(.is-compact) .install-banner-subtitle {
+    display: none;
+  }
+
+  .install-dock:not(.hidden):not(.is-compact) .install-banner-card {
+    padding: 10px 12px;
+  }
+
+  .install-dock:not(.hidden):not(.is-compact) .install-banner-actions {
+    margin-top: 8px;
   }
 }
 
