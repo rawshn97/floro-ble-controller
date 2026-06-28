@@ -19,6 +19,8 @@
         document.head.appendChild(b);
       }
       window.__FLORO_PWA_BASE = p.indexOf('/sign-controller') === 0 ? '/sign-controller/' : './';
+      var manifestLink = document.querySelector('link[rel="manifest"]');
+      if (manifestLink) manifestLink.href = window.__FLORO_PWA_BASE + 'manifest.json';
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -189,20 +191,20 @@
 
 </section>
 
-<footer id="install-banner" class="install-dock hidden" role="region" aria-label="Install FloRo app">
+</div>
+
+<div id="install-banner" class="install-prompt hidden" role="region" aria-label="Install FloRo app" aria-hidden="true">
   <div class="install-banner-card">
     <img src="./logo.png" alt="" class="install-banner-icon" width="48" height="48">
     <div class="install-banner-content">
       <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
-      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for quick access.</p>
+      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for one-tap access.</p>
       <div class="install-banner-actions">
-        <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary" type="button">Install</button>
+        <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button">Install</button>
         <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action install-banner-action-dismiss" type="button">Not now</button>
       </div>
     </div>
   </div>
-</footer>
-
 </div>
 
 <div id="settings-sheet" class="sheet-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">

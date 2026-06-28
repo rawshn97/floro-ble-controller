@@ -1625,50 +1625,20 @@ input[type="range"]::-webkit-slider-thumb {
   line-height: 1.6;
 }
 
-.install-dock {
-  flex-shrink: 0;
-  margin-top: auto;
+.install-prompt {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(12px + var(--safe-bottom));
+  z-index: 70;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  padding: 0 16px calc(12px + var(--safe-bottom));
-  background: linear-gradient(to top, var(--bg-primary) 70%, transparent);
+  padding: 0 16px;
+  pointer-events: none;
 }
 
-.install-dock.is-compact {
-  padding-top: 0;
-}
-
-.install-dock.is-compact .install-banner-card {
-  padding: 10px 12px;
-  gap: 10px;
-  align-items: center;
-}
-
-.install-dock.is-compact .install-banner-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.install-dock.is-compact .install-banner-icon,
-.install-dock.is-compact .install-banner-subtitle,
-.install-dock.is-compact .install-banner-title {
-  display: none;
-}
-
-.install-dock.is-compact .install-banner-actions {
-  margin-top: 0;
-  width: 100%;
-}
-
-.install-dock.is-compact .install-banner-action-primary {
-  flex: 1;
-}
-
-.install-dock.is-compact .install-banner-action-dismiss {
-  flex: 0 0 auto;
-  min-width: 44px;
-  padding-inline: 12px;
+.install-prompt .install-banner-card {
+  pointer-events: auto;
 }
 
 .install-banner-card {
@@ -1746,18 +1716,6 @@ input[type="range"]::-webkit-slider-thumb {
 
   .card-eyebrow {
     margin-bottom: 6px;
-  }
-
-  .install-dock:not(.hidden):not(.is-compact) .install-banner-subtitle {
-    display: none;
-  }
-
-  .install-dock:not(.hidden):not(.is-compact) .install-banner-card {
-    padding: 10px 12px;
-  }
-
-  .install-dock:not(.hidden):not(.is-compact) .install-banner-actions {
-    margin-top: 8px;
   }
 }
 
