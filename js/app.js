@@ -109,9 +109,15 @@ let displayView = savedScene.displayView;
 let favorites = [];
 let colorPresets = [];
 let connectionState = 'offline';
+let suppressModeDropdownChange = false;
+let sceneRestoreInFlight = null;
 
 const log = createLogger(consoleBody);
 const wakeLock = new WakeLockManager(log);
+
+function getBleMode() {
+  return displayView === 'solid' ? 1 : activeModeVal;
+}
 
 function getSceneSnapshot() {
   return {
@@ -120,7 +126,7 @@ function getSceneSnapshot() {
     brightness: lastBrightnessVal,
     speed: lastSpeedVal,
     color: activeColor,
-    activeMode: activeModeVal,
+    activeMode: displayView === 'solid' ? 1 : activeModeVal,
     lastAnimationMode,
   };
 }
@@ -236,19 +242,20 @@ async function syncSceneToSign({ includeMode } = {}) {
   if (!ble.isConnected) return;
 
   const { r, g, b } = hexToRgb(colorPicker.getHex());
+  const mode = getBleMode();
   await ble.sendScene({
     brightness: isPoweredOn ? lastBrightnessVal : 0,
     speed: lastSpeedVal,
     r,
     g,
     b,
-    mode: activeModeVal,
+    mode,
     includeMode: includeMode ?? true,
   });
 }
 
 function syncColorToSign() {
-  return syncSceneToSign({ includeMode: activeModeVal !== 1 });
+  return syncSceneToSign({ includeMode: getBleMode() !== 1 });
 }
 
 function syncDisplayViewWithMode() {
@@ -334,8 +341,14 @@ function refreshAnimationPicker(mode = activeModeVal) {
   }
 }
 
-function updateModeDropdown(mode) {
+function setAnimDropdownValue(mode) {
+  suppressModeDropdownChange = true;
   animDropdown.value = String(mode);
+  suppressModeDropdownChange = false;
+}
+
+function updateModeDropdown(mode) {
+  setAnimDropdownValue(mode);
   renderModeList(modeList, { activeMode: mode });
   renderModeList(modeListSheet, { activeMode: mode, query: modeSearchSheet?.value || '' });
   updateModeHero(modeHeroEls, mode);
@@ -380,16 +393,32 @@ async function applyColorSelection() {
 }
 
 async function restoreSceneToSign() {
-  syncDisplayViewWithMode();
-  syncRemotePanels();
-  updateModeDropdown(activeModeVal);
-  colorPicker.setHex(activeColor, { commit: false });
-  updateNeonThemeColor(activeColor, themePanels);
-  syncBrightnessSliders(lastBrightnessVal);
-  sliderSpeed.value = lastSpeedVal;
-  valSpeed.textContent = `${lastSpeedVal}%`;
-  updatePreviewChrome();
-  await syncSceneToSign();
+  if (sceneRestoreInFlight) return sceneRestoreInFlight;
+
+  sceneRestoreInFlight = (async () => {
+    ble.bumpSceneGeneration();
+
+    if (displayView === 'solid' && activeModeVal !== 1) {
+      activeModeVal = 1;
+    }
+
+    syncDisplayViewWithMode();
+    syncRemotePanels();
+    updateModeDropdown(getBleMode());
+    colorPicker.setHex(activeColor, { commit: false });
+    updateNeonThemeColor(activeColor, themePanels);
+    syncBrightnessSliders(lastBrightnessVal);
+    sliderSpeed.value = lastSpeedVal;
+    valSpeed.textContent = `${lastSpeedVal}%`;
+    updatePreviewChrome();
+    await syncSceneToSign();
+  })();
+
+  try {
+    await sceneRestoreInFlight;
+  } finally {
+    sceneRestoreInFlight = null;
+  }
 }
 
 async function onConnected() {
@@ -454,14 +483,18 @@ function disconnectDevice() {
   haptic('light');
 }
 
-window.setPowerState = function (on) {
+window.setPowerState = async function (on) {
   isPoweredOn = on;
   updatePowerUI(on);
-  persistScene();
+  if (on) {
+    persistScene();
+  } else {
+    persistSceneNow();
+  }
   haptic(on ? 'light' : 'heavy');
   if (!ble.isConnected) return;
   if (on) {
-    restoreSceneToSign();
+    await restoreSceneToSign();
   } else {
     ble.sendBrightness(0);
   }
@@ -594,6 +627,7 @@ window.selectSwatch = function (btn, r, g, b) {
 };
 
 animDropdown.addEventListener('change', (e) => {
+  if (suppressModeDropdownChange) return;
   setMode(parseInt(e.target.value, 10));
 });
 
@@ -754,7 +788,7 @@ function applySavedSceneToUI() {
   syncBrightnessSliders(lastBrightnessVal);
   sliderSpeed.value = lastSpeedVal;
   valSpeed.textContent = `${lastSpeedVal}%`;
-  animDropdown.value = String(activeModeVal);
+  setAnimDropdownValue(activeModeVal);
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, displayView, { animate: false });
   syncRemotePanels();
   updateModeDropdown(activeModeVal);
@@ -766,12 +800,12 @@ btnReconnect.addEventListener('click', reconnectDevice);
 btnDisconnect.addEventListener('click', disconnectDevice);
 
 modeSegSolid.addEventListener('click', () => {
-  if (displayView === 'solid') return;
+  if (displayView === 'solid' && activeModeVal === 1) return;
   displayView = 'solid';
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
   syncRemotePanels();
-  persistScene();
   if (activeModeVal !== 1) setMode(1);
+  else persistScene();
 });
 
 modeSegAnimation.addEventListener('click', () => {
