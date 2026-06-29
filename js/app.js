@@ -677,16 +677,6 @@ function stepSpeed(delta) {
 
 function bindStepperButtons() {
   document.addEventListener('click', (e) => {
-    const brightnessSetBtn = e.target.closest('[data-brightness-set]');
-    if (brightnessSetBtn) {
-      e.preventDefault();
-      const level = Number(brightnessSetBtn.getAttribute('data-brightness-set'));
-      if (level !== lastBrightnessVal) {
-        haptic('light');
-        onBrightnessInput(level, { immediate: true });
-      }
-      return;
-    }
     const brightnessBtn = e.target.closest('[data-step-brightness]');
     if (brightnessBtn) {
       e.preventDefault();
