@@ -183,18 +183,20 @@ body.sheet-open {
 .status-chip {
   flex: 0 0 auto;
   min-width: 0;
+  max-width: min(140px, 38vw);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 12px;
+  min-height: 36px;
   border: none;
   border-radius: 100px;
   background: var(--fill-tertiary);
   color: var(--label-secondary);
   font-family: inherit;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background var(--spring), color var(--spring);
   -webkit-tap-highlight-color: transparent;
@@ -219,9 +221,9 @@ body.sheet-open {
 }
 .chip-connected .status-chip-dot { background: var(--system-green); }
 .chip-connected {
-  color: var(--accent);
-  background: var(--accent-dim);
-  box-shadow: 0 0 12px var(--accent-dim);
+  color: var(--system-green);
+  background: var(--system-green-muted);
+  box-shadow: 0 0 12px rgba(65, 233, 189, 0.22);
 }
 
 @keyframes chip-pulse {
@@ -331,7 +333,8 @@ body.sheet-open {
 }
 
 .color-swatches-remote .swatch-btn {
-  min-height: 0;
+  aspect-ratio: 1;
+  min-height: 48px;
   height: auto;
 }
 
@@ -503,8 +506,10 @@ body.sheet-open {
 }
 
 .control-row .brightness-stepper-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .control-row .brightness-stepper-btn svg {
@@ -569,6 +574,32 @@ body.sheet-open {
   background: var(--fill-primary);
 }
 
+.preset-row--anim {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 8px;
+  grid-template-columns: unset;
+  max-width: 100%;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.preset-row--anim .preset-tile {
+  flex: 0 0 auto;
+  min-width: 112px;
+  scroll-snap-align: start;
+}
+
+.preset-row--solid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-template-columns: unset;
+}
+
 .preset-row--solid:not(.hidden) {
   margin-top: 0;
 }
@@ -622,9 +653,9 @@ body.sheet-open {
   width: 100%;
   min-height: 56px;
   padding: 10px 12px;
-  border: 0.5px solid rgba(255, 0, 127, 0.28);
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(255, 0, 127, 0.14), rgba(255, 0, 127, 0.04));
+  border: 1px solid rgba(219, 230, 228, 0.08);
+  border-radius: var(--radius-card);
+  background: var(--bg-elevated);
   color: var(--label-primary);
   font-family: inherit;
   text-align: left;
@@ -1644,6 +1675,17 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 2px 16px var(--accent-rgba);
 }
 
+.btn-connect {
+  background: var(--system-green);
+  color: var(--bg-deep);
+  box-shadow: 0 2px 16px rgba(65, 233, 189, 0.35);
+  font-weight: 600;
+}
+
+.btn-connect:active:not(:disabled) {
+  opacity: 0.9;
+}
+
 .btn-secondary {
   background: var(--fill-tertiary);
   color: var(--label-primary);
@@ -1968,13 +2010,13 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .install-banner-action {
-  min-height: 36px;
-  padding: 8px 16px;
+  min-height: 44px;
+  padding: 10px 16px;
   font-size: 15px;
   width: auto;
 }
 
-@media (max-width: 500px), (max-height: 850px) {
+@media (max-width: 500px), (max-height: 920px) {
   :root {
     --gauge-size: min(48vw, 180px);
   }
@@ -2380,11 +2422,16 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .connect-prompt {
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(65, 233, 189, 0.45);
   border-radius: var(--radius-card);
   padding: 12px 14px;
   background: var(--bg-surface);
-  box-shadow: 0 0 16px var(--accent-dim);
+  box-shadow: 0 0 16px var(--system-green-muted);
+}
+
+.connect-prompt .btn-connect {
+  min-height: 48px;
+  font-size: 17px;
 }
 
 .anim-mode-picker-btn {
@@ -2409,11 +2456,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 .modal-sheet {
   background: var(--bg-surface);
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: var(--accent-on);
 }
 
 @media (max-width: 360px) {

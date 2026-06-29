@@ -150,7 +150,7 @@ export function haptic(type = 'light') {
 export function updateConnectionChip(chipEl, textEl, state, name = '', lastDevice = null) {
   if (!chipEl || !textEl) return;
 
-  chipEl.className = `status-chip chip-${state} sr-only`;
+  chipEl.className = `status-chip chip-${state}`;
 
   if (state === 'connecting') {
     textEl.textContent = 'Connecting…';
