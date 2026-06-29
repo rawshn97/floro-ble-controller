@@ -223,7 +223,7 @@ body.sheet-open { overflow: hidden; }
 
 .app-main {
   position: relative;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   overflow: hidden;
   width: 100%;
@@ -476,9 +476,9 @@ body.sheet-open { overflow: hidden; }
 
 .connect-prompt .btn-connect {
   min-height: 48px;
-  background: var(--accent);
+  background: var(--system-green);
   color: var(--accent-on);
-  box-shadow: 0 2px 16px var(--accent-rgba);
+  box-shadow: 0 2px 16px var(--system-green-muted);
 }
 
 /* ── Remote dock ── */
@@ -506,8 +506,14 @@ body.sheet-open { overflow: hidden; }
 }
 
 .remote-dock:has(#solid-controls:not(.hidden)) #color-preset-section:not(.hidden) {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
+}
+
+.remote-dock:has(#solid-controls:not(.hidden)) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .remote-dock:has(#solid-controls:not(.hidden)) .power-cta {
@@ -846,6 +852,10 @@ body.sheet-open { overflow: hidden; }
   overflow: hidden;
   margin-top: 8px;
   padding: 10px 12px;
+}
+
+.solid-presets-dock:not(.hidden) {
+  min-height: 88px;
 }
 
 .solid-presets-header {
@@ -1229,9 +1239,9 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .btn-connect {
-  background: var(--accent);
+  background: var(--system-green);
   color: var(--accent-on);
-  box-shadow: 0 2px 16px var(--accent-rgba);
+  box-shadow: 0 2px 16px var(--system-green-muted);
 }
 
 .btn-secondary {
@@ -1882,6 +1892,40 @@ input[type="range"]::-webkit-slider-thumb {
 
 @media (max-width: 500px), (max-height: 915px) {
   :root { --gauge-size: min(44vw, 168px); }
+
+  .app-shell:has(#connect-prompt:not(.hidden)) .hero-zone {
+    max-height: min(20dvh, 148px);
+  }
+
+  .connect-prompt {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+    padding: 8px 12px;
+  }
+
+  .connect-prompt-text {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .connect-prompt-actions {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .connect-prompt .btn-connect {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
 
   .hero-zone {
     max-height: min(24dvh, 168px);
