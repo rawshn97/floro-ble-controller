@@ -457,6 +457,65 @@ body.sheet-open {
   background: rgba(2, 13, 10, 0.18);
 }
 
+.control-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.control-row .brightness-stepper-card {
+  flex: 0 0 20%;
+  min-width: 68px;
+  max-width: 22%;
+  grid-column: auto;
+  padding: 10px 8px;
+}
+
+.control-row .remote-color-zone {
+  flex: 1 1 80%;
+  min-width: 0;
+  grid-column: auto;
+}
+
+.control-row .brightness-stepper-card .control-card__header {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.control-row .brightness-stepper-card .control-label {
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.control-row .brightness-stepper {
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.control-row .brightness-stepper-value {
+  font-size: clamp(22px, 7vw, 32px);
+}
+
+.control-row .brightness-stepper-btn {
+  width: 36px;
+  height: 36px;
+}
+
+.control-row .brightness-stepper-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.control-row .brightness-stepper-limit {
+  font-size: 11px;
+}
+
 .brightness-stepper-card {
   grid-column: 1 / -1;
 }
@@ -1948,6 +2007,18 @@ input[type="range"]::-webkit-slider-thumb {
     grid-template-columns: 1fr;
   }
 
+  .control-row {
+    flex-wrap: nowrap;
+  }
+
+  .control-row .brightness-stepper-card {
+    min-width: 60px;
+  }
+
+  .color-swatches-remote .swatch-btn {
+    min-height: 40px;
+  }
+
   .remote-color-zone,
   .remote-anim-zone {
     gap: 10px;
@@ -2220,9 +2291,16 @@ input[type="range"]::-webkit-slider-thumb {
   font-variant-numeric: tabular-nums;
 }
 
-#animation-panel.control-card,
+#animation-panel.control-card {
+  grid-column: 1 / -1;
+}
+
 #color-panel.control-card {
   grid-column: 1 / -1;
+}
+
+.control-row #color-panel.control-card {
+  grid-column: auto;
 }
 
 .color-swatches-remote {
