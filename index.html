@@ -162,20 +162,20 @@
             <button class="swatch-btn" type="button" style="background:#00ffff" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan" aria-label="Ice Cyan"></button>
             <button class="swatch-btn" type="button" style="background:#a855f7" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
             <button class="swatch-btn" type="button" style="background:#ffffff" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
+          </div>
+
+          <div class="color-swatches-footer">
             <button id="palette-toggle" class="swatch-btn swatch-btn-custom" type="button" aria-expanded="false" aria-controls="palette-sheet" aria-label="Custom color" title="Custom color">
               <span class="swatch-custom-ring" aria-hidden="true"></span>
             </button>
-          </div>
-
-          <div class="color-actions">
-            <button id="btn-save-color-preset" class="btn btn-primary btn-compact" type="button">Save preset</button>
+            <button id="btn-save-color-preset" class="btn btn-primary btn-save-preset" type="button">Save preset</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="color-preset-section" class="solid-presets-dock hidden" aria-label="Saved color presets">
-      <div id="color-presets-row" class="preset-grid preset-row--solid"></div>
+    <div id="color-preset-section" class="solid-presets-dock control-card hidden" aria-label="Saved color presets">
+      <div id="color-presets-row" class="color-swatches preset-row--solid"></div>
     </div>
 
     <div id="anim-controls" class="remote-panel hidden" data-view-panel="animation">

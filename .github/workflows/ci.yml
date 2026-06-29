@@ -23,7 +23,7 @@ jobs:
           test -f sw.js
           test -f js/errors.js
           grep -q 'manifest.webmanifest' index.html
-          grep -q 'floro-controller-v40' sw.js
+          grep -q 'floro-controller-v41' sw.js
 
       - name: Regenerate PWA icons
         run: node scripts/generate-icons.mjs

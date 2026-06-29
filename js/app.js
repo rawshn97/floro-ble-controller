@@ -874,7 +874,7 @@ function renderColorPresets() {
   visiblePresets.forEach((preset, index) => {
     const chip = document.createElement('div');
     const isSelected = preset.hex.toLowerCase() === activeColor.toLowerCase();
-    chip.className = `preset-tile${isSelected ? ' selected' : ''}`;
+    chip.className = `swatch-btn swatch-btn-preset${isSelected ? ' selected' : ''}`;
     chip.style.background = preset.hex;
     chip.setAttribute('role', 'button');
     chip.setAttribute('tabindex', '0');
@@ -882,7 +882,7 @@ function renderColorPresets() {
     chip.title = preset.label;
 
     const label = document.createElement('span');
-    label.className = 'preset-tile-label';
+    label.className = 'swatch-preset-label';
     label.textContent = truncatePresetLabel(preset.label);
     chip.appendChild(label);
 
@@ -907,7 +907,7 @@ function renderColorPresets() {
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
-    removeBtn.className = 'preset-tile-remove';
+    removeBtn.className = 'swatch-preset-remove';
     removeBtn.setAttribute('aria-label', `Remove ${preset.label}`);
     removeBtn.textContent = '×';
     removeBtn.addEventListener('click', (e) => {
@@ -924,7 +924,7 @@ function renderColorPresets() {
 
 function highlightColorPresets() {
   if (!colorPresetsRow) return;
-  colorPresetsRow.querySelectorAll('.preset-tile').forEach((chip, index) => {
+  colorPresetsRow.querySelectorAll('.swatch-btn-preset').forEach((chip, index) => {
     const preset = colorPresets[index];
     if (!preset) return;
     chip.classList.toggle('selected', preset.hex.toLowerCase() === activeColor.toLowerCase());
