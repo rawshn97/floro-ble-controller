@@ -28,6 +28,7 @@ import {
   setupPwaInstall,
   setupSettingsSheet,
   updateConnectionChip,
+  updateConnectQuickAction,
   updateNeonThemeColor,
   syncSceneGauge,
   WakeLockManager,
@@ -55,6 +56,8 @@ const deviceNameEl = document.getElementById('device-name');
 const connectionStatus = document.getElementById('connection-status');
 const statusChip = document.getElementById('status-chip');
 const statusChipText = document.getElementById('status-chip-text');
+const quickSettingsBtn = document.getElementById('quick-settings');
+const quickSettingsLabel = quickSettingsBtn?.querySelector('.quick-action-label');
 
 const remoteDock = document.getElementById('remote-dock');
 const powerStrip = document.getElementById('power-strip');
@@ -260,6 +263,7 @@ const ble = new FloroBleController({
 function setConnectionState(state, name = '') {
   connectionState = state;
   updateConnectionChip(statusChip, statusChipText, state, name, ble.lastDeviceInfo);
+  updateConnectQuickAction(quickSettingsBtn, quickSettingsLabel, state, name);
   updateConnectPrompt();
 }
 
@@ -941,10 +945,10 @@ document.getElementById('quick-add-fav')?.addEventListener('click', () => {
 });
 
 document.getElementById('quick-settings')?.addEventListener('click', () => {
-  statusChip?.click();
+  window.openSettingsSheet?.();
 });
 
-statusChip.addEventListener('click', () => {
+statusChip?.addEventListener('click', () => {
   window.openSettingsSheet?.();
 });
 
@@ -1065,6 +1069,7 @@ updateConnectPrompt();
 
 log('System ready.', 'info');
 tryAutoReconnect();
+updateConnectQuickAction(quickSettingsBtn, quickSettingsLabel, connectionState);
 
 window.addEventListener('pagehide', persistSceneNow);
 window.addEventListener('beforeunload', persistSceneNow);
