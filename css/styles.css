@@ -546,7 +546,7 @@ body.sheet-open { overflow: hidden; }
   overflow: visible;
 }
 
-/* Static: brightness 20% + color 80% */
+/* Static: brightness 22% + color 78% */
 
 .solid-layout {
   display: flex;
@@ -558,32 +558,18 @@ body.sheet-open { overflow: hidden; }
 }
 
 .brightness-card {
-  flex: 0 0 20%;
-  min-width: 68px;
+  flex: 0 0 22%;
+  min-width: 72px;
   max-width: 22%;
-  padding: 10px 6px;
+  padding: 8px 6px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   min-height: 0;
   align-self: stretch;
 }
 
-.brightness-card .brightness-icon-lg {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  font-size: 17px;
-}
-
-.brightness-card .control-label {
-  font-size: 11px;
-  line-height: 1.15;
-}
-
 .color-card {
-  flex: 1 1 80%;
+  flex: 1 1 78%;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -592,54 +578,165 @@ body.sheet-open { overflow: hidden; }
   overflow: hidden;
 }
 
-.brightness-stepper {
+/* Brightness remote column (Static tab) */
+
+.brightness-remote {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  height: 100%;
+  width: 100%;
   gap: 6px;
+}
+
+.brightness-remote__step {
   flex: 0 0 auto;
   width: 100%;
-}
-
-.brightness-stepper-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.brightness-stepper-value {
-  font-size: clamp(18px, 5vw, 24px);
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: var(--label-primary);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.brightness-stepper-btn {
-  width: 52px;
+  min-height: 48px;
   height: 52px;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 14px;
   background: var(--bg-elevated);
   color: var(--label-primary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: transform var(--spring), background var(--spring);
+  transition: transform var(--spring), background var(--spring), color var(--spring);
   -webkit-tap-highlight-color: transparent;
 }
 
-.brightness-stepper-btn:active {
-  transform: scale(0.94);
+.brightness-remote__step:active {
+  transform: scale(0.96);
   background: var(--fill-primary);
+  color: var(--accent);
+}
+
+.brightness-remote__readout {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0 4px;
+}
+
+.brightness-remote__sun {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+
+.brightness-remote__value {
+  font-size: clamp(22px, 6.2vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--label-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.brightness-card[data-powered-off="true"] .brightness-remote__value {
+  font-size: clamp(16px, 4.5vw, 20px);
+  letter-spacing: 0.04em;
+}
+
+.brightness-remote__track {
+  flex: 1 1 auto;
+  position: relative;
+  min-height: 128px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 0.5px solid var(--separator-opaque);
+  padding: 5px;
+  overflow: hidden;
+}
+
+.brightness-remote__fill {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  height: calc((var(--brightness-level, 8) / 8) * (100% - 10px));
+  border-radius: 11px;
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--accent) 82%, #000),
+    var(--accent)
+  );
+  box-shadow:
+    0 0 22px var(--accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: height 0.22s cubic-bezier(0.25, 0.1, 0.25, 1);
+  pointer-events: none;
+}
+
+.brightness-remote__segments {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100%;
+  gap: 3px;
+}
+
+.brightness-remote__segment {
+  flex: 1 1 0;
+  min-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--spring);
+}
+
+.brightness-remote__segment::before {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.brightness-remote__segment:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.brightness-card[data-level="1"] .brightness-remote__segment[data-brightness-set="1"],
+.brightness-card[data-level="2"] .brightness-remote__segment[data-brightness-set="2"],
+.brightness-card[data-level="3"] .brightness-remote__segment[data-brightness-set="3"],
+.brightness-card[data-level="4"] .brightness-remote__segment[data-brightness-set="4"],
+.brightness-card[data-level="5"] .brightness-remote__segment[data-brightness-set="5"],
+.brightness-card[data-level="6"] .brightness-remote__segment[data-brightness-set="6"],
+.brightness-card[data-level="7"] .brightness-remote__segment[data-brightness-set="7"],
+.brightness-card[data-level="8"] .brightness-remote__segment[data-brightness-set="8"] {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.42);
+}
+
+.brightness-card[data-powered-off="true"] .brightness-remote__fill {
+  opacity: 0.2;
+  box-shadow: none;
+}
+
+.brightness-card[data-powered-off="true"] .brightness-remote__sun {
+  opacity: 0.45;
+  box-shadow: none;
 }
 
 /* ── Control cards ── */
@@ -703,7 +800,9 @@ body.sheet-open { overflow: hidden; }
 .disabled-control .btn,
 .disabled-control .anim-mode-picker-btn,
 .disabled-control .preset-tile,
-.disabled-control .fav-chip {
+.disabled-control .fav-chip,
+.disabled-control .brightness-remote__step,
+.disabled-control .brightness-remote__segment {
   pointer-events: auto;
 }
 
@@ -1960,12 +2059,16 @@ input[type="range"]::-webkit-slider-thumb {
 
   .color-swatches-footer .btn-save-preset { min-height: 40px; }
 
-  .brightness-card { min-width: 62px; }
+  .brightness-card { min-width: 68px; }
 
-  .brightness-stepper-btn {
-    width: 48px;
+  .brightness-remote__step {
+    min-height: 48px;
     height: 48px;
   }
+
+  .brightness-remote__track { min-height: 112px; }
+
+  .brightness-remote__segment { min-height: 24px; }
 
   .solid-presets-dock {
     margin-top: 6px;

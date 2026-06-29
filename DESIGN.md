@@ -402,8 +402,8 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 ### Remote dock (`#remote-dock`)
 
 - **Scrollable panel** with `flex: 1; min-height: 0; overflow-y: auto` on `.remote-panel`. Power CTA pinned at dock bottom (`flex-shrink: 0`). No toolbar power mirror.
-- **Static tab:** `.solid-layout` flex row - brightness stepper column ~20% left, neon color card ~80% right (side by side, never stacked).
-  - Brightness: vertical stepper (max, up, value, down, min) + hidden range input for BLE sync.
+- **Static tab:** `.solid-layout` flex row - brightness remote column ~22% left, neon color card ~78% right (side by side, never stacked).
+  - Brightness: vertical remote rail (up/down steps, sun readout, 8-segment tap track + accent fill) + hidden range input for BLE sync.
   - Neon color: 4×2 swatch grid, Custom color + Save preset actions below (grid, not overlapping swatches).
   - Color presets: 3-column `.preset-row--solid` grid; labels truncated to 6 chars via `truncatePresetLabel()`.
 - **Dynamic tab:** brightness + speed slider cards, mode picker card, horizontal-scroll `.preset-row--anim` for favorites.
@@ -424,7 +424,7 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 
 - All 65 IDs in `scripts/check-ids.sh`.
 - `syncSceneGauge()`, `updateConnectQuickAction()`, `updateNeonThemeColor()`, `truncatePresetLabel()` behavior preserved.
-- Service worker cache bumped (`floro-controller-v38`) on static asset change.
+- Service worker cache bumped (`floro-controller-v47`) on static asset change.
 
 ## Decisions Log
 

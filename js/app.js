@@ -78,6 +78,7 @@ const sliderBrightness = document.getElementById('slider-brightness');
 const sliderBrightnessAnim = document.getElementById('slider-brightness-anim');
 const valBrightness = document.getElementById('val-brightness');
 const valBrightnessAnim = document.getElementById('val-brightness-anim');
+const brightnessCard = document.querySelector('.brightness-card');
 const sliderSpeed = document.getElementById('slider-speed');
 const valSpeed = document.getElementById('val-speed');
 const customColorPickerRoot = document.getElementById('custom-color-picker');
@@ -628,6 +629,9 @@ function updatePowerUI(on) {
   if (on) {
     syncBrightnessSliders(lastBrightnessVal);
   } else {
+    if (brightnessCard) {
+      brightnessCard.dataset.poweredOff = 'true';
+    }
     valBrightness.textContent = 'OFF';
     valBrightnessAnim.textContent = 'OFF';
   }
@@ -643,6 +647,11 @@ function syncControlPanelsEnabled() {
 function syncBrightnessSliders(val) {
   sliderBrightness.value = val;
   sliderBrightnessAnim.value = val;
+  if (brightnessCard) {
+    brightnessCard.dataset.level = String(val);
+    brightnessCard.style.setProperty('--brightness-level', String(val));
+    brightnessCard.dataset.poweredOff = isPoweredOn ? 'false' : 'true';
+  }
   if (valBrightness) {
     valBrightness.textContent = isPoweredOn ? String(val) : 'OFF';
   }
@@ -668,6 +677,16 @@ function stepSpeed(delta) {
 
 function bindStepperButtons() {
   document.addEventListener('click', (e) => {
+    const brightnessSetBtn = e.target.closest('[data-brightness-set]');
+    if (brightnessSetBtn) {
+      e.preventDefault();
+      const level = Number(brightnessSetBtn.getAttribute('data-brightness-set'));
+      if (level !== lastBrightnessVal) {
+        haptic('light');
+        onBrightnessInput(level, { immediate: true });
+      }
+      return;
+    }
     const brightnessBtn = e.target.closest('[data-step-brightness]');
     if (brightnessBtn) {
       e.preventDefault();
