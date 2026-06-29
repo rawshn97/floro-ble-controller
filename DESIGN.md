@@ -385,6 +385,47 @@ Do **not** introduce these — they break the premium-remote feel:
 | `logo.png` | Neon Attack official mark (header + icon source) |
 | `scripts/generate-icons.mjs` | Regenerate icons from `logo.png` |
 
+## UI Rebuild v2 (2026-06-29)
+
+Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north star unchanged; this section supersedes conflicting notes in older IA diagrams above.
+
+### Header
+
+- **Visible:** Neon Attack logo + "FloRo" brand, vertical-dots menu (`#btn-menu`) only.
+- **Hidden:** `#status-chip` is `sr-only` (screen reader + ID contract). Connection state surfaces on the **Connect** quick-action chip (`#quick-settings`), green when connected via `updateConnectQuickAction()`.
+
+### Hero
+
+- Arc gauge (`#scene-gauge`) + vertical **Static** / **Dynamic** mode rail (display labels; internal IDs remain `mode-seg-solid` / `mode-seg-animation`).
+- Quick actions row: Color, Modes, Add, Connect.
+
+### Remote dock (`#remote-dock`)
+
+- **Scrollable panel** with `flex: 1; min-height: 0; overflow-y: auto` on `.remote-panel`. Power CTA pinned at dock bottom (`flex-shrink: 0`). No toolbar power mirror.
+- **Static tab:** `.solid-layout` flex row - brightness stepper column ~20% left, neon color card ~80% right (side by side, never stacked).
+  - Brightness: vertical stepper (max, up, value, down, min) + hidden range input for BLE sync.
+  - Neon color: 4×2 swatch grid, Custom color + Save preset actions below (grid, not overlapping swatches).
+  - Color presets: 3-column `.preset-row--solid` grid; labels truncated to 6 chars via `truncatePresetLabel()`.
+- **Dynamic tab:** brightness + speed slider cards, mode picker card, horizontal-scroll `.preset-row--anim` for favorites.
+- **Power:** single `#power-btn.power-cta` mint pill at dock bottom only.
+
+### Overflow contract
+
+- `.app-shell`: `height: 100dvh; overflow: hidden` column flex.
+- Hero compacts via `max-height` + smaller `--gauge-size` at ≤915px and ≤740px height (OnePlus 12 / short Android).
+- Connect strip (`#connect-prompt`) stays mint-accented; not retinted to selected neon.
+- Install banner: fixed overlay outside `.app-shell`, `z-index: 70`.
+
+### Contrast
+
+- `--accent-on` (computed in `accentOnColor()`) for readable text on accent-filled controls, chips, and mode rail active state.
+
+### Unchanged JS contracts
+
+- All 65 IDs in `scripts/check-ids.sh`.
+- `syncSceneGauge()`, `updateConnectQuickAction()`, `updateNeonThemeColor()`, `truncatePresetLabel()` behavior preserved.
+- Service worker cache bumped (`floro-controller-v38`) on static asset change.
+
 ## Decisions Log
 
 | Date | Decision | Rationale |
@@ -415,4 +456,4 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-29 | Mint Remote visual overhaul (planned) | Reference mockups: Sofia Sans, `#41E9BD`, arc gauge, card grid; see `UI_OVERHAUL_PLAN.md` |
 | 2026-06-29 | Default accent mint, dynamic retint kept | North star unchanged: UI glows selected neon color |
 | 2026-06-29 | Feature Parity Matrix in UI_OVERHAUL_PLAN.md | Every v2.1.0 feature mapped before mint build; devex/QA acceptance contract |
-| 2026-06-29 | Existing UX Review in UI_OVERHAUL_PLAN.md | Shipped bottom-first dock, install overlay, preset layouts validated before mint build |
+| 2026-06-29 | UI Rebuild v2 from scratch | Clean HTML/CSS; sr-only status chip; Connect quick-action shows connection; 20/80 static layout; scrollable dock; no power mirror; v38 cache |

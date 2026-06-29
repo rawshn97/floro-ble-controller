@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v37';
+const CACHE_NAME = 'floro-controller-v38';
 const ASSETS = [
   './',
   './index.html',
