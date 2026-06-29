@@ -31,6 +31,7 @@ import {
   updateConnectQuickAction,
   updateNeonThemeColor,
   syncSceneGauge,
+  truncatePresetLabel,
   WakeLockManager,
 } from './ui.js';
 
@@ -60,7 +61,6 @@ const quickSettingsBtn = document.getElementById('quick-settings');
 const quickSettingsLabel = quickSettingsBtn?.querySelector('.quick-action-label');
 
 const remoteDock = document.getElementById('remote-dock');
-const powerStrip = document.getElementById('power-strip');
 const solidControls = document.getElementById('solid-controls');
 const colorPanel = document.getElementById('color-panel');
 const animControls = document.getElementById('anim-controls');
@@ -88,6 +88,7 @@ const modeList = document.getElementById('mode-list');
 const modeListSheet = document.getElementById('mode-list-sheet');
 const favoritesGrid = document.getElementById('favorites-grid');
 const colorPresetsRow = document.getElementById('color-presets-row');
+const colorPresetSection = document.getElementById('color-preset-section');
 const animModeHeroNum = document.getElementById('anim-mode-hero-num');
 const animModeHeroName = document.getElementById('anim-mode-hero-name');
 const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
@@ -105,7 +106,7 @@ const compatBanner = document.getElementById('compat-banner');
 const appVersionEl = document.getElementById('app-version');
 
 const controlPanels = [solidControls, colorPanel, animControls, animationPanel];
-const themePanels = [remoteDock, powerStrip, ...controlPanels];
+const themePanels = [remoteDock, ...controlPanels];
 
 let isPoweredOn = savedScene.isPoweredOn;
 let lastBrightnessVal = savedScene.brightness;
@@ -288,12 +289,6 @@ function updateConnectPrompt() {
 
 function enablePanels(enabled) {
   controlPanels.forEach((p) => p?.classList.toggle('disabled-control', !enabled));
-  setPowerStripEnabled(enabled);
-}
-
-function setPowerStripEnabled(enabled) {
-  if (!powerStrip) return;
-  powerStrip.classList.toggle('disabled-control', !enabled);
 }
 
 function resetUI() {
@@ -302,7 +297,6 @@ function resetUI() {
   connectionStatus.className = 'status-pill';
   btnConnect.classList.remove('hidden');
   btnDisconnect.classList.add('hidden');
-  setPowerStripEnabled(false);
   syncControlPanelsEnabled();
   updateReconnectButton();
   setConnectionState('offline');
@@ -388,7 +382,7 @@ function renderModeList(listEl, { query = '', activeMode = 1 } = {}) {
 
     const subtitle = document.createElement('span');
     subtitle.className = 'mode-list-sub';
-    subtitle.textContent = mode === 1 ? 'Solid color on sign' : label;
+    subtitle.textContent = mode === 1 ? 'Static color on sign' : label;
 
     copy.appendChild(title);
     copy.appendChild(subtitle);
@@ -601,7 +595,6 @@ if (powerBtn) {
 function updatePowerUI(on) {
   const connected = ble.isConnected;
   const visualOn = connected && on;
-  const mirror = document.querySelector('.power-strip__mirror');
   const ctaLabel = powerBtn?.querySelector('.power-cta-label');
 
   if (powerBtn) {
@@ -613,11 +606,6 @@ function updatePowerUI(on) {
     } else {
       powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
     }
-  }
-
-  if (mirror) {
-    mirror.classList.toggle('is-on', visualOn);
-    mirror.classList.toggle('is-unavailable', !connected);
   }
 
   if (ctaLabel) {
@@ -648,9 +636,12 @@ function syncControlPanelsEnabled() {
 function syncBrightnessSliders(val) {
   sliderBrightness.value = val;
   sliderBrightnessAnim.value = val;
-  const label = isPoweredOn ? `${val} / 8` : 'OFF';
-  valBrightness.textContent = label;
-  valBrightnessAnim.textContent = label;
+  if (valBrightness) {
+    valBrightness.textContent = isPoweredOn ? String(val) : 'OFF';
+  }
+  if (valBrightnessAnim) {
+    valBrightnessAnim.textContent = isPoweredOn ? `${val} / 8` : 'OFF';
+  }
   refreshSceneGauge();
 }
 
@@ -767,24 +758,24 @@ function saveFavorites() {
 function renderFavorites() {
   favoritesGrid.innerHTML = '';
   favorites.forEach((fav) => {
-    const chip = document.createElement('div');
-    chip.className = `fav-chip ${fav.mode === activeModeVal ? 'active' : ''}`;
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = `preset-tile${fav.mode === activeModeVal ? ' active' : ''}`;
     chip.setAttribute('data-mode', fav.mode);
-
-    const numSpan = document.createElement('span');
-    numSpan.className = 'fav-chip-num';
-    numSpan.textContent = String(fav.mode);
+    chip.setAttribute('aria-label', fav.label);
+    chip.title = fav.label;
 
     const labelSpan = document.createElement('span');
-    labelSpan.className = 'fav-chip-label';
-    labelSpan.textContent = fav.label;
-    labelSpan.addEventListener('click', () => setMode(fav.mode));
-
-    chip.appendChild(numSpan);
+    labelSpan.className = 'preset-tile-label';
+    labelSpan.textContent = truncatePresetLabel(fav.label);
     chip.appendChild(labelSpan);
 
-    const removeBtn = document.createElement('span');
-    removeBtn.className = 'fav-chip-remove';
+    chip.addEventListener('click', () => setMode(fav.mode));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'preset-tile-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${fav.label}`);
     removeBtn.textContent = '×';
     removeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -797,7 +788,7 @@ function renderFavorites() {
 }
 
 function highlightActiveFavorite() {
-  document.querySelectorAll('.fav-chip').forEach((chip) => {
+  document.querySelectorAll('.preset-row--anim .preset-tile').forEach((chip) => {
     const mode = parseInt(chip.getAttribute('data-mode'), 10);
     chip.classList.toggle('active', mode === activeModeVal);
   });
@@ -1062,7 +1053,6 @@ async function tryAutoReconnect() {
 }
 
 bindStepperButtons();
-setPowerStripEnabled(false);
 syncControlPanelsEnabled();
 updatePowerUI(isPoweredOn);
 updateConnectPrompt();

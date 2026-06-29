@@ -122,6 +122,13 @@ export function syncSceneGauge(state) {
   });
 }
 
+export function truncatePresetLabel(name, maxLen = 6) {
+  if (!name) return '';
+  const trimmed = String(name).trim();
+  if (trimmed.length <= maxLen) return trimmed;
+  return `${trimmed.slice(0, maxLen - 1)}…`;
+}
+
 export function rgbToHex(r, g, b) {
   return (
     '#' +

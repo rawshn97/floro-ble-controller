@@ -79,8 +79,8 @@
 
   <div class="hero-zone">
     <div class="mode-rail seg-control mode-seg-control" role="tablist" aria-label="Display mode">
-      <button id="mode-seg-solid" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view" aria-label="Solid color mode">Solid</button>
-      <button id="mode-seg-animation" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view" aria-label="Animation mode">Animation</button>
+      <button id="mode-seg-solid" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view" aria-label="Static color mode">Static</button>
+      <button id="mode-seg-animation" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view" aria-label="Dynamic mode">Dynamic</button>
     </div>
 
     <div id="scene-gauge" class="scene-gauge" role="img" aria-label="Scene readout">
@@ -106,7 +106,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path></svg>
       <span class="quick-action-label">Color</span>
     </button>
-    <button id="quick-mode-picker" class="quick-action-btn" type="button" aria-label="Animation modes">
+    <button id="quick-mode-picker" class="quick-action-btn" type="button" aria-label="Dynamic modes">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
       <span class="quick-action-label">Modes</span>
     </button>
@@ -132,28 +132,23 @@
 
 <section id="remote-dock" class="remote-dock" aria-label="Sign controls">
 
-  <div class="remote-toolbar">
-    <div id="power-strip" class="power-strip">
-      <div class="power-strip__mirror power-remote-btn is-unavailable" aria-hidden="true">
-        <svg class="power-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M12 3v6"></path>
-          <path d="M7.05 5.64a8 8 0 1 0 9.9 0"></path>
-        </svg>
-      </div>
-    </div>
-  </div>
-
   <div id="solid-controls" class="remote-panel control-grid" data-view-panel="solid">
-    <div class="control-card remote-slider-block">
-      <div class="control-card__header slider-header">
+    <div class="control-card brightness-stepper-card">
+      <div class="control-card__header">
         <span class="control-card__icon" aria-hidden="true">☀</span>
         <span class="control-label">Brightness</span>
-        <span class="slider-val" id="val-brightness">8 / 8</span>
       </div>
-      <div class="slider-stepper-row">
-        <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
-        <input type="range" id="slider-brightness" class="ios-slider mint-slider" min="1" max="8" value="8" aria-label="Brightness level">
-        <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
+      <div class="brightness-stepper" aria-live="polite">
+        <span class="brightness-stepper-limit" aria-hidden="true">8</span>
+        <button class="brightness-stepper-btn" type="button" data-step-brightness="1" aria-label="Increase brightness">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </button>
+        <span class="brightness-stepper-value" id="val-brightness">8</span>
+        <button class="brightness-stepper-btn" type="button" data-step-brightness="-1" aria-label="Decrease brightness">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <span class="brightness-stepper-limit" aria-hidden="true">1</span>
+        <input type="range" id="slider-brightness" class="visually-hidden" min="1" max="8" value="8" aria-label="Brightness level" tabindex="-1">
       </div>
     </div>
 
@@ -173,7 +168,15 @@
         <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
       </div>
 
-      <div id="color-presets-row" class="color-presets-row preset-row--solid hidden"></div>
+      <div id="color-preset-section" class="preset-section hidden">
+        <div class="preset-section-header">
+          <span class="preset-section-label">Presets</span>
+          <button id="btn-preset-search-solid" class="preset-section-search" type="button" aria-label="Open custom color picker">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+        <div id="color-presets-row" class="preset-grid preset-row--solid"></div>
+      </div>
 
       <div class="remote-color-actions">
         <button id="palette-toggle" class="btn btn-secondary btn-compact" type="button" aria-expanded="false" aria-controls="palette-sheet">
@@ -227,14 +230,15 @@
         <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
       </div>
 
-      <div class="fav-header-row">
-        <span class="fav-section-label">Quick Presets</span>
-        <button class="btn btn-text btn-add-fav" type="button" onclick="addCurrentToFavorites()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Add
-        </button>
+      <div class="preset-section">
+        <div class="preset-section-header">
+          <span class="preset-section-label">Presets</span>
+          <button id="btn-preset-search-anim" class="preset-section-search" type="button" aria-label="Search dynamic modes">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+        <div id="favorites-grid" class="preset-grid preset-row--anim"></div>
       </div>
-      <div id="favorites-grid" class="favorites-grid favorites-grid-remote preset-row--anim"></div>
     </div>
 
     <select id="anim-dropdown" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
@@ -350,7 +354,7 @@
   <div class="modal-sheet">
     <div class="sheet-grabber" aria-hidden="true"></div>
     <h2 class="sheet-title">Save color preset</h2>
-    <p class="sheet-desc">Name this custom color for quick access on the Solid tab.</p>
+    <p class="sheet-desc">Name this custom color for quick access on the Static tab.</p>
     <input id="color-preset-name-input" class="ios-input modal-input" type="text" maxlength="32" autocomplete="off" placeholder="Preset name">
     <div class="sheet-actions sheet-actions-row">
       <button id="color-preset-modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
@@ -373,12 +377,12 @@
   <div class="sheet-backdrop" data-close-mode-picker></div>
   <div class="modal-sheet mode-picker-sheet">
     <div class="sheet-grabber" aria-hidden="true"></div>
-    <h2 id="mode-picker-title" class="sheet-title">Animation modes</h2>
+    <h2 id="mode-picker-title" class="sheet-title">Dynamic modes</h2>
     <div class="search-wrap">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="search" id="mode-search-sheet" class="ios-search" placeholder="Search by name or number" autocomplete="off" aria-controls="mode-list-sheet" aria-label="Search animation modes">
+      <input type="search" id="mode-search-sheet" class="ios-search" placeholder="Search by name or number" autocomplete="off" aria-controls="mode-list-sheet" aria-label="Search dynamic modes">
     </div>
-    <div id="mode-list-sheet" class="mode-list mode-list-sheet" role="listbox" aria-label="Animation modes" tabindex="0"></div>
+    <div id="mode-list-sheet" class="mode-list mode-list-sheet" role="listbox" aria-label="Dynamic modes" tabindex="0"></div>
     <button id="btn-close-mode-picker" class="btn btn-secondary btn-full" type="button">Done</button>
   </div>
 </div>

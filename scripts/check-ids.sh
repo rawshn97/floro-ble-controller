@@ -7,7 +7,7 @@ MISSING=0
 
 IDS=(
   compat-banner connect-prompt btn-connect-main btn-reconnect-main
-  status-chip status-chip-text btn-menu remote-dock power-strip power-btn
+  status-chip status-chip-text btn-menu remote-dock power-btn
   install-banner install-banner-title install-banner-subtitle btn-install btn-dismiss-install
   solid-view animation-view solid-preview-swatch anim-preview-name
   mode-seg-solid mode-seg-animation solid-controls color-panel
