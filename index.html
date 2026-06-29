@@ -132,16 +132,16 @@
     <div id="solid-controls" class="remote-panel" data-view-panel="solid">
       <div class="solid-layout">
         <div class="control-card brightness-card" aria-label="Brightness">
-          <div class="control-card__header brightness-header-icon-only">
-            <span class="control-card__icon brightness-icon-lg" aria-hidden="true">☀</span>
-          </div>
           <div class="brightness-stepper" aria-live="polite">
             <button class="brightness-stepper-btn" type="button" data-step-brightness="1" aria-label="Increase brightness">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
-            <span class="brightness-stepper-value" id="val-brightness">8</span>
+            <div class="brightness-stepper-center">
+              <span class="control-card__icon brightness-icon-lg" aria-hidden="true">☀</span>
+              <span class="brightness-stepper-value" id="val-brightness">8</span>
+            </div>
             <button class="brightness-stepper-btn" type="button" data-step-brightness="-1" aria-label="Decrease brightness">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <input type="range" id="slider-brightness" class="visually-hidden" min="1" max="8" value="8" aria-label="Brightness level" tabindex="-1">
           </div>
