@@ -136,15 +136,13 @@
             <span class="control-card__icon brightness-icon-lg" aria-hidden="true">☀</span>
           </div>
           <div class="brightness-stepper" aria-live="polite">
-            <span class="brightness-stepper-limit" aria-hidden="true">8</span>
             <button class="brightness-stepper-btn" type="button" data-step-brightness="1" aria-label="Increase brightness">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>
             </button>
             <span class="brightness-stepper-value" id="val-brightness">8</span>
             <button class="brightness-stepper-btn" type="button" data-step-brightness="-1" aria-label="Decrease brightness">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
-            <span class="brightness-stepper-limit" aria-hidden="true">1</span>
             <input type="range" id="slider-brightness" class="visually-hidden" min="1" max="8" value="8" aria-label="Brightness level" tabindex="-1">
           </div>
         </div>
@@ -164,10 +162,12 @@
             <button class="swatch-btn" type="button" style="background:#00ffff" onclick="selectSwatch(this, 0, 255, 255)" title="Ice Cyan" aria-label="Ice Cyan"></button>
             <button class="swatch-btn" type="button" style="background:#a855f7" onclick="selectSwatch(this, 168, 85, 247)" title="Neon Purple" aria-label="Neon Purple"></button>
             <button class="swatch-btn" type="button" style="background:#ffffff" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
+            <button id="palette-toggle" class="swatch-btn swatch-btn-custom" type="button" aria-expanded="false" aria-controls="palette-sheet" aria-label="Custom color" title="Custom color">
+              <span class="swatch-custom-ring" aria-hidden="true"></span>
+            </button>
           </div>
 
           <div class="color-actions">
-            <button id="palette-toggle" class="btn btn-secondary btn-compact" type="button" aria-expanded="false" aria-controls="palette-sheet">Custom color</button>
             <button id="btn-save-color-preset" class="btn btn-primary btn-compact" type="button">Save preset</button>
           </div>
         </div>

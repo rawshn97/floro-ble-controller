@@ -825,6 +825,28 @@ function removeFavorite(mode) {
   log(`Removed Mode ${mode} from presets.`, 'info');
 }
 
+const COLOR_PRESET_MAX_ROWS = 2;
+
+function getPresetGridColumns() {
+  if (!colorPresetsRow) return 3;
+  const cols = getComputedStyle(colorPresetsRow).gridTemplateColumns;
+  if (!cols || cols === 'none') return 3;
+  const count = cols.trim().split(/\s+/).length;
+  return count > 0 ? count : 3;
+}
+
+function getMaxColorPresets() {
+  return getPresetGridColumns() * COLOR_PRESET_MAX_ROWS;
+}
+
+function trimColorPresetsToMax() {
+  const max = getMaxColorPresets();
+  if (colorPresets.length <= max) return false;
+  colorPresets = colorPresets.slice(0, max);
+  saveColorPresets();
+  return true;
+}
+
 function loadColorPresets() {
   try {
     const raw = localStorage.getItem(COLOR_PRESETS_KEY);
@@ -833,6 +855,7 @@ function loadColorPresets() {
   } catch {
     colorPresets = [];
   }
+  trimColorPresetsToMax();
   renderColorPresets();
 }
 
@@ -844,9 +867,11 @@ function renderColorPresets() {
   if (!colorPresetsRow) return;
   colorPresetsRow.innerHTML = '';
   updateColorPresetSectionVisibility();
-  if (colorPresets.length === 0) return;
+  const max = getMaxColorPresets();
+  const visiblePresets = colorPresets.slice(0, max);
+  if (visiblePresets.length === 0) return;
 
-  colorPresets.forEach((preset, index) => {
+  visiblePresets.forEach((preset, index) => {
     const chip = document.createElement('div');
     const isSelected = preset.hex.toLowerCase() === activeColor.toLowerCase();
     chip.className = `preset-tile${isSelected ? ' selected' : ''}`;
@@ -992,6 +1017,14 @@ loadColorPresets();
 updateReconnectButton();
 setupCompatBanner(compatBanner, log);
 
+let presetGridResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(presetGridResizeTimer);
+  presetGridResizeTimer = setTimeout(() => {
+    if (trimColorPresetsToMax()) renderColorPresets();
+  }, 150);
+});
+
 setupPaletteToggle(document.getElementById('palette-toggle'), {
   sheet: document.getElementById('palette-sheet'),
   closeBtn: document.getElementById('btn-close-palette'),
@@ -1053,8 +1086,12 @@ setupColorPresetModal({
       log('This color is already saved.', 'info');
       return;
     }
+    const max = getMaxColorPresets();
+    if (colorPresets.length >= max) {
+      const removed = colorPresets.pop();
+      log(`Removed "${removed.label}" to make room for new preset.`, 'info');
+    }
     colorPresets.unshift({ hex, label: name });
-    if (colorPresets.length > 12) colorPresets = colorPresets.slice(0, 12);
     saveColorPresets();
     renderColorPresets();
     log(`Saved color preset "${name}".`, 'success');
