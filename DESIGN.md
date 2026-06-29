@@ -15,46 +15,62 @@ The app should feel like a polished physical remote: compact, confident, mode-dr
 
 ### The memorable thing
 
-**The UI glows the color on the sign.** Default accent is FloRo pink (`#ff007f`), but when the user picks a solid neon color, `updateNeonThemeColor()` retints `--accent`, slider values, swatch rings, and control-card borders to match. The remote feels physically linked to the light it controls.
+**The UI glows the color on the sign.** Default chrome accent is mint (`#41E9BD`, reference palette). When the user picks a solid neon color, `updateNeonThemeColor()` retints `--accent`, arc stroke, slider fills, swatch rings, and control-card glows to match. The remote feels physically linked to the light it controls.
+
+### Visual reference (2026-06-29 overhaul)
+
+Mint Remote aesthetic from attached AC remote mockups: Sofia Sans, deep black-green canvas, charcoal cards, circular arc hero gauge, vertical mode rail, full-width mint power CTA. Implementation plan: `UI_OVERHAUL_PLAN.md`.
 
 ## Information Architecture
 
-Bottom-first remote layout. Primary controls live in the thumb zone; header is status-only chrome.
+Hero + dock layout (Mint Remote). Arc gauge and mode rail are supplementary readout in `.app-main`; **control cards live inside `#remote-dock`** (primary thumb zone). Power CTA is the same `#power-btn` styled as a mint pill at the dock bottom. Infrastructure stays in sheets.
 
 ```
 ┌─────────────────────────────────────┐
-│ Header: logo · status chip · ⋮    │  compact (~44px)
+│ Header: FloRo · status · menu     │  ~52px, radial glow behind
 ├─────────────────────────────────────┤
-│                                     │
-│   Preview (optional, low emphasis)  │  flex; hidden on short screens
-│                                     │
+│ HERO ZONE (readout, compacts ≤740)  │
+│  [Solid|Anim rail]  ( ARC GAUGE )   │
+│  [ quick action chips x4 ]          │
 ├─────────────────────────────────────┤
-│ CONNECT PROMPT (offline only)       │  Scan & Connect + optional Reconnect
+│ CONNECT STRIP (offline, dock-adj)   │
 ├─────────────────────────────────────┤
-│ REMOTE DOCK (thumb zone)            │
-│  [Solid | Animation]  [Power]       │
-│  Brightness (+ Speed on Anim)       │
-│  Color grid OR mode picker + presets│
-│  [Custom color] [Save color preset] │
-├─────────────────────────────────────┤
-│ Install dock (when not standalone)  │
+│ #remote-dock (PRIMARY thumb zone)   │
+│  [Solid|Anim] [power mirror] toolbar│
+│  Brightness · Color/Mode cards      │
+│  preset row (h-scroll or pills)     │
+│  [ mint Power On/Off #power-btn ]   │
 └─────────────────────────────────────┘
-         ⋮ / status chip tap
-              ↓
-┌─────────────────────────────────────┐
-│ Settings sheet                      │
-│ Mode picker sheet (animation)       │
-│ Custom color sheet (solid)          │
-└─────────────────────────────────────┘
+
+  (fixed overlay, outside `.app-shell`, z-index 70)
+  Install banner (#install-banner)
+
+         settings / sheets  →  z-index 100
 ```
+
+Full markup and phase breakdown: `UI_OVERHAUL_PLAN.md`.
+
+### Feature preservation (build contract)
+
+Visual overhaul only. All v2.1.0 behavior must survive unchanged: BLE connect/reconnect/auto-reconnect/disconnect, power gating, Solid/Animation mode logic, brightness/speed/color/mode controls, 200-mode picker with search, animation favorites and color presets, HSL custom picker with recents, scene persistence, activity log, PWA install flows, wake lock, haptics, and dynamic accent from selected neon color.
+
+**Authoritative checklist:** `UI_OVERHAUL_PLAN.md` → Feature Parity Matrix + Behavioral invariants + Existing UX Review. Devex review and QA sign off against those sections.
+
+Additional non-negotiables from shipped UX review:
+
+- **Install banner:** Fixed bottom overlay (`#install-banner.install-prompt`), outside `.app-shell`. Do not regress z-index or 7-day dismiss TTL.
+- **Thumb-zone dock:** `#remote-dock` remains the primary control surface on phones; hero gauge is supplementary readout.
+- **Preset layouts:** Animation favorites = horizontal scroll row; color presets = flex-wrap pill row.
+- **Custom color:** Bottom sheet (`#palette-sheet`) only; no inline palette on the main surface.
+- **Power-on restore:** `alignUIForPowerOnRestore()` Animation tab behavior is non-negotiable.
 
 ### Header (`app-header-compact`)
 
 | Element | Role |
 |---------|------|
-| Neon Attack logo + "FloRo" | Compact brand mark |
-| Status chip | Connection state; tap opens settings |
-| Menu button (⋮) | Opens settings sheet |
+| Neon Attack logo + "FloRo" | Compact brand mark (keep in mint layout) |
+| Status chip | Connection state; offline copy "Tap to connect"; tap opens settings |
+| Menu button (vertical dots) | `#btn-menu`; opens settings sheet |
 
 ### Remote dock (`#remote-dock`)
 
@@ -84,113 +100,118 @@ Infrastructure only: connection, activity log, install, about.
 
 | Region | CSS / ID | Behavior |
 |--------|----------|----------|
-| **Header** | `.app-header` | Sticky top chrome: brand, status chip, settings menu. Frosted black blur, 48px min height + safe-area top. |
-| **Mode toolbar** | `.mode-toolbar` | Sticky below header: Solid \| Animation segmented control + Power switch. Stays visible while view scrolls. |
-| **View stage** | `.view-stage` | Single active panel (`#solid-view` or `#animation-view`). 280px min height; horizontal slide transition between modes. |
-| **Install dock** | `#install-banner.install-dock` | Bottom of `.app-shell` flex column (not floating overlay). Mobile: always shows Install until standalone; dismiss collapses to compact bar. |
-| **Sheets** | `.sheet-overlay` + `.modal-sheet` | Bottom sheets for settings, install, and save-favorite. Backdrop blur; body scroll locked via `body.sheet-open`. |
+| **Header** | `.app-header` | Sticky top: logo + FloRo, status chip, vertical-dots menu. 52px min height + safe-area top; radial glow behind. |
+| **Hero zone** | `.hero-zone` | Mode rail (left) + arc gauge (center) + quick actions. Readout only; compacts on short viewports, never removed. |
+| **Connect strip** | `#connect-prompt` | Dock-adjacent offline CTA; hidden when connected/connecting/unsupported. |
+| **Remote dock** | `#remote-dock` | **Primary thumb zone:** sticky toolbar (Solid \| Animation + power mirror), scrollable control cards inside. |
+| **Power CTA** | `#power-btn.power-cta` | Single `#power-btn` node; mint full-width pill at dock bottom (not a cloned button). |
+| **Install banner** | `#install-banner.install-prompt` | Fixed overlay **outside** `.app-shell`, `z-index: 70`. Never flex child of shell. 7-day dismiss TTL. |
+| **Sheets** | `.sheet-overlay` + `.modal-sheet` | Bottom sheets; `z-index: 100`. One overlay at a time. |
 
-Main content (`.app-main`) is max-width 500px, centered, with optional compat banner above the view stage.
+Main content (`.app-main`) is max-width 500px, centered. `#remote-dock` sits below connect strip; cards scroll inside dock while toolbar stays thumb-reachable.
 
 ## Aesthetic Direction
 
-- **Direction:** Brutally Minimal + Luxury/Refined hybrid — iOS 16 dark grouped surfaces with neon accent glow
-- **Decoration level:** Intentional — subtle glass blur on sticky chrome, neon border glow on active color panels
-- **Mood:** Confident, tactile, night-mode native. Like holding a matte-black remote with one hot-pink LED indicator.
+- **Direction:** Mint Remote — dark smart-home remote with neon mint accent and arc gauge hero (reference: attached AC remote mockups)
+- **Decoration level:** Intentional — radial teal glow at top of canvas, mint outer glow on active controls and arc stroke
+- **Mood:** Premium night-mode remote. Matte charcoal surfaces, one luminous mint thread (retinted to sign color when picking neon).
 - **Reference patterns:**
-  - **Philips Hue:** Mode-first surfaces, segmented room/scene switching, brightness always near the top
-  - **Govee Home:** Compact preset grids, speed + brightness paired in effect mode
-  - **Apple Home:** Grouped list cards, sheet modals for settings, system green/red status semantics
+  - **Attached mockups:** Arc gauge, vertical mode rail, 24px card radius, bottom power pill
+  - **Philips Hue / Govee:** Mode-first IA, preset grids, brightness always visible
+  - **Prior FloRo IA:** Settings in sheets, no BLE debug on main surface
 
 ## Typography
 
-- **Display/Hero:** SF Pro Text (system) — `-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif`
-- **Body:** Same stack at 17px base — matches iOS body text size for thumb-friendly legibility
-- **UI/Labels:** 13px semibold uppercase eyebrows; 15px control labels
-- **Data/Console:** `ui-monospace, 'SF Mono', Menlo, monospace` at 11px for activity log
-- **Scale:**
+- **Family:** [Sofia Sans](https://fonts.google.com/specimen/Sofia+Sans) — Regular 400, Medium 500, Semi Bold 600, Bold 700
+- **Loading:** Google Fonts CDN in `index.html`; fallback `system-ui, sans-serif`
+- **Data/Console:** `ui-monospace, 'SF Mono', Menlo, monospace` at 11px for activity log (unchanged)
 
 | Token | Size | Weight | Use |
 |-------|------|--------|-----|
-| Title | 20px | 700 | Sheet titles |
+| Gauge hero | 42–48px | 700 | Arc center value (brightness / mode #) |
+| Title | 20px | 700 | Sheet titles, header |
 | Body | 17px | 400 | Default text, buttons |
-| Label | 15px | 500 | Control labels, slider values |
+| Label | 15px | 600 | Card labels, slider values |
 | Eyebrow | 13px | 600 | Section headers, uppercase |
-| Caption | 11–12px | 600 | Status pills, console |
+| Caption | 11–12px | 600 | Status, console |
 
 ## Color
 
-- **Approach:** Restrained — one dynamic neon accent; system semantics for status
+- **Approach:** Restrained — mint default accent + dynamic retint to selected neon color
 
-### Core palette (CSS custom properties in `css/styles.css`)
+### Core palette (target `css/styles.css` after overhaul)
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--bg-primary` | `#000000` | Page background |
-| `--bg-grouped` | `#1c1c1e` | Control cards |
-| `--bg-secondary` | `#2c2c2e` | Settings cards |
-| `--bg-tertiary` | `#3a3a3c` | Segmented active segment, fills |
-| `--label-primary` | `#ffffff` | Primary text |
-| `--label-secondary` | `rgba(235,235,245,0.6)` | Secondary text |
-| `--label-tertiary` | `rgba(235,235,245,0.3)` | Placeholders, chevrons |
-| `--accent` / `--neon-glow` | `#ff007f` | Default FloRo pink; updates with selected color |
-| `--accent-rgba` | `rgba(255,0,127,0.35)` | Glow, selected swatch ring |
-| `--accent-muted` | `rgba(255,0,127,0.15)` | Active favorite chip fill |
-| `--system-green` | `#30d158` | Connected, power on |
-| `--system-red` | `#ff453a` | Offline, destructive |
-| `--system-blue` | `#0a84ff` | Info log entries |
-| `--system-orange` | `#ff9f0a` | Connecting pulse |
+| `--bg-deep` / `--bg-primary` | `#020D0A` | Page background |
+| `--bg-surface` / `--bg-grouped` | `#1D1F21` | Cards, rails, header buttons |
+| `--bg-elevated` | `#252829` | Inactive chips, inputs |
+| `--text-primary` / `--label-primary` | `#DBE6E4` | Primary text |
+| `--text-secondary` / `--label-secondary` | `rgba(219,230,228,0.62)` | Labels |
+| `--text-muted` / `--label-tertiary` | `rgba(219,230,228,0.38)` | Meta, placeholders |
+| `--accent` / `--neon-glow` | `#41E9BD` | Default mint; updates with selected color |
+| `--accent-dim` / `--accent-muted` | `rgba(65,233,189,0.18)` | Active chip fill, glow base |
+| `--accent-glow` / `--accent-rgba` | `rgba(65,233,189,0.45)` | Shadow, arc, rings |
+| `--danger` / `--system-red` | `#FF6B6B` | Offline, destructive |
+| `--success` | `#41E9BD` | Connected (same as accent) |
+| `--warning` / `--system-orange` | `#FFB020` | Connecting pulse |
+| `--system-blue` | `#5B9BD5` | Info log entries |
+
+### Ambient background
+
+Top third: `radial-gradient(ellipse 120% 50% at 50% -10%, rgba(8,44,38,0.85), transparent 55%)` over `--bg-deep`.
 
 ### Dynamic accent
 
-When a solid color is selected, `updateNeonThemeColor()` in `js/ui.js` propagates the chosen hex to `--accent`, `--neon-glow`, and control-card border/shadow. The UI literally glows the current neon color.
+When a solid color is selected, `updateNeonThemeColor()` in `js/ui.js` propagates the chosen hex to `--accent`, arc stroke, slider fill, swatch rings, and card glow. Default rest state uses mint.
 
 ### Dark mode
 
-Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure white backgrounds except slider thumbs and switch knobs.
+Dark-only. No light theme.
 
 ## Spacing
 
 - **Base unit:** 4px
-- **Density:** Compact — optimized for one-handed phone use
+- **Density:** Compact — one-handed phone use
 - **Max content width:** 500px centered
 - **Key spacing:**
 
 | Context | Value |
 |---------|-------|
-| Header/toolbar horizontal padding | 16px |
-| Main padding | 12px 16px + safe-area |
-| Card internal padding | 14px 16px |
-| Gap between cards / view sections | 12px |
-| Swatch grid gap | 10px |
+| Header horizontal padding | 16px |
+| Hero zone gap (rail / gauge) | 12px |
+| Card grid gap | 10px |
+| Card internal padding | 14px |
+| Preset grid gap | 8px |
+| Power CTA margin top | 12px + safe-area |
 
 ## Layout
 
-- **Approach:** Grid-disciplined single column
-- **Sticky chrome:** Header + mode toolbar stay fixed while view content scrolls
+- **Approach:** Grid-disciplined — hero row + 2-col control cards inside dock + mode-specific preset rows
+- **Sticky chrome:** Header fixed; hero may scroll on very short viewports
 - **Border radius scale:**
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--radius-sm` | 8px | Logo, small chips |
-| `--radius-md` | 12px | Swatches, inputs, buttons |
-| `--radius-lg` | 14px | Control cards |
-| `--radius-xl` | 20px | Sheet top corners |
+| `--radius-control` | 16px | Swatches, inputs, quick actions |
+| `--radius-card` | 24px | Control cards, sheets |
+| `--radius-pill` | 999px | Mode rail, power CTA, status chip |
+| `--gauge-size` | `min(72vw, 280px)` | Arc diameter |
 
 ## Motion
 
-- **Approach:** Intentional — transitions aid comprehension without spectacle
-- **Easing:** `--spring: 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)`; switch knob uses `--spring-bounce`
+- **Approach:** Intentional — arc and glow communicate state
+- **Easing:** `--spring: 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)`
 - **Key animations:**
 
 | Interaction | Duration | Behavior |
 |-------------|----------|----------|
-| View switch (Solid ↔ Animation) | 280ms | Outgoing panel slides left + fades; incoming slides in |
-| Settings sheet open | 350ms | Slide up from bottom (`sheet-up` keyframe) |
-| Status chip connecting | 1s loop | Orange dot pulse |
-| Palette disclosure | 350ms | Chevron rotate + max-height expand |
-| Button press | instant | `scale(0.97)` + opacity dip |
-| Reduced motion | — | All animations collapse to 0.01ms via `prefers-reduced-motion` |
+| Arc value change | 280ms | `stroke-dashoffset` transition |
+| View switch (Solid ↔ Animation) | 280ms | Gauge label crossfade |
+| Sheet open | 350ms | Slide up (`sheet-up`) |
+| Status connecting | 1s loop | Warning dot pulse |
+| Button / card press | instant | `scale(0.98)` |
+| Reduced motion | — | Collapse to 0.01ms via `prefers-reduced-motion` |
 
 ## Component Rules
 
@@ -201,22 +222,29 @@ Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure whit
 - Tapping opens settings sheet (same as menu button)
 - Never show raw BLE UUIDs or debug strings
 
-### Segmented control (`seg-control`)
+### Mode rail (`mode-rail` / `seg-control`)
 
-- Exactly two segments for display mode: Solid | Animation
+- Vertical pills: Solid | Animation (restyled from horizontal seg control)
 - Use `role="tablist"` / `role="tab"` / `role="tabpanel"` for accessibility
-- Active segment gets `--bg-tertiary` fill + subtle shadow
+- Active pill: solid `--accent` fill, `--bg-deep` text, mint glow shadow
+
+### Scene gauge (`scene-gauge`)
+
+- SVG arc (~270°) with mint stroke (or dynamic accent)
+- Center: large value (brightness `8` or mode `32`) + sublabel
+- `aria-label` reflects current scene state
+- Updated via `updateArcGauge()` in `js/ui.js`
 
 ### Control cards (`control-card`)
 
-- Grouped iOS card on `--bg-grouped`
-- Disabled state: `disabled-control` class → 45% opacity, no pointer events
-- When connected, cards receive dynamic neon border glow from active color
+- Charcoal `--bg-surface`, 24px radius, optional icon badge
+- Disabled: `disabled-control` → 45% opacity
+- Connected: subtle dynamic glow on border from active color
 
-### Sliders (`ios-slider`)
+### Sliders (`mint-slider` / `ios-slider`)
 
-- Always show live value in `--accent` to the right (e.g. `8 / 8`, `50%`)
-- 28px thumb, 4px track — large enough for thumbs
+- Live value in card header in `--accent`
+- Thin track with mint fill; thumb with soft glow
 
 ### Color swatches (`swatch-btn`)
 
@@ -256,11 +284,12 @@ Dark-only. No light theme. Surfaces use iOS grouped dark hierarchy; no pure whit
 
 | Variant | Use |
 |---------|-----|
-| `btn-primary` | Scan & Connect, Save, Install |
-| `btn-secondary` | Reconnect, Done, Cancel |
+| `btn-primary` | Scan & Connect, Save, Install (mint fill) |
+| `btn-secondary` | Reconnect, Done, Cancel (surface fill) |
 | `btn-destructive` | Disconnect |
-| `btn-text` | Add favorite (accent text, no fill) |
-| `btn-step` | ± mode stepper (44×44px) |
+| `btn-text` | Add favorite (accent text) |
+| `btn-step` | ± stepper (44×44px) |
+| `power-cta` | Full-width bottom Power On/Off pill |
 
 ## Interaction Patterns
 
@@ -311,7 +340,8 @@ Do **not** introduce these — they break the premium-remote feel:
 | Showing Solid + Animation controls simultaneously | Violates mode-first IA; creates scroll fatigue |
 | Large "Connect" hero on launch | Connection is secondary; status chip + auto-reconnect handle it |
 | Native `<input type="color">` | Awkward on mobile; use HSL picker in collapsed disclosure |
-| Purple/violet gradient accents | Generic AI slop; FloRo pink (`#ff007f`) is the brand anchor |
+| Purple/violet gradient accents | Generic AI slop; use mint `#41E9BD` as default chrome |
+| iOS system-font-only UI | Use Sofia Sans per reference mockups |
 | Multi-column marketing layout | This is a utility remote, not a landing page |
 | Centered-everything with uniform spacing | Use left-aligned grouped cards like iOS Settings |
 | Exposed UUID / GATT service names in UI | Belongs in dev docs, not user-facing chrome |
@@ -333,7 +363,7 @@ Do **not** introduce these — they break the premium-remote feel:
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
 - **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v31`
-- **Install prompt:** Bottom install dock; mobile Install always visible until standalone; Android 2.5s fallback
+- **Install prompt:** Fixed bottom overlay (`#install-banner`, z-index 70); mobile Install always visible until standalone; Android 2.5s fallback; compact card on short viewports
 - **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
 
 ## File Map
@@ -341,8 +371,9 @@ Do **not** introduce these — they break the premium-remote feel:
 | File | Design responsibility |
 |------|----------------------|
 | `index.html` | IA structure, ARIA roles, component markup |
-| `css/styles.css` | All visual tokens, component styles, motion |
-| `js/ui.js` | View transitions, sheet behavior, chip states, theme color, install dock, mode list filter |
+| `css/styles.css` | All visual tokens, mint remote layout, gauge, motion |
+| `js/ui.js` | Arc gauge, view transitions, sheets, theme color, install dock |
+| `UI_OVERHAUL_PLAN.md` | Phased implementation plan for mint remote build |
 | `js/state.js` | Scene persistence (localStorage) |
 | `js/app.js` | Mode logic, auto-reconnect, remote dock, color presets |
 | `js/mode-names.js` | Curated friendly names for modes 1–200 |
@@ -367,7 +398,7 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-23 | Activity log in settings only | Debug visibility without polluting main remote surface |
 | 2026-06-23 | Deploy at `/sign-controller/` via portfolio rewrite | Keeps rawshn.com namespace clean; separate Vercel project for static PWA |
 | 2026-06-29 | Android install banner fallback + 7-day dismiss TTL | `beforeinstallprompt` is unreliable on some Android builds; fallback banner + timed dismiss prevents permanent hide after accidental tap |
-| 2026-06-29 | Bottom install dock in app shell | Matches Coach PWA pattern: persistent mobile Install, not a dismissible floating chip |
+| 2026-06-29 | Fixed install overlay outside shell | Shipped `#install-banner` at z-70; do not move into `.app-shell` flex (UX review 2026-06-29) |
 | 2026-06-29 | Standalone PWA paths (absolute manifest + scoped SW) | `start_url`/`scope`/`id` = `/sign-controller/` like Health Hub `/coach/`; SW uses `__FLORO_PWA_BASE` |
 | 2026-06-29 | Neon Attack logo in header + PWA icons | Official `logo.png` branding with FloRo title and `#ff007f` accent; icons regenerated from same source |
 | 2026-06-29 | Animation picker IA redesign | Mode hero + searchable scrollable list with number + name; dropdown hidden (a11y fallback only) |
@@ -381,3 +412,7 @@ Do **not** introduce these — they break the premium-remote feel:
 | 2026-06-30 | Official Neon Attack icon from APK playstore.png | Header + PWA icons regenerated from APK asset |
 | 2026-06-30 | Mode picker + custom color as bottom sheets | Keeps main remote surface compact; lists scroll inside sheets only |
 | 2026-06-30 | Save color preset (`floro_color_presets`) | User-named custom colors on Solid tab |
+| 2026-06-29 | Mint Remote visual overhaul (planned) | Reference mockups: Sofia Sans, `#41E9BD`, arc gauge, card grid; see `UI_OVERHAUL_PLAN.md` |
+| 2026-06-29 | Default accent mint, dynamic retint kept | North star unchanged: UI glows selected neon color |
+| 2026-06-29 | Feature Parity Matrix in UI_OVERHAUL_PLAN.md | Every v2.1.0 feature mapped before mint build; devex/QA acceptance contract |
+| 2026-06-29 | Existing UX Review in UI_OVERHAUL_PLAN.md | Shipped bottom-first dock, install overlay, preset layouts validated before mint build |

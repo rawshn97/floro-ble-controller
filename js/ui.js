@@ -23,6 +23,8 @@ export function updateNeonThemeColor(hexColor, panels) {
   document.documentElement.style.setProperty('--neon-glow-rgba', `${hexColor}59`);
   document.documentElement.style.setProperty('--accent-rgba', `${hexColor}59`);
   document.documentElement.style.setProperty('--accent-muted', `${hexColor}26`);
+  document.documentElement.style.setProperty('--accent-dim', `${hexColor}2E`);
+  document.documentElement.style.setProperty('--accent-glow', `${hexColor}73`);
 
   panels.forEach((panel) => {
     if (!panel) return;
@@ -31,6 +33,83 @@ export function updateNeonThemeColor(hexColor, panels) {
   });
 
   return hexColor;
+}
+
+let _arcLength = 0;
+
+function getArcLength(arcEl) {
+  if (!_arcLength && arcEl?.getTotalLength) {
+    _arcLength = arcEl.getTotalLength();
+  }
+  return _arcLength || 283;
+}
+
+export function updateArcGauge(gaugeEl, { value, max, label, sublabel, poweredOff }) {
+  if (!gaugeEl) return;
+
+  const arc = gaugeEl.querySelector('.scene-gauge__arc');
+  const valueEl = gaugeEl.querySelector('#scene-gauge-value') || gaugeEl.querySelector('.scene-gauge__value');
+  const subEl = gaugeEl.querySelector('#scene-gauge-sub') || gaugeEl.querySelector('.scene-gauge__sub');
+
+  const pct = poweredOff || max <= 0 ? 0 : Math.min(1, Math.max(0, value / max));
+  const len = getArcLength(arc);
+
+  if (arc) {
+    arc.style.strokeDasharray = `${len * pct} ${len}`;
+  }
+  if (valueEl) valueEl.textContent = label ?? String(value);
+  if (subEl) subEl.textContent = sublabel ?? '';
+
+  if (poweredOff) {
+    gaugeEl.setAttribute('aria-label', 'Power off');
+  } else if (sublabel) {
+    gaugeEl.setAttribute('aria-label', `${label} ${sublabel}`.trim());
+  }
+}
+
+/** Single hub for arc gauge readout updates */
+export function syncSceneGauge(state) {
+  const gaugeEl = document.getElementById('scene-gauge');
+  if (!gaugeEl) return;
+
+  const {
+    displayView = 'solid',
+    isPoweredOn = true,
+    brightness = 8,
+    speed = 50,
+    activeMode = 32,
+    connected = true,
+  } = state;
+
+  if (!connected || !isPoweredOn) {
+    updateArcGauge(gaugeEl, {
+      value: 0,
+      max: 1,
+      label: 'OFF',
+      sublabel: connected ? 'Powered off' : 'Offline',
+      poweredOff: true,
+    });
+    return;
+  }
+
+  if (displayView === 'solid') {
+    updateArcGauge(gaugeEl, {
+      value: brightness,
+      max: 8,
+      label: String(brightness),
+      sublabel: 'Brightness',
+      poweredOff: false,
+    });
+    return;
+  }
+
+  updateArcGauge(gaugeEl, {
+    value: speed,
+    max: 100,
+    label: String(activeMode),
+    sublabel: getModeName(Number(activeMode)),
+    poweredOff: false,
+  });
 }
 
 export function rgbToHex(r, g, b) {
@@ -410,9 +489,19 @@ export function setupPwaInstall({
     return 'Add FloRo Controller to your home screen for one-tap access.';
   }
 
+  function showInstallPrompt() {
+    if (!bannerEl || shouldSuppressPrompt()) return;
+
+    bannerEl.classList.remove('hidden');
+    bannerEl.setAttribute('aria-hidden', 'false');
+    document.querySelector('.app-shell')?.classList.add('install-banner-visible');
+    updateInstallPromptContent();
+  }
+
   function hideInstallPrompt() {
     bannerEl?.classList.add('hidden');
     bannerEl?.setAttribute('aria-hidden', 'true');
+    document.querySelector('.app-shell')?.classList.remove('install-banner-visible');
   }
 
   function updateInstallPromptContent() {
@@ -432,14 +521,6 @@ export function setupPwaInstall({
     if (btnDismiss) {
       btnDismiss.classList.remove('hidden');
     }
-  }
-
-  function showInstallPrompt() {
-    if (!bannerEl || shouldSuppressPrompt()) return;
-
-    bannerEl.classList.remove('hidden');
-    bannerEl.setAttribute('aria-hidden', 'false');
-    updateInstallPromptContent();
   }
 
   function scheduleAndroidFallback() {

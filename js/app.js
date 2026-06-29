@@ -29,6 +29,7 @@ import {
   setupSettingsSheet,
   updateConnectionChip,
   updateNeonThemeColor,
+  syncSceneGauge,
   WakeLockManager,
 } from './ui.js';
 
@@ -145,6 +146,21 @@ if (appVersionEl) {
   appVersionEl.textContent = `v${APP_VERSION}`;
 }
 
+function getGaugeState() {
+  return {
+    displayView,
+    isPoweredOn,
+    brightness: lastBrightnessVal,
+    speed: lastSpeedVal,
+    activeMode: activeModeVal,
+    connected: ble.isConnected,
+  };
+}
+
+function refreshSceneGauge() {
+  syncSceneGauge(getGaugeState());
+}
+
 function updatePreviewChrome() {
   if (solidPreviewSwatch) {
     solidPreviewSwatch.style.background = activeColor;
@@ -152,6 +168,7 @@ function updatePreviewChrome() {
   if (animPreviewName) {
     animPreviewName.textContent = getModeName(activeModeVal);
   }
+  refreshSceneGauge();
 }
 
 function syncRemotePanels() {
@@ -578,9 +595,12 @@ if (powerBtn) {
 }
 
 function updatePowerUI(on) {
+  const connected = ble.isConnected;
+  const visualOn = connected && on;
+  const mirror = document.querySelector('.power-strip__mirror');
+  const ctaLabel = powerBtn?.querySelector('.power-cta-label');
+
   if (powerBtn) {
-    const connected = ble.isConnected;
-    const visualOn = connected && on;
     powerBtn.classList.toggle('is-on', visualOn);
     powerBtn.classList.toggle('is-unavailable', !connected);
     powerBtn.setAttribute('aria-pressed', visualOn ? 'true' : 'false');
@@ -588,6 +608,19 @@ function updatePowerUI(on) {
       powerBtn.setAttribute('aria-label', 'Power');
     } else {
       powerBtn.setAttribute('aria-label', on ? 'Power on' : 'Power off');
+    }
+  }
+
+  if (mirror) {
+    mirror.classList.toggle('is-on', visualOn);
+    mirror.classList.toggle('is-unavailable', !connected);
+  }
+
+  if (ctaLabel) {
+    if (!connected) {
+      ctaLabel.textContent = 'Power';
+    } else {
+      ctaLabel.textContent = on ? 'Power On' : 'Power Off';
     }
   }
 
@@ -599,6 +632,8 @@ function updatePowerUI(on) {
     valBrightness.textContent = 'OFF';
     valBrightnessAnim.textContent = 'OFF';
   }
+
+  refreshSceneGauge();
 }
 
 function syncControlPanelsEnabled() {
@@ -612,6 +647,7 @@ function syncBrightnessSliders(val) {
   const label = isPoweredOn ? `${val} / 8` : 'OFF';
   valBrightness.textContent = label;
   valBrightnessAnim.textContent = label;
+  refreshSceneGauge();
 }
 
 function stepBrightness(delta) {
@@ -668,6 +704,7 @@ function onSpeedInput(val, { immediate = false } = {}) {
   sliderSpeed.value = val;
   valSpeed.textContent = `${val}%`;
   persistScene();
+  refreshSceneGauge();
   if (sTimeout) clearTimeout(sTimeout);
   const send = () => {
     if (ble.isConnected && isPoweredOn) ble.sendSpeed(val);
@@ -870,6 +907,7 @@ modeSegSolid.addEventListener('click', () => {
   displayView = 'solid';
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'solid');
   syncRemotePanels();
+  refreshSceneGauge();
   if (activeModeVal !== 1) setMode(1);
   else persistScene();
 });
@@ -880,7 +918,30 @@ modeSegAnimation.addEventListener('click', () => {
   setDisplayView(solidView, animationView, modeSegSolid, modeSegAnimation, 'animation');
   syncRemotePanels();
   persistScene();
+  refreshSceneGauge();
   if (activeModeVal === 1) setMode(lastAnimationMode);
+});
+
+document.getElementById('quick-custom-color')?.addEventListener('click', () => {
+  document.getElementById('palette-toggle')?.click();
+});
+
+document.getElementById('quick-mode-picker')?.addEventListener('click', () => {
+  if (displayView !== 'animation') {
+    modeSegAnimation.click();
+  }
+  document.getElementById('anim-mode-picker-btn')?.click();
+});
+
+document.getElementById('quick-add-fav')?.addEventListener('click', () => {
+  if (displayView !== 'animation') {
+    modeSegAnimation.click();
+  }
+  window.addCurrentToFavorites?.();
+});
+
+document.getElementById('quick-settings')?.addEventListener('click', () => {
+  statusChip?.click();
 });
 
 statusChip.addEventListener('click', () => {

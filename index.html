@@ -38,11 +38,14 @@
       }
     })();
   </script>
-  <meta name="theme-color" content="#0b0f19">
+  <meta name="theme-color" content="#020D0A">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FloRo">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -72,20 +75,49 @@
 
   <div id="compat-banner" class="compat-banner hidden"></div>
 
-  <div class="view-stage remote-view-stage">
-    <div id="solid-view" class="view-panel is-active" role="tabpanel" aria-labelledby="mode-seg-solid">
-      <div class="remote-preview remote-preview-solid" aria-hidden="true">
-        <span class="remote-preview-label">Solid color</span>
-        <span id="solid-preview-swatch" class="remote-preview-swatch"></span>
-      </div>
+  <div class="ambient-bg" aria-hidden="true"></div>
+
+  <div class="hero-zone">
+    <div class="mode-rail seg-control mode-seg-control" role="tablist" aria-label="Display mode">
+      <button id="mode-seg-solid" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view" aria-label="Solid color mode">Solid</button>
+      <button id="mode-seg-animation" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view" aria-label="Animation mode">Animation</button>
     </div>
 
-    <div id="animation-view" class="view-panel" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
-      <div class="remote-preview remote-preview-animation" aria-hidden="true">
-        <span class="remote-preview-label">Animation</span>
-        <span id="anim-preview-name" class="remote-preview-mode">Counter Spin</span>
+    <div id="scene-gauge" class="scene-gauge" role="img" aria-label="Scene readout">
+      <svg class="scene-gauge__svg" viewBox="0 0 200 200" aria-hidden="true">
+        <path class="scene-gauge__track" d="M 40 160 A 60 60 0 1 1 160 160" fill="none"></path>
+        <path class="scene-gauge__arc" d="M 40 160 A 60 60 0 1 1 160 160" fill="none"></path>
+      </svg>
+      <div class="scene-gauge__center">
+        <span id="scene-gauge-value" class="scene-gauge__value">8</span>
+        <span id="scene-gauge-sub" class="scene-gauge__sub">Brightness</span>
+        <div id="solid-view" class="view-panel is-active gauge-preview" role="tabpanel" aria-labelledby="mode-seg-solid">
+          <span id="solid-preview-swatch" class="remote-preview-swatch gauge-preview-swatch" aria-hidden="true"></span>
+        </div>
+        <div id="animation-view" class="view-panel gauge-preview" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
+          <span id="anim-preview-name" class="remote-preview-mode gauge-preview-label" aria-hidden="true">Counter Spin</span>
+        </div>
       </div>
     </div>
+  </div>
+
+  <div class="quick-actions" aria-label="Quick actions">
+    <button id="quick-custom-color" class="quick-action-btn" type="button" aria-label="Custom color">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 0 20"></path></svg>
+      <span class="quick-action-label">Color</span>
+    </button>
+    <button id="quick-mode-picker" class="quick-action-btn" type="button" aria-label="Animation modes">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span class="quick-action-label">Modes</span>
+    </button>
+    <button id="quick-add-fav" class="quick-action-btn" type="button" aria-label="Add favorite preset">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span class="quick-action-label">Add</span>
+    </button>
+    <button id="quick-settings" class="quick-action-btn" type="button" aria-label="Connection and settings">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><circle cx="12" cy="20" r="1"></circle></svg>
+      <span class="quick-action-label">Connect</span>
+    </button>
   </div>
 
 </main>
@@ -101,35 +133,35 @@
 <section id="remote-dock" class="remote-dock" aria-label="Sign controls">
 
   <div class="remote-toolbar">
-    <div class="seg-control mode-seg-control" role="tablist" aria-label="Display mode">
-      <button id="mode-seg-solid" class="seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view">Solid</button>
-      <button id="mode-seg-animation" class="seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view">Animation</button>
-    </div>
     <div id="power-strip" class="power-strip">
-      <button id="power-btn" class="btn power-remote-btn is-unavailable" type="button" aria-label="Power" aria-pressed="false">
+      <div class="power-strip__mirror power-remote-btn is-unavailable" aria-hidden="true">
         <svg class="power-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <path d="M12 3v6"></path>
           <path d="M7.05 5.64a8 8 0 1 0 9.9 0"></path>
         </svg>
-      </button>
+      </div>
     </div>
   </div>
 
-  <div id="solid-controls" class="remote-panel" data-view-panel="solid">
-    <div class="remote-slider-block">
-      <div class="slider-header">
+  <div id="solid-controls" class="remote-panel control-grid" data-view-panel="solid">
+    <div class="control-card remote-slider-block">
+      <div class="control-card__header slider-header">
+        <span class="control-card__icon" aria-hidden="true">☀</span>
         <span class="control-label">Brightness</span>
         <span class="slider-val" id="val-brightness">8 / 8</span>
       </div>
       <div class="slider-stepper-row">
         <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
-        <input type="range" id="slider-brightness" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
+        <input type="range" id="slider-brightness" class="ios-slider mint-slider" min="1" max="8" value="8" aria-label="Brightness level">
         <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
       </div>
     </div>
 
-    <div id="color-panel" class="remote-color-zone">
-      <p class="card-eyebrow">Neon color</p>
+    <div id="color-panel" class="control-card remote-color-zone">
+      <div class="control-card__header">
+        <span class="control-card__icon" aria-hidden="true">◆</span>
+        <p class="card-eyebrow control-label">Neon color</p>
+      </div>
       <div class="color-swatches color-swatches-remote">
         <button class="swatch-btn selected" type="button" style="background: #ff0000;" onclick="selectSwatch(this, 255, 0, 0)" title="Ruby Red" aria-label="Ruby Red"></button>
         <button class="swatch-btn" type="button" style="background: #00ff00;" onclick="selectSwatch(this, 0, 255, 0)" title="Electric Green" aria-label="Electric Green"></button>
@@ -141,7 +173,7 @@
         <button class="swatch-btn" type="button" style="background: #ffffff;" onclick="selectSwatch(this, 255, 255, 255)" title="Bright White" aria-label="Bright White"></button>
       </div>
 
-      <div id="color-presets-row" class="color-presets-row hidden"></div>
+      <div id="color-presets-row" class="color-presets-row preset-row--solid hidden"></div>
 
       <div class="remote-color-actions">
         <button id="palette-toggle" class="btn btn-secondary btn-compact" type="button" aria-expanded="false" aria-controls="palette-sheet">
@@ -152,34 +184,35 @@
     </div>
   </div>
 
-  <div id="anim-controls" class="remote-panel hidden" data-view-panel="animation">
-    <div class="remote-dual-sliders">
-      <div class="remote-slider-block">
-        <div class="slider-header">
-          <span class="control-label">Brightness</span>
-          <span class="slider-val" id="val-brightness-anim">8 / 8</span>
-        </div>
-        <div class="slider-stepper-row">
-          <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
-          <input type="range" id="slider-brightness-anim" class="ios-slider" min="1" max="8" value="8" aria-label="Brightness level">
-          <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
-        </div>
+  <div id="anim-controls" class="remote-panel control-grid hidden" data-view-panel="animation">
+    <div class="control-card remote-slider-block">
+      <div class="control-card__header slider-header">
+        <span class="control-card__icon" aria-hidden="true">☀</span>
+        <span class="control-label">Brightness</span>
+        <span class="slider-val" id="val-brightness-anim">8 / 8</span>
       </div>
-      <div class="remote-slider-block">
-        <div class="slider-header">
-          <span class="control-label">Speed</span>
-          <span class="slider-val" id="val-speed">50%</span>
-        </div>
-        <div class="slider-stepper-row">
-          <button class="btn btn-step" type="button" data-step-speed="-1" aria-label="Decrease speed">−</button>
-          <input type="range" id="slider-speed" class="ios-slider" min="0" max="100" value="50" aria-label="Animation speed">
-          <button class="btn btn-step" type="button" data-step-speed="1" aria-label="Increase speed">+</button>
-        </div>
+      <div class="slider-stepper-row">
+        <button class="btn btn-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">−</button>
+        <input type="range" id="slider-brightness-anim" class="ios-slider mint-slider" min="1" max="8" value="8" aria-label="Brightness level">
+        <button class="btn btn-step" type="button" data-step-brightness="1" aria-label="Increase brightness">+</button>
+      </div>
+    </div>
+    <div class="control-card remote-slider-block">
+      <div class="control-card__header slider-header">
+        <span class="control-card__icon" aria-hidden="true">≋</span>
+        <span class="control-label">Speed</span>
+        <span class="slider-val" id="val-speed">50%</span>
+      </div>
+      <div class="slider-stepper-row">
+        <button class="btn btn-step" type="button" data-step-speed="-1" aria-label="Decrease speed">−</button>
+        <input type="range" id="slider-speed" class="ios-slider mint-slider" min="0" max="100" value="50" aria-label="Animation speed">
+        <button class="btn btn-step" type="button" data-step-speed="1" aria-label="Increase speed">+</button>
       </div>
     </div>
 
-    <div id="animation-panel" class="remote-anim-zone">
+    <div id="animation-panel" class="control-card remote-anim-zone">
       <button id="anim-mode-picker-btn" class="anim-mode-picker-btn" type="button" aria-haspopup="dialog">
+        <span class="control-card__icon anim-mode-icon" aria-hidden="true">✦</span>
         <span class="anim-mode-hero-num" id="anim-mode-hero-num">32</span>
         <span class="anim-mode-picker-copy">
           <span class="anim-mode-hero-name" id="anim-mode-hero-name">Counter Spin</span>
@@ -190,7 +223,7 @@
 
       <div class="animation-select-row">
         <button class="btn btn-step" type="button" onclick="stepMode(-1)" aria-label="Previous mode">−</button>
-        <div class="anim-stepper-readout" id="anim-stepper-readout" aria-hidden="true">32 · Counter Spin</div>
+        <div class="anim-stepper-readout" id="anim-stepper-readout" aria-live="polite">32 · Counter Spin</div>
         <button class="btn btn-step" type="button" onclick="stepMode(1)" aria-label="Next mode">+</button>
       </div>
 
@@ -201,13 +234,21 @@
           Add
         </button>
       </div>
-      <div id="favorites-grid" class="favorites-grid favorites-grid-remote"></div>
+      <div id="favorites-grid" class="favorites-grid favorites-grid-remote preset-row--anim"></div>
     </div>
 
     <select id="anim-dropdown" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
     <input type="search" id="mode-search" class="visually-hidden" tabindex="-1" aria-hidden="true">
     <div id="mode-list" class="visually-hidden" tabindex="-1" aria-hidden="true"></div>
   </div>
+
+  <button id="power-btn" class="btn power-remote-btn power-cta is-unavailable" type="button" aria-label="Power" aria-pressed="false">
+    <svg class="power-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 3v6"></path>
+      <path d="M7.05 5.64a8 8 0 1 0 9.9 0"></path>
+    </svg>
+    <span class="power-cta-label">Power On</span>
+  </button>
 
 </section>
 
