@@ -2220,7 +2220,8 @@ input[type="range"]::-webkit-slider-thumb {
   font-variant-numeric: tabular-nums;
 }
 
-#animation-panel.control-card {
+#animation-panel.control-card,
+#color-panel.control-card {
   grid-column: 1 / -1;
 }
 
@@ -2314,8 +2315,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--bg-elevated);
 }
 
-.preset-row--anim .fav-chip.active,
-.favorites-grid-remote .fav-chip.active {
+.preset-row--anim .preset-tile.active {
   border-color: var(--accent);
   box-shadow: 0 0 12px var(--accent-glow);
 }

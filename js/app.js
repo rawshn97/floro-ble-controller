@@ -172,6 +172,7 @@ function updatePreviewChrome() {
   if (animPreviewName) {
     animPreviewName.textContent = getModeName(activeModeVal);
   }
+  highlightColorPresets();
   refreshSceneGauge();
 }
 
@@ -758,10 +759,11 @@ function saveFavorites() {
 function renderFavorites() {
   favoritesGrid.innerHTML = '';
   favorites.forEach((fav) => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
+    const chip = document.createElement('div');
     chip.className = `preset-tile${fav.mode === activeModeVal ? ' active' : ''}`;
     chip.setAttribute('data-mode', fav.mode);
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
     chip.setAttribute('aria-label', fav.label);
     chip.title = fav.label;
 
@@ -771,6 +773,12 @@ function renderFavorites() {
     chip.appendChild(labelSpan);
 
     chip.addEventListener('click', () => setMode(fav.mode));
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setMode(fav.mode);
+      }
+    });
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -829,42 +837,49 @@ function renderColorPresets() {
   if (!colorPresetsRow) return;
   colorPresetsRow.innerHTML = '';
   if (colorPresets.length === 0) {
-    colorPresetsRow.classList.add('hidden');
+    colorPresetSection?.classList.add('hidden');
     return;
   }
-  colorPresetsRow.classList.remove('hidden');
+  colorPresetSection?.classList.remove('hidden');
 
   colorPresets.forEach((preset, index) => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'color-preset-chip';
+    const chip = document.createElement('div');
+    const isSelected = preset.hex.toLowerCase() === activeColor.toLowerCase();
+    chip.className = `preset-tile${isSelected ? ' selected' : ''}`;
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
     chip.setAttribute('aria-label', preset.label);
-
-    const swatch = document.createElement('span');
-    swatch.className = 'color-preset-swatch';
-    swatch.style.background = preset.hex;
+    chip.title = preset.label;
 
     const label = document.createElement('span');
-    label.className = 'color-preset-label';
-    label.textContent = preset.label;
-
-    chip.appendChild(swatch);
+    label.className = 'preset-tile-label';
+    label.textContent = truncatePresetLabel(preset.label);
     chip.appendChild(label);
 
-    chip.addEventListener('click', () => {
+    const applyPreset = () => {
       document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
       colorPicker.setHex(preset.hex, { commit: false });
       activeColor = updateNeonThemeColor(preset.hex, themePanels);
       updatePreviewChrome();
       persistScene();
       applyColorSelection();
+      highlightColorPresets();
       haptic('light');
+    };
+
+    chip.addEventListener('click', applyPreset);
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        applyPreset();
+      }
     });
 
-    const removeBtn = document.createElement('span');
-    removeBtn.className = 'color-preset-remove';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'preset-tile-remove';
+    removeBtn.setAttribute('aria-label', `Remove ${preset.label}`);
     removeBtn.textContent = '×';
-    removeBtn.setAttribute('role', 'button');
     removeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       colorPresets.splice(index, 1);
@@ -874,6 +889,15 @@ function renderColorPresets() {
     chip.appendChild(removeBtn);
 
     colorPresetsRow.appendChild(chip);
+  });
+}
+
+function highlightColorPresets() {
+  if (!colorPresetsRow) return;
+  colorPresetsRow.querySelectorAll('.preset-tile').forEach((chip, index) => {
+    const preset = colorPresets[index];
+    if (!preset) return;
+    chip.classList.toggle('selected', preset.hex.toLowerCase() === activeColor.toLowerCase());
   });
 }
 
@@ -933,6 +957,17 @@ document.getElementById('quick-add-fav')?.addEventListener('click', () => {
     modeSegAnimation.click();
   }
   window.addCurrentToFavorites?.();
+});
+
+document.getElementById('btn-preset-search-anim')?.addEventListener('click', () => {
+  if (displayView !== 'animation') {
+    modeSegAnimation.click();
+  }
+  window.openModePickerSheet?.();
+});
+
+document.getElementById('btn-preset-search-solid')?.addEventListener('click', () => {
+  document.getElementById('palette-toggle')?.click();
 });
 
 document.getElementById('quick-settings')?.addEventListener('click', () => {

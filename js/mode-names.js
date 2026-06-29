@@ -9,7 +9,7 @@
  * Curated names below; official strings noted where mapped by convention.
  */
 const MODE_NAME_LIST = [
-  'Solid Color',
+  'Static Color',
   'Blink Mode',
   'Soft Pulse',
   'Slow Blink',
@@ -225,7 +225,7 @@ export function formatModeLabel(mode, { compact = false } = {}) {
   const num = Number(mode);
   const name = getModeName(num);
   if (num === 1) {
-    return compact ? 'Solid Color' : '1 · Solid Color';
+    return compact ? 'Static Color' : '1 · Static Color';
   }
   return compact ? name : `${num} · ${name}`;
 }
