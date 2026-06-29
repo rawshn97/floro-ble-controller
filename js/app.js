@@ -180,6 +180,13 @@ function syncRemotePanels() {
   const isSolid = displayView === 'solid';
   solidControls?.classList.toggle('hidden', !isSolid);
   animControls?.classList.toggle('hidden', isSolid);
+  updateColorPresetSectionVisibility();
+}
+
+function updateColorPresetSectionVisibility() {
+  if (!colorPresetSection) return;
+  const show = displayView === 'solid' && colorPresets.length > 0;
+  colorPresetSection.classList.toggle('hidden', !show);
 }
 
 let colorLiveTimeout = null;
@@ -836,16 +843,14 @@ function saveColorPresets() {
 function renderColorPresets() {
   if (!colorPresetsRow) return;
   colorPresetsRow.innerHTML = '';
-  if (colorPresets.length === 0) {
-    colorPresetSection?.classList.add('hidden');
-    return;
-  }
-  colorPresetSection?.classList.remove('hidden');
+  updateColorPresetSectionVisibility();
+  if (colorPresets.length === 0) return;
 
   colorPresets.forEach((preset, index) => {
     const chip = document.createElement('div');
     const isSelected = preset.hex.toLowerCase() === activeColor.toLowerCase();
     chip.className = `preset-tile${isSelected ? ' selected' : ''}`;
+    chip.style.background = preset.hex;
     chip.setAttribute('role', 'button');
     chip.setAttribute('tabindex', '0');
     chip.setAttribute('aria-label', preset.label);
@@ -964,10 +969,6 @@ document.getElementById('btn-preset-search-anim')?.addEventListener('click', () 
     modeSegAnimation.click();
   }
   window.openModePickerSheet?.();
-});
-
-document.getElementById('btn-preset-search-solid')?.addEventListener('click', () => {
-  document.getElementById('palette-toggle')?.click();
 });
 
 document.getElementById('quick-settings')?.addEventListener('click', () => {

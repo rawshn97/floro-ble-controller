@@ -509,6 +509,11 @@ body.sheet-open { overflow: hidden; }
 
 .remote-panel.hidden { display: none !important; }
 
+#solid-controls.remote-panel {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
 /* Static: brightness 20% + color 80% */
 
 .solid-layout {
@@ -534,8 +539,19 @@ body.sheet-open { overflow: hidden; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
-  margin-bottom: 6px;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.brightness-header-icon-only {
+  justify-content: center;
+}
+
+.brightness-card .brightness-icon-lg {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 22px;
 }
 
 .brightness-card .control-label {
@@ -757,6 +773,57 @@ body.sheet-open { overflow: hidden; }
 
 .preset-row--solid {
   width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  align-content: start;
+}
+
+.solid-presets-dock {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.solid-presets-dock .preset-row--solid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 2px;
+}
+
+.preset-row--solid .preset-tile {
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 1;
+  min-height: 72px;
+  padding: 6px 6px 8px;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.preset-row--solid .preset-tile-label {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.preset-row--solid .preset-tile.selected {
+  background-color: inherit;
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--accent-rgba), 0 0 12px var(--accent-glow);
+}
+
+.preset-row--solid .preset-tile.selected .preset-tile-remove {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .preset-row--anim {
@@ -807,7 +874,7 @@ body.sheet-open { overflow: hidden; }
 }
 
 .preset-tile.active,
-.preset-tile.selected {
+.preset-row--anim .preset-tile.selected {
   background: var(--accent);
   color: var(--accent-on);
   box-shadow: 0 0 12px var(--accent-glow);
