@@ -105,7 +105,7 @@ const consoleBody = document.getElementById('console-body');
 const compatBanner = document.getElementById('compat-banner');
 const appVersionEl = document.getElementById('app-version');
 
-const controlPanels = [solidControls, colorPanel, animControls, animationPanel];
+const controlPanels = [solidControls, colorPanel, colorPresetSection, animControls, animationPanel];
 const themePanels = [remoteDock, ...controlPanels];
 
 let isPoweredOn = savedScene.isPoweredOn;
@@ -185,8 +185,7 @@ function syncRemotePanels() {
 
 function updateColorPresetSectionVisibility() {
   if (!colorPresetSection) return;
-  const show = displayView === 'solid' && colorPresets.length > 0;
-  colorPresetSection.classList.toggle('hidden', !show);
+  colorPresetSection.classList.toggle('hidden', displayView !== 'solid');
 }
 
 let colorLiveTimeout = null;
@@ -865,11 +864,20 @@ function saveColorPresets() {
 
 function renderColorPresets() {
   if (!colorPresetsRow) return;
-  colorPresetsRow.innerHTML = '';
   updateColorPresetSectionVisibility();
   const max = getMaxColorPresets();
   const visiblePresets = colorPresets.slice(0, max);
-  if (visiblePresets.length === 0) return;
+  colorPresetsRow.innerHTML = '';
+  colorPresetsRow.classList.remove('is-empty');
+
+  if (visiblePresets.length === 0) {
+    colorPresetsRow.classList.add('is-empty');
+    const hint = document.createElement('span');
+    hint.className = 'color-presets-empty-hint';
+    hint.textContent = 'Save a preset from your custom color';
+    colorPresetsRow.appendChild(hint);
+    return;
+  }
 
   visiblePresets.forEach((preset, index) => {
     const chip = document.createElement('div');
