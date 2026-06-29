@@ -824,18 +824,10 @@ function removeFavorite(mode) {
   log(`Removed Mode ${mode} from presets.`, 'info');
 }
 
-const COLOR_PRESET_MAX_ROWS = 2;
-
-function getPresetGridColumns() {
-  if (!colorPresetsRow) return 3;
-  const cols = getComputedStyle(colorPresetsRow).gridTemplateColumns;
-  if (!cols || cols === 'none') return 3;
-  const count = cols.trim().split(/\s+/).length;
-  return count > 0 ? count : 3;
-}
+const COLOR_PRESET_MAX_COUNT = 12;
 
 function getMaxColorPresets() {
-  return getPresetGridColumns() * COLOR_PRESET_MAX_ROWS;
+  return COLOR_PRESET_MAX_COUNT;
 }
 
 function trimColorPresetsToMax() {
