@@ -94,12 +94,14 @@ const animModeHeroNum = document.getElementById('anim-mode-hero-num');
 const animModeHeroName = document.getElementById('anim-mode-hero-name');
 const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
 const animStepperReadout = document.getElementById('anim-stepper-readout');
+const animModePickerBtn = document.getElementById('anim-mode-picker-btn');
 
 const modeHeroEls = {
   num: animModeHeroNum,
   name: animModeHeroName,
   meta: animModeHeroMeta,
   readout: animStepperReadout,
+  pickerBtn: animModePickerBtn,
 };
 
 const consoleBody = document.getElementById('console-body');
@@ -181,6 +183,14 @@ function syncRemotePanels() {
   const isSolid = displayView === 'solid';
   solidControls?.classList.toggle('hidden', !isSolid);
   animControls?.classList.toggle('hidden', isSolid);
+  if (solidControls) {
+    solidControls.toggleAttribute('hidden', !isSolid);
+    solidControls.toggleAttribute('inert', !isSolid);
+  }
+  if (animControls) {
+    animControls.toggleAttribute('hidden', isSolid);
+    animControls.toggleAttribute('inert', isSolid);
+  }
   updateColorPresetSectionVisibility();
 }
 
@@ -407,10 +417,17 @@ function renderModeList(listEl, { query = '', activeMode = 1 } = {}) {
 
 function updateModeHero(heroEls, mode) {
   const num = Number(mode);
+  const modeName = getModeName(num);
   if (heroEls.num) heroEls.num.textContent = String(num);
-  if (heroEls.name) heroEls.name.textContent = getModeName(num);
+  if (heroEls.name) heroEls.name.textContent = modeName;
   if (heroEls.meta) heroEls.meta.textContent = `Mode ${num} of ${MODE_COUNT}`;
   if (heroEls.readout) heroEls.readout.textContent = formatModeLabel(num);
+  if (heroEls.pickerBtn) {
+    heroEls.pickerBtn.setAttribute(
+      'aria-label',
+      `Select animation mode: ${modeName}, mode ${num} of ${MODE_COUNT}`
+    );
+  }
   updatePreviewChrome();
 }
 

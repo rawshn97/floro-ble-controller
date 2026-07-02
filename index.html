@@ -77,11 +77,11 @@
 
     <section class="hero-zone" aria-label="Scene readout">
       <div class="mode-rail seg-control" role="tablist" aria-label="Display mode">
-        <button id="mode-seg-solid" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-view" aria-label="Static color mode">Static</button>
-        <button id="mode-seg-animation" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="animation-view" aria-label="Dynamic mode">Dynamic</button>
+        <button id="mode-seg-solid" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="solid-controls" aria-label="Static color mode">Static</button>
+        <button id="mode-seg-animation" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="anim-controls" aria-label="Dynamic mode">Dynamic</button>
       </div>
 
-      <div id="scene-gauge" class="scene-gauge" role="img" aria-label="Scene readout">
+      <div id="scene-gauge" class="scene-gauge" role="group" aria-label="Scene readout">
         <svg class="scene-gauge__svg" viewBox="0 0 200 200" aria-hidden="true">
           <path class="scene-gauge__track" d="M 40 160 A 60 60 0 1 1 160 160" fill="none"></path>
           <path class="scene-gauge__arc" d="M 40 160 A 60 60 0 1 1 160 160" fill="none"></path>
@@ -89,10 +89,10 @@
         <div class="scene-gauge__center">
           <span id="scene-gauge-value" class="scene-gauge__value">8</span>
           <span id="scene-gauge-sub" class="scene-gauge__sub">Brightness</span>
-          <div id="solid-view" class="view-panel is-active gauge-preview" role="tabpanel" aria-labelledby="mode-seg-solid">
+          <div id="solid-view" class="view-panel is-active gauge-preview" aria-hidden="true">
             <span id="solid-preview-swatch" class="gauge-preview-swatch" aria-hidden="true"></span>
           </div>
-          <div id="animation-view" class="view-panel gauge-preview" role="tabpanel" aria-labelledby="mode-seg-animation" hidden>
+          <div id="animation-view" class="view-panel gauge-preview" aria-hidden="true" hidden>
             <span id="anim-preview-name" class="gauge-preview-label" aria-hidden="true">Counter Spin</span>
           </div>
         </div>
@@ -129,7 +129,7 @@
 
   <section id="remote-dock" class="remote-dock" aria-label="Sign controls">
 
-    <div id="solid-controls" class="remote-panel" data-view-panel="solid">
+    <div id="solid-controls" class="remote-panel" data-view-panel="solid" role="tabpanel" aria-labelledby="mode-seg-solid">
       <div class="solid-layout">
         <div class="control-card brightness-card" aria-label="Brightness" data-level="8" style="--brightness-level: 8">
           <div class="brightness-stepper" aria-live="polite">
@@ -187,7 +187,7 @@
       <div id="color-presets-row" class="color-swatches preset-row--solid"></div>
     </div>
 
-    <div id="anim-controls" class="remote-panel hidden" data-view-panel="animation">
+    <div id="anim-controls" class="remote-panel hidden" data-view-panel="animation" role="tabpanel" aria-labelledby="mode-seg-animation" hidden inert>
       <div class="control-card slider-card">
         <div class="control-card__header slider-header">
           <span class="control-card__icon" aria-hidden="true">☀</span>
@@ -215,7 +215,7 @@
       </div>
 
       <div id="animation-panel" class="control-card anim-card">
-        <button id="anim-mode-picker-btn" class="anim-mode-picker-btn" type="button" aria-haspopup="dialog">
+        <button id="anim-mode-picker-btn" class="anim-mode-picker-btn" type="button" aria-haspopup="dialog" aria-label="Select animation mode">
           <span class="control-card__icon anim-mode-icon" aria-hidden="true">✦</span>
           <span class="anim-mode-hero-num" id="anim-mode-hero-num">32</span>
           <span class="anim-mode-picker-copy">
