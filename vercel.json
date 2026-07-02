@@ -1,9 +1,22 @@
 {
+  "redirects": [
+    {
+      "source": "/manifest.json",
+      "destination": "/manifest.webmanifest",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         { "key": "Permissions-Policy", "value": "bluetooth=(self)" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" }
       ]
     }
   ]

@@ -19,17 +19,17 @@
         document.head.appendChild(b);
       }
       window.__FLORO_PWA_BASE = p.indexOf('/sign-controller') === 0 ? '/sign-controller/' : './';
+      var manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.id = 'pwa-manifest';
+      manifestLink.href = window.__FLORO_PWA_BASE + 'manifest.webmanifest';
+      document.head.appendChild(manifestLink);
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
-  <link rel="manifest" href="./manifest.webmanifest" id="pwa-manifest">
   <script>
     (function () {
-      var link = document.getElementById('pwa-manifest');
-      if (link && window.__FLORO_PWA_BASE) {
-        link.href = window.__FLORO_PWA_BASE + 'manifest.webmanifest';
-      }
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(window.__FLORO_PWA_BASE + 'sw.js', { scope: window.__FLORO_PWA_BASE }).then(
           function (reg) { console.log('ServiceWorker registered:', reg.scope); },

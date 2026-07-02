@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v50';
+const CACHE_NAME = 'floro-controller-v51';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,12 @@ const ASSETS = [
   './icons/apple-touch-icon.png',
   './logo.png',
 ];
+
+function isNetworkFirstRequest(request) {
+  if (request.mode === 'navigate') return true;
+  const path = new URL(request.url).pathname;
+  return path.endsWith('/manifest.webmanifest') || path.endsWith('/sw.js');
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -37,6 +43,26 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  if (isNetworkFirstRequest(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
@@ -49,12 +75,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-          return caches.match(event.request);
-        });
+        .catch(() => caches.match(event.request));
     })
   );
 });

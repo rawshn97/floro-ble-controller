@@ -11,6 +11,9 @@
   "background_color": "#020D0A",
   "theme_color": "#020D0A",
   "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "/sign-controller/icons/icon-192.png",
