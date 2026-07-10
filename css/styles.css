@@ -770,23 +770,23 @@ body.sheet-open { overflow: hidden; }
 /* ── Remote dock (legacy overrides) ── */
 
 .remote-dock:has(#solid-controls:not(.hidden)) {
-  gap: 8px;
-  padding-bottom: 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  gap: 0;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .remote-dock:has(#solid-controls:not(.hidden)) #solid-controls {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 8px;
 }
 
-.remote-dock:has(#solid-controls:not(.hidden)) #color-preset-section:not(.hidden) {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  min-height: 88px;
-}
+/* color-preset-section is now inside solid-controls/solid-layout */
+
 
 /* ── Bottom Action Dock (Fixed Power Bar) ── */
 
@@ -831,8 +831,14 @@ body.sheet-open { overflow: hidden; }
 .remote-panel.hidden { display: none !important; }
 
 #solid-controls.remote-panel {
-  flex: 0 0 auto;
-  overflow: visible;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  gap: 0;
+  padding-bottom: 8px;
 }
 
 /* Static: horizontal M3 brightness + full-width color */
@@ -1246,9 +1252,9 @@ body.sheet-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   overflow: visible;
-  margin-top: 8px;
+  margin-top: 0;
   padding: 10px 12px;
-  --preset-indent: calc(clamp(68px, 20%, 22%) + 10px);
+  --preset-indent: 0px;
 }
 
 .solid-presets-dock:not(.hidden) {
@@ -1261,8 +1267,8 @@ body.sheet-open { overflow: hidden; }
 }
 
 .solid-presets-dock .preset-row--solid {
-  margin-left: var(--preset-indent);
-  width: calc(100% - var(--preset-indent));
+  margin-left: 0;
+  width: 100%;
   min-width: 0;
   min-height: 0;
   overflow-x: auto;
@@ -2390,9 +2396,9 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
   .solid-presets-dock {
-    margin-top: 6px;
+    margin-top: 0;
     padding: 8px 10px;
-    --preset-indent: calc(clamp(62px, 20%, 22%) + 10px);
+    --preset-indent: 0px;
   }
 
   .bottom-action-dock .power-cta {
