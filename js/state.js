@@ -1,7 +1,7 @@
 const STORAGE_KEY_SCENE = 'floro_scene_state';
 
 const SCENE_DEFAULTS = {
-  displayView: 'solid',
+  displayView: 'animation',
   isPoweredOn: true,
   brightness: 8,
   speed: 50,

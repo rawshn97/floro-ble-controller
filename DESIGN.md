@@ -7,7 +7,391 @@
 - **Space/industry:** Smart lighting / IoT controller apps (peers: Philips Hue, Govee Home, Apple Home).
 - **Project type:** Single-screen utility PWA with installable home-screen behavior.
 
-## North Star
+## Material 3 Minimal — Active design (2026-07-09)
+
+**Status:** This section supersedes Mint Remote visual direction below for the next implementation pass. BLE behavior, scene persistence, sheets, and PWA contracts are unchanged unless noted here.
+
+### North Star (revised)
+
+**Calm control, fast thumbs.** Material 3 surfaces, no glow or arc hero. Users flip colors and modes often — one-tap access to recents on the main surface; full palette in a sheet.
+
+### Memorable thing
+
+**The current color is always obvious** — one large squircle shows what the sign is showing; recents are one tap away.
+
+### Aesthetic
+
+- **Direction:** Material 3 minimal, **compact** (not airy). Icons carry meaning so rows stay short.
+- **Decoration:** None on canvas — tonal `surface-container` cards only
+- **Accent:** Restrained teal primary `#4DB6AC` on controls. **No global UI retint** to selected neon; color feedback is on squircles only
+- **Typography:** [Roboto Flex](https://fonts.google.com/specimen/Roboto+Flex) UI, Roboto Mono activity log
+- **Icons:** [Material Symbols Outlined](https://fonts.google.com/icons) 24dp default, 20dp inline in dense rows
+
+### Density and spacing (fix empty whitespace)
+
+Previous mock had oversized cards and label-heavy blocks. Target **Google Home / Pixel Settings** density: 48dp list rows, 12px card padding, 8px vertical gaps.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--space-section` | 8px | Gap between cards / strip |
+| `--space-card` | 12px | Card internal padding |
+| `--row-height` | 48px | Icon + label + control rows |
+| `--strip-padding` | 12px 16px | Global color strip |
+| `--squircle-hero` | 48px | Hero (was 56 — tighter) |
+| `--squircle-quick` | 40px | Recents in strip |
+
+**Layout shift:** Replace tall "readout card + separate fine-tune card" with **icon-led control rows** (one row per parameter). Segmented adjust context stays, but the active parameter row highlights; inactive rows stay visible at 48dp with icon, name, value, ±.
+
+### Iconography (Material Symbols Outlined)
+
+Icons reduce text, fill horizontal space intentionally, and survive localization. Load once in `index.html`:
+
+```html
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+```
+
+| Surface | Icon | Symbol name |
+|---------|------|-------------|
+| Settings | ⋮ | `more_vert` |
+| Connect banner | Bluetooth | `bluetooth_searching` |
+| Static tab | Solid | `palette` |
+| Dynamic tab | Animation | `animation` |
+| Color sheet / hero | Color | `palette` |
+| Custom picker | Tune | `tune` |
+| More colors | Add | `add` |
+| Brightness | Sun | `brightness_6` |
+| Speed | Motion | `speed` |
+| Mode | Effects | `auto_awesome` |
+| Browse modes | Search | `search` |
+| Save favorite | Bookmark | `bookmark_add` |
+| Save color preset | Label | `label` |
+| Power on | Power | `power_settings_new` |
+| Decrease / increase | − / + | `remove` / `add` (icon buttons, not text) |
+
+**Rules:**
+
+- Leading icon in every control row (24dp, `on-surface-variant`)
+- Tab segments may show icon + short label (`Static`, `Dynamic`) or icon-only under 360px width
+- Do not add decorative icons — every icon maps to a control
+- Icon buttons: 40×40dp touch target, `state-layer` on press
+
+### Color identity — names, types, and swatch differentiation
+
+Users must tell **neon**, **saved custom**, and **unsaved custom** apart at a glance. Color alone is not enough when two customs are similar hues.
+
+#### Resolution order (`resolveColorLabel(hex)`)
+
+1. **Saved preset** (`floro_color_presets`) → user `label`
+2. **Neon catalog** (fixed 8 hex → name map in `js/colors.js`) → e.g. `Ruby Red`
+3. **Fallback** → uppercase hex `#FF00FF`
+
+#### Swatch variants (squircle)
+
+| Type | Class | Visual | Label under swatch |
+|------|-------|--------|-------------------|
+| **Neon** | `.swatch--neon` | Solid fill only | Curated name (max 8 chars) |
+| **Saved custom** | `.swatch--saved` | Fill + **solid** 1.5px `outline-variant` ring | User preset name |
+| **Unsaved custom** | `.swatch--custom` | Fill + **dashed** 1.5px `outline-variant` ring + small `tune` icon badge (12dp, bottom-right) | Hex or "Custom" |
+| **Selected (any)** | `.is-selected` | 2px `on-surface` ring + gap | — |
+
+Hero row shows: `[48px squircle] [name] [type subtitle]` — subtitle is `Neon` | `Saved` | `#AABBCC` for unsaved custom.
+
+#### Recent strip with labels
+
+Each recent is a **column**: squircle + 8-character label underneath (not floating whitespace).
+
+```
+  [hero]     [○]      [○]      [○]     [+]
+ Ruby Red  Violet   #E91E63  Green   More
+  neon      saved    custom   neon
+```
+
+Tap target includes label (whole column). Type styling follows rules above.
+
+#### Custom color naming flow
+
+| Step | User action | UI result |
+|------|-------------|-----------|
+| 1 | Drag custom picker | Live preview; hero shows **hex** + `swatch--custom` dashed ring; subtitle "Custom" |
+| 2 | Pause / commit | Added to recents with hex label until named |
+| 3 | Tap **Save preset** (label icon) | Modal: name required (max 32 chars), default suggestion from hex |
+| 4 | Confirm save | `floro_color_presets` entry; swatch becomes `swatch--saved`; label replaces hex in strip, recents, sheet |
+| 5 | Re-pick same hex later | `resolveColorLabel` returns saved name automatically |
+
+**Rename / delete:** long-press saved swatch in sheet → menu: Rename, Delete. Rename updates all UI surfaces showing that hex.
+
+**Neon never shows dashed ring** — catalog colors are first-class, not "custom."
+
+### Information architecture (overview)
+
+```
+Top app bar: FloRo · Settings (more_vert)
+Connect banner (bluetooth_searching + Connect) — compact 40dp
+[ palette Static | animation Dynamic ]     ← Dynamic default
+┌ Global color strip ──────────────────────┐
+│ palette [hero] Ruby Red · Neon          │
+│ [○][○][○][○][+]  label under each       │
+└────────────────────────────────────────┘
+── Static ──
+  brightness_6  Brightness    8   − +
+  Power (power_settings_new, pinned)
+── Dynamic ──
+  [ Mode | Brightness | Speed ]  ← compact segmented
+  auto_awesome  Mode      32 Counter  − +   ← active row highlighted
+  brightness_6  Bright   8              − +
+  speed         Speed   50%             − +
+  search        Browse modes            >
+  bookmark      Favorites ····· scroll
+  Power (pinned)
+```
+
+No arc gauge, no quick-action chip row, no vertical mode rail, no 4×2 neon grid on main.
+
+### Launch and session defaults
+
+| Situation | Tab shown | Adjust context | Mode / color |
+|-----------|-----------|----------------|--------------|
+| **First install** (no `floro_scene_state`) | **Dynamic** | Mode | `lastAnimationMode` 32, color `#ff0000` |
+| **Return visit** | Restored `displayView` from localStorage | Mode if Dynamic | Restored scene snapshot |
+| **After connect / power-on** | **Dynamic** (restore) | Mode | `alignUIForPowerOnRestore()` — unchanged |
+| **User picks solid color** | Switches to **Static** | n/a | `activeMode` → 1 |
+
+**Code:** `js/state.js` → `SCENE_DEFAULTS.displayView: 'animation'`. HTML default tab: Dynamic selected, `#anim-controls` visible.
+
+### Global color strip (fast-flip)
+
+Sits **below** Static/Dynamic tabs, **above** tab panel content. Visible on **both** tabs so frequent color flippers on Dynamic do not switch tabs for recents.
+
+```
+┌──────────────────────────────────────────┐
+│ palette [hero] Ruby Red · Neon            │
+│  Ruby   Violet  #E91E   Green    More    │  ← 8 char labels, typed swatches
+│  [○]     [○]     [○]     [○]     [+]     │
+└──────────────────────────────────────────┘
+```
+
+| Target | Tap behavior |
+|--------|----------------|
+| Hero squircle or name row | Open Color sheet |
+| Recent squircle (1–4) | Apply color immediately (see flows below) |
+| `+` squircle | Open Color sheet scrolled to Neon / Custom |
+
+Static tab has **brightness only** in its panel. Dynamic has **no color controls** in its panel; strip handles all color.
+
+### Interaction flows
+
+#### 1. App open (cold start)
+
+1. Load `floro_scene_state` + `floro_recent_colors`
+2. Render global color strip from `activeColor` + top 4 recents
+3. If no saved state → **Dynamic** tab, Mode context, mode 32
+4. If saved state → restore tab, brightness, speed, color, mode
+5. `tryAutoReconnect()` if supported (unchanged)
+6. Connect banner if offline
+
+#### 2. Recent squircle tap (main strip)
+
+Applies to strip on Static **or** Dynamic tab.
+
+1. Set `activeColor` to recent hex
+2. `resolveColorLabel(hex)` → update hero name + subtitle (Neon / Saved / hex)
+3. Apply correct swatch class (`neon` | `saved` | `custom`) on hero + tapped recent
+4. Ring selected column in strip
+4. If sign was in animation (`activeMode !== 1`): `prepareSolidModeForColorPick()` → UI **Static** tab, mode 1 local, flag mode send
+5. Debounced BLE: `C=…` then `M1` if needed (existing `sendColorToSignLive`)
+6. `pushRecent(hex)` — move to front, dedupe
+7. Re-render strip (max 4 recents + hero)
+8. `persistScene()`; light haptic
+
+**Not connected:** steps 1–3 + 7 still run; BLE steps no-op; activity log on failed write if user connects later scene restores.
+
+#### 3. Neon squircle tap (inside Color sheet)
+
+1. User opened sheet via hero, `+`, or (future) overflow
+2. Tap neon squircle
+3. Same as recent tap (steps 1–8 above)
+4. **Close sheet**
+5. If user was on Dynamic before sheet → ends on **Static** tab (solid mode)
+
+#### 4. Saved preset tap (sheet → Your colors)
+
+1. Tap saved preset squircle
+2. Same apply pipeline as neon (steps 2–8 in recent flow)
+3. Close sheet
+4. Preset does not duplicate into recents unless `pushRecent` runs on commit (it should — same as any pick)
+
+#### 5. Custom color pick (HSL picker in sheet)
+
+**Live adjust** (drag 2D plane, hue strip, sliders, hex field):
+
+| Phase | UI | BLE | Tab |
+|-------|-----|-----|-----|
+| Pointer down / drag | Hero preview in sheet updates; optional live preview on strip hero after 150ms idle | `sendColorToSignLive` debounced 120ms | If `activeMode !== 1`: switch to **Static** immediately (`prepareSolidModeForColorPick`) |
+| Pause 150ms (`scheduleCommit`) | `pushRecent` → `onColorCommit` | Immediate color + mode 1 if needed | Static tab |
+| Tap **Done** | Close sheet only; color already committed on last pause | — | Stay on Static if color forced solid |
+
+**After custom commit:**
+
+1. `activeColor` = picked hex
+2. Hero + strip update; custom hex in recents (front)
+3. `applyColorSelection()` — if already mode 1, `syncColorToSign()` only
+4. No auto-open Save preset modal; user taps **Save preset** in sheet if they want a named slot
+5. Light haptic on commit
+
+**Edge cases:**
+
+- **Drag then dismiss sheet without pause:** last live value stands if debounce already sent; if user swipes sheet closed mid-drag, treat close as commit (flush `scheduleCommit` on sheet close)
+- **Invalid hex:** field shakes, revert to `currentHex`; no BLE send
+- **Same as last color:** still refresh recents order (move to front)
+- **Power off:** picker works for UI state; BLE blocked until power on
+- **White (#FFFFFF):** squircle gets `outline-variant` border for visibility
+
+#### 6. Save color preset
+
+1. User has custom (or any) color active in sheet
+2. Tap **Save preset** → `#color-preset-modal`
+3. Enter name → confirm
+4. Append to `floro_color_presets` (cap enforced — evict oldest with log)
+5. Re-render **Your colors** in sheet; do not add second row on main
+6. Modal closes; sheet stays open; user taps Done when finished
+
+#### 7. Static ↔ Dynamic tab switch
+
+| From → To | UI | BLE |
+|-----------|-----|-----|
+| Dynamic → Static | Show brightness card; strip unchanged | If `activeMode !== 1`: `setMode(1)`, send solid |
+| Static → Dynamic | Show adjust context + readout | If was mode 1: `setMode(lastAnimationMode)` |
+
+Color strip **never hides** on tab switch.
+
+#### 8. Dynamic — Mode / Brightness / Speed cycling
+
+| Context | ± action | Wrap | BLE |
+|---------|----------|------|-----|
+| **Mode** | ±1 mode | 2↔200, **skip mode 1** | `M{n}` |
+| **Brightness** | ±1 step | 1↔8 | `B=n` |
+| **Speed** | ±5% (or 10%) | 0↔100 | `S=…` inverted wire |
+
+Favorite chip tap → set context Mode, apply mode, highlight chip.
+
+Browse all → mode picker sheet → on select, close sheet, update readout.
+
+#### 9. Connect / power-on (unchanged contracts)
+
+- **Connect + power on:** `restoreSceneToSign()` → **Dynamic** tab, saved animation mode, strip shows saved color (sign may animate; color state preserved for when user goes solid)
+- **Power off:** strip visible but dimmed; taps update UI only or no-op BLE
+- **Power on:** `setPowerState(true)` → `alignUIForPowerOnRestore()` → send full scene
+
+**Power on → animation 32 (typical first-run behavior):**
+
+1. User taps **Power On** while connected
+2. `alignUIForPowerOnRestore()` sets `displayView = 'animation'`, `activeMode` = `lastAnimationMode` (default **32** if never changed)
+3. UI lands on **Dynamic** tab; readout shows **32 · Counter Spin** (or saved mode name)
+4. `syncSceneToSign()` sends brightness, speed, color, then `M32` (or saved mode) last
+5. Physical sign boots into that animation — matches firmware tendency to show last mode on power-up
+
+If the user had been on mode 47 before power off, restore sends **47**, not 32. Mode 32 is the **default** from `SCENE_DEFAULTS.lastAnimationMode` and seed favorites, not a hard override every power cycle.
+
+**Connect without power toggle:** same restore path when `isPoweredOn` is true on connect (`onConnected` → `restoreSceneToSign()`).
+
+### Static panel
+
+Brightness card only. All color UI is in the **global color strip** + **Color sheet**.
+
+#### Color sheet (`#palette-sheet`)
+
+Sections top to bottom:
+
+1. **Neon** — 8 squircles, horizontal scroll
+2. **Your colors** — saved presets; squircle + delete
+3. **Recent** — full list (up to 8) from `floro_recent_colors`
+4. **Custom** — HSL picker (`js/color-picker.js`)
+5. **Save preset** — opens `#color-preset-modal`
+
+Sheet title: **Color**. On squircle pick: apply, close sheet, update global strip. On sheet close mid-custom-drag: flush pending commit.
+
+### Shape system — squircles
+
+All color touch targets use **squircles** (superellipse). One shape token for neon, custom, saved, and recent colors.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--shape-squircle` | `28%` border-radius on 1:1 box | CSS squircle approximation |
+| `--squircle-hero` | 48×48px | Current color in global strip |
+| `--squircle-quick` | 40×40px | Recents in global strip |
+| `--squircle-grid` | 44×44px | Neon + saved grids inside sheet |
+| `--swatch-label-size` | 10px / 500 | Caption under recent columns |
+
+**Selected state:** 2px `on-surface` ring + 2px gap (outline), no glow shadow.
+
+```css
+.swatch-squircle {
+  width: var(--squircle-size, 44px);
+  height: var(--squircle-size, 44px);
+  border-radius: var(--shape-squircle, 28%);
+  border: 2px solid transparent;
+  padding: 0;
+}
+.swatch-squircle.is-selected {
+  border-color: var(--md-sys-color-on-surface);
+  box-shadow: 0 0 0 2px var(--md-sys-color-surface-container);
+}
+.swatch-squircle.swatch--saved {
+  border: 1.5px solid var(--md-sys-color-outline-variant);
+}
+.swatch-squircle.swatch--custom {
+  border: 1.5px dashed var(--md-sys-color-outline-variant);
+}
+.swatch-squircle.swatch--custom::after {
+  /* 12dp tune badge, bottom-right — Material symbol or SVG */
+}
+```
+
+```css
+.control-row {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  gap: 12px;
+  padding: 0 12px;
+}
+.control-row .material-symbols-outlined {
+  font-size: 24px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+```
+
+### M3 color tokens (dark)
+
+| Token | Hex | Use |
+|-------|-----|-----|
+| `--md-sys-color-primary` | `#4DB6AC` | Filled buttons, slider active track |
+| `--md-sys-color-surface` | `#101414` | Page background |
+| `--md-sys-color-surface-container` | `#1B211F` | Cards |
+| `--md-sys-color-surface-container-high` | `#252B29` | Readout card, recents tray |
+| `--md-sys-color-on-surface` | `#E0E3E2` | Primary text |
+| `--md-sys-color-on-surface-variant` | `#BEC9C6` | Labels |
+| `--md-sys-color-outline-variant` | `#3F4947` | Dividers |
+
+### Feature preservation (unchanged)
+
+All v2.1.0 BLE behavior survives: connect/reconnect, power gating, Static/Dynamic logic, brightness/speed/mode, 200-mode picker, animation favorites, color presets, HSL picker, scene persistence, activity log, PWA install, wake lock, haptics. **Removed:** global `updateNeonThemeColor()` UI retint (squircle selection only).
+
+### Implementation notes
+
+| File | Change |
+|------|--------|
+| `index.html` | Global `#color-strip`; icon-led 48dp rows; Material Symbols font link |
+| `js/colors.js` | **New:** neon hex→name map + `resolveColorLabel(hex, presets)` |
+| `js/state.js` | `SCENE_DEFAULTS.displayView: 'animation'` |
+| `css/styles.css` | Compact spacing; swatch type variants; `.control-row` |
+| `js/app.js` | Strip columns with labels; swatch class from color type; rename preset |
+| `js/ui.js` | Squircle ring on selected color only (no global retint) |
+| `#palette-sheet` | Neon / Your colors / Recent / Custom; squatch + label grid |
+
+---
+
+## North Star (legacy Mint Remote — reference only)
 
 **Premium hardware remote energy** — not a BLE debug panel.
 
@@ -457,3 +841,12 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 | 2026-06-29 | Default accent mint, dynamic retint kept | North star unchanged: UI glows selected neon color |
 | 2026-06-29 | Feature Parity Matrix in UI_OVERHAUL_PLAN.md | Every v2.1.0 feature mapped before mint build; devex/QA acceptance contract |
 | 2026-06-29 | UI Rebuild v2 from scratch | Clean HTML/CSS; sr-only status chip; Connect quick-action shows connection; 20/80 static layout; scrollable dock; no power mirror; v38 cache |
+| 2026-07-09 | Material 3 minimal redesign | User rejected Mint Remote visual noise; M3 surfaces, Roboto Flex, no arc/glow |
+| 2026-07-09 | Color: hero squircle + 4 recents on main | Frequent color flippers; neon grid and saved row move to Color sheet only |
+| 2026-07-09 | Squircle shape system for all color targets | Unified 44/48/56dp squircles; ring selection, no global neon retint |
+| 2026-07-09 | Dynamic adjust context (Mode/Brightness/Speed) | One readout ± control; fine-tune sliders secondary; mode ± skips solid mode 1 |
+| 2026-07-09 | Global color strip below tabs | Recents reachable from Dynamic default without tab switch |
+| 2026-07-09 | Default launch tab: Dynamic | `SCENE_DEFAULTS.displayView: 'animation'`; first open matches animation-first use |
+| 2026-07-09 | Custom color: commit on pause + sheet close flush | Live BLE while dragging; Static tab when leaving animation; Done only closes |
+| 2026-07-09 | Material Symbols + 48dp control rows | Cut whitespace; icons replace verbose labels; compact density |
+| 2026-07-09 | Color swatch types: neon / saved / custom | Dashed ring + tune badge for unsaved custom; labels under recents; `resolveColorLabel` |

@@ -27,21 +27,8 @@ function accentOnColor(hexColor) {
 }
 
 export function updateNeonThemeColor(hexColor, panels) {
-  document.documentElement.style.setProperty('--neon-glow', hexColor);
-  document.documentElement.style.setProperty('--accent', hexColor);
-  document.documentElement.style.setProperty('--accent-on', accentOnColor(hexColor));
-  document.documentElement.style.setProperty('--neon-glow-rgba', `${hexColor}59`);
-  document.documentElement.style.setProperty('--accent-rgba', `${hexColor}59`);
-  document.documentElement.style.setProperty('--accent-muted', `${hexColor}26`);
-  document.documentElement.style.setProperty('--accent-dim', `${hexColor}2E`);
-  document.documentElement.style.setProperty('--accent-glow', `${hexColor}73`);
-
-  panels.forEach((panel) => {
-    if (!panel) return;
-    panel.style.boxShadow = `0 2px 20px ${hexColor}18`;
-    panel.style.borderColor = `${hexColor}40`;
-  });
-
+  /* M3: color feedback on squircles only — no global UI retint. */
+  void panels;
   return hexColor;
 }
 
@@ -77,49 +64,8 @@ export function updateArcGauge(gaugeEl, { value, max, label, sublabel, poweredOf
   }
 }
 
-/** Single hub for arc gauge readout updates */
-export function syncSceneGauge(state) {
-  const gaugeEl = document.getElementById('scene-gauge');
-  if (!gaugeEl) return;
-
-  const {
-    displayView = 'solid',
-    isPoweredOn = true,
-    brightness = 8,
-    speed = 50,
-    activeMode = 32,
-    connected = true,
-  } = state;
-
-  if (!connected || !isPoweredOn) {
-    updateArcGauge(gaugeEl, {
-      value: 0,
-      max: 1,
-      label: 'OFF',
-      sublabel: connected ? 'Powered off' : 'Offline',
-      poweredOff: true,
-    });
-    return;
-  }
-
-  if (displayView === 'solid') {
-    updateArcGauge(gaugeEl, {
-      value: brightness,
-      max: 8,
-      label: String(brightness),
-      sublabel: 'Brightness',
-      poweredOff: false,
-    });
-    return;
-  }
-
-  updateArcGauge(gaugeEl, {
-    value: speed,
-    max: 100,
-    label: String(activeMode),
-    sublabel: getModeName(Number(activeMode)),
-    poweredOff: false,
-  });
+export function syncSceneGauge(_state) {
+  /* Arc gauge removed in M3 layout. */
 }
 
 export function truncatePresetLabel(name, maxLen = 6) {
@@ -210,10 +156,12 @@ export function setDisplayView(
   const incoming = isSolid ? solidView : animationView;
   const outgoing = isSolid ? animationView : solidView;
 
-  segSolid.classList.toggle('active', isSolid);
-  segSolid.setAttribute('aria-selected', isSolid ? 'true' : 'false');
-  segAnimation.classList.toggle('active', !isSolid);
-  segAnimation.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
+  segSolid?.classList.toggle('active', isSolid);
+  segSolid?.setAttribute('aria-selected', isSolid ? 'true' : 'false');
+  segAnimation?.classList.toggle('active', !isSolid);
+  segAnimation?.setAttribute('aria-selected', !isSolid ? 'true' : 'false');
+
+  if (!solidView || !animationView) return;
 
   const applyView = () => {
     solidView.classList.toggle('is-active', isSolid);
@@ -226,7 +174,7 @@ export function setDisplayView(
     animationView.classList.remove('is-exiting');
   };
 
-  if (!animate || viewTransitionLock) {
+  if (!animate || viewTransitionLock || !incoming || !outgoing) {
     applyView();
     return;
   }

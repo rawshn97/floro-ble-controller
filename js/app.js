@@ -1,5 +1,13 @@
 import { FloroBleController, isBleSupported } from './ble.js';
-import { createColorPicker } from './color-picker.js';
+import { createColorPicker, loadRecentColors } from './color-picker.js';
+import {
+  NEON_COLORS,
+  getSwatchTypeLabel,
+  normalizeHex,
+  resolveColorLabel,
+  swatchTypeClass,
+  truncateColorLabel,
+} from './colors.js';
 import { describeBleError } from './errors.js';
 import {
   formatModeLabel,
@@ -28,9 +36,7 @@ import {
   setupPwaInstall,
   setupSettingsSheet,
   updateConnectionChip,
-  updateConnectQuickAction,
   updateNeonThemeColor,
-  syncSceneGauge,
   truncatePresetLabel,
   WakeLockManager,
 } from './ui.js';
@@ -57,22 +63,25 @@ const deviceNameEl = document.getElementById('device-name');
 const connectionStatus = document.getElementById('connection-status');
 const statusChip = document.getElementById('status-chip');
 const statusChipText = document.getElementById('status-chip-text');
-const quickSettingsBtn = document.getElementById('quick-settings');
-const quickSettingsLabel = quickSettingsBtn?.querySelector('.quick-action-label');
+const statusChipText = document.getElementById('status-chip-text');
 
 const remoteDock = document.getElementById('remote-dock');
 const solidControls = document.getElementById('solid-controls');
-const colorPanel = document.getElementById('color-panel');
 const animControls = document.getElementById('anim-controls');
 const animationPanel = document.getElementById('animation-panel');
 const powerBtn = document.getElementById('power-btn');
+
+const colorHeroSwatch = document.getElementById('color-hero-swatch');
+const colorHeroName = document.getElementById('color-hero-name');
+const colorHeroType = document.getElementById('color-hero-type');
+const colorRecentsStrip = document.getElementById('color-recents-strip');
+const neonGrid = document.getElementById('neon-grid');
+const btnOpenPalette = document.getElementById('btn-open-palette');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
 const modeSegAnimation = document.getElementById('mode-seg-animation');
 const solidView = document.getElementById('solid-view');
 const animationView = document.getElementById('animation-view');
-const solidPreviewSwatch = document.getElementById('solid-preview-swatch');
-const animPreviewName = document.getElementById('anim-preview-name');
 
 const sliderBrightness = document.getElementById('slider-brightness');
 const sliderBrightnessAnim = document.getElementById('slider-brightness-anim');
@@ -89,7 +98,6 @@ const modeList = document.getElementById('mode-list');
 const modeListSheet = document.getElementById('mode-list-sheet');
 const favoritesGrid = document.getElementById('favorites-grid');
 const colorPresetsRow = document.getElementById('color-presets-row');
-const colorPresetSection = document.getElementById('color-preset-section');
 const animModeHeroNum = document.getElementById('anim-mode-hero-num');
 const animModeHeroName = document.getElementById('anim-mode-hero-name');
 const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
@@ -108,8 +116,8 @@ const consoleBody = document.getElementById('console-body');
 const compatBanner = document.getElementById('compat-banner');
 const appVersionEl = document.getElementById('app-version');
 
-const controlPanels = [solidControls, colorPanel, colorPresetSection, animControls, animationPanel];
-const themePanels = [remoteDock, ...controlPanels];
+const controlPanels = [remoteDock, solidControls, animControls, animationPanel];
+const themePanels = [];
 
 let isPoweredOn = savedScene.isPoweredOn;
 let lastBrightnessVal = savedScene.brightness;
@@ -154,29 +162,113 @@ if (appVersionEl) {
 }
 
 function getGaugeState() {
-  return {
-    displayView,
-    isPoweredOn,
-    brightness: lastBrightnessVal,
-    speed: lastSpeedVal,
-    activeMode: activeModeVal,
-    connected: ble.isConnected,
-  };
+  return {};
 }
 
-function refreshSceneGauge() {
-  syncSceneGauge(getGaugeState());
+function refreshSceneGauge() {}
+
+function applySwatchClasses(el, hex) {
+  if (!el) return;
+  el.classList.remove('swatch--neon', 'swatch--saved', 'swatch--custom');
+  el.classList.add(swatchTypeClass(hex, colorPresets));
+}
+
+function updateColorHero() {
+  const hex = normalizeHex(activeColor);
+  if (colorHeroSwatch) {
+    colorHeroSwatch.style.background = hex;
+    applySwatchClasses(colorHeroSwatch, hex);
+    colorHeroSwatch.classList.toggle('is-selected', true);
+  }
+  if (colorHeroName) {
+    colorHeroName.textContent = resolveColorLabel(hex, colorPresets);
+  }
+  if (colorHeroType) {
+    colorHeroType.textContent = getSwatchTypeLabel(hex, colorPresets);
+  }
+}
+
+function pickColor(hex, { commit = true } = {}) {
+  const normalized = normalizeHex(hex);
+  activeColor = updateNeonThemeColor(normalized, themePanels);
+  colorPicker.setHex(normalized, { commit: false });
+  document.querySelectorAll('.swatch-btn, .swatch-squircle').forEach((s) => {
+    s.classList.remove('selected', 'is-selected');
+  });
+  updatePreviewChrome();
+  persistScene();
+  haptic('light');
+  if (commit) {
+    applyColorSelection();
+  }
+}
+
+function renderNeonGrid() {
+  if (!neonGrid) return;
+  neonGrid.innerHTML = '';
+  NEON_COLORS.forEach(({ hex, name, r, g, b }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `swatch-btn swatch-squircle swatch--neon${normalizeHex(hex) === normalizeHex(activeColor) ? ' selected' : ''}`;
+    btn.style.background = hex;
+    btn.title = name;
+    btn.setAttribute('aria-label', name);
+    btn.addEventListener('click', () => {
+      pickColor(hex);
+    });
+    neonGrid.appendChild(btn);
+  });
+}
+
+function renderColorStrip() {
+  if (!colorRecentsStrip) return;
+  updateColorHero();
+  colorRecentsStrip.innerHTML = '';
+
+  const recents = loadRecentColors().filter((h) => normalizeHex(h) !== normalizeHex(activeColor));
+  const slots = recents.slice(0, 4);
+
+  slots.forEach((hex) => {
+    const col = document.createElement('button');
+    col.type = 'button';
+    col.className = 'recent-col';
+    const sw = document.createElement('span');
+    sw.className = `swatch-squircle ${swatchTypeClass(hex, colorPresets)}`;
+    sw.style.background = hex;
+    if (normalizeHex(hex) === normalizeHex(activeColor)) {
+      sw.classList.add('is-selected');
+    }
+    const label = document.createElement('span');
+    label.className = 'recent-label';
+    label.textContent = truncateColorLabel(resolveColorLabel(hex, colorPresets));
+    col.appendChild(sw);
+    col.appendChild(label);
+    col.addEventListener('click', () => pickColor(hex));
+    colorRecentsStrip.appendChild(col);
+  });
+
+  const moreCol = document.createElement('button');
+  moreCol.type = 'button';
+  moreCol.className = 'recent-col';
+  moreCol.setAttribute('data-open-palette', 'true');
+  moreCol.setAttribute('aria-label', 'More colors');
+  const moreSw = document.createElement('span');
+  moreSw.className = 'swatch-more';
+  moreSw.textContent = '+';
+  const moreLabel = document.createElement('span');
+  moreLabel.className = 'recent-label';
+  moreLabel.textContent = 'More';
+  moreCol.appendChild(moreSw);
+  moreCol.appendChild(moreLabel);
+  moreCol.addEventListener('click', () => btnOpenPalette?.click());
+  colorRecentsStrip.appendChild(moreCol);
 }
 
 function updatePreviewChrome() {
-  if (solidPreviewSwatch) {
-    solidPreviewSwatch.style.background = activeColor;
-  }
-  if (animPreviewName) {
-    animPreviewName.textContent = getModeName(activeModeVal);
-  }
+  updateColorHero();
+  renderColorStrip();
+  renderNeonGrid();
   highlightColorPresets();
-  refreshSceneGauge();
 }
 
 function syncRemotePanels() {
@@ -191,12 +283,6 @@ function syncRemotePanels() {
     animControls.toggleAttribute('hidden', isSolid);
     animControls.toggleAttribute('inert', isSolid);
   }
-  updateColorPresetSectionVisibility();
-}
-
-function updateColorPresetSectionVisibility() {
-  if (!colorPresetSection) return;
-  colorPresetSection.classList.toggle('hidden', displayView !== 'solid');
 }
 
 let colorLiveTimeout = null;
@@ -282,7 +368,6 @@ const ble = new FloroBleController({
 function setConnectionState(state, name = '') {
   connectionState = state;
   updateConnectionChip(statusChip, statusChipText, state, name, ble.lastDeviceInfo);
-  updateConnectQuickAction(quickSettingsBtn, quickSettingsLabel, state, name);
   updateConnectPrompt();
 }
 
@@ -673,9 +758,8 @@ function syncBrightnessSliders(val) {
     valBrightness.textContent = isPoweredOn ? String(val) : 'OFF';
   }
   if (valBrightnessAnim) {
-    valBrightnessAnim.textContent = isPoweredOn ? `${val} / 8` : 'OFF';
+    valBrightnessAnim.textContent = isPoweredOn ? String(val) : 'OFF';
   }
-  refreshSceneGauge();
 }
 
 function stepBrightness(delta) {
@@ -748,11 +832,11 @@ let sTimeout = null;
 sliderSpeed.addEventListener('input', (e) => onSpeedInput(parseInt(e.target.value, 10)));
 
 window.selectSwatch = function (btn, r, g, b) {
-  document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
-  btn.classList.add('selected');
-  colorPicker.setHex(rgbToHex(r, g, b), { commit: false });
-  haptic('light');
-  applyColorSelection();
+  pickColor(rgbToHex(r, g, b));
+};
+
+window.selectNeonSwatch = function (hex) {
+  pickColor(hex);
 };
 
 animDropdown.addEventListener('change', (e) => {
@@ -760,9 +844,12 @@ animDropdown.addEventListener('change', (e) => {
 });
 
 window.stepMode = function stepMode(delta) {
-  let mode = parseInt(animDropdown.value, 10) + delta;
-  if (mode < 1) mode = MODE_COUNT;
-  if (mode > MODE_COUNT) mode = 1;
+  let mode = parseInt(animDropdown.value, 10);
+  do {
+    mode += delta;
+    if (mode < 2) mode = MODE_COUNT;
+    if (mode > MODE_COUNT) mode = 2;
+  } while (mode === 1);
   setMode(mode);
 };
 
@@ -882,7 +969,6 @@ function saveColorPresets() {
 
 function renderColorPresets() {
   if (!colorPresetsRow) return;
-  updateColorPresetSectionVisibility();
   const max = getMaxColorPresets();
   const visiblePresets = colorPresets.slice(0, max);
   colorPresetsRow.innerHTML = '';
@@ -898,38 +984,20 @@ function renderColorPresets() {
   }
 
   visiblePresets.forEach((preset, index) => {
-    const chip = document.createElement('div');
-    const isSelected = preset.hex.toLowerCase() === activeColor.toLowerCase();
-    chip.className = `swatch-btn swatch-btn-preset${isSelected ? ' selected' : ''}`;
-    chip.style.background = preset.hex;
-    chip.setAttribute('role', 'button');
-    chip.setAttribute('tabindex', '0');
-    chip.setAttribute('aria-label', preset.label);
-    chip.title = preset.label;
+    const btn = document.createElement('button');
+    const isSelected = normalizeHex(preset.hex) === normalizeHex(activeColor);
+    btn.type = 'button';
+    btn.className = `swatch-btn swatch-squircle swatch--saved${isSelected ? ' selected' : ''}`;
+    btn.style.background = preset.hex;
+    btn.setAttribute('aria-label', preset.label);
+    btn.title = preset.label;
 
     const label = document.createElement('span');
     label.className = 'swatch-preset-label';
-    label.textContent = truncatePresetLabel(preset.label);
-    chip.appendChild(label);
+    label.textContent = truncatePresetLabel(preset.label, 8);
+    btn.appendChild(label);
 
-    const applyPreset = () => {
-      document.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
-      colorPicker.setHex(preset.hex, { commit: false });
-      activeColor = updateNeonThemeColor(preset.hex, themePanels);
-      updatePreviewChrome();
-      persistScene();
-      applyColorSelection();
-      highlightColorPresets();
-      haptic('light');
-    };
-
-    chip.addEventListener('click', applyPreset);
-    chip.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        applyPreset();
-      }
-    });
+    btn.addEventListener('click', () => pickColor(preset.hex));
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -941,19 +1009,20 @@ function renderColorPresets() {
       colorPresets.splice(index, 1);
       saveColorPresets();
       renderColorPresets();
+      updatePreviewChrome();
     });
-    chip.appendChild(removeBtn);
+    btn.appendChild(removeBtn);
 
-    colorPresetsRow.appendChild(chip);
+    colorPresetsRow.appendChild(btn);
   });
 }
 
 function highlightColorPresets() {
   if (!colorPresetsRow) return;
-  colorPresetsRow.querySelectorAll('.swatch-btn-preset').forEach((chip, index) => {
+  colorPresetsRow.querySelectorAll('.swatch-btn').forEach((chip, index) => {
     const preset = colorPresets[index];
     if (!preset) return;
-    chip.classList.toggle('selected', preset.hex.toLowerCase() === activeColor.toLowerCase());
+    chip.classList.toggle('selected', normalizeHex(preset.hex) === normalizeHex(activeColor));
   });
 }
 
@@ -997,18 +1066,7 @@ modeSegAnimation.addEventListener('click', () => {
   if (activeModeVal === 1) setMode(lastAnimationMode);
 });
 
-document.getElementById('quick-custom-color')?.addEventListener('click', () => {
-  document.getElementById('palette-toggle')?.click();
-});
-
-document.getElementById('quick-mode-picker')?.addEventListener('click', () => {
-  if (displayView !== 'animation') {
-    modeSegAnimation.click();
-  }
-  document.getElementById('anim-mode-picker-btn')?.click();
-});
-
-document.getElementById('quick-add-fav')?.addEventListener('click', () => {
+document.getElementById('btn-add-favorite')?.addEventListener('click', () => {
   if (displayView !== 'animation') {
     modeSegAnimation.click();
   }
@@ -1022,12 +1080,19 @@ document.getElementById('btn-preset-search-anim')?.addEventListener('click', () 
   window.openModePickerSheet?.();
 });
 
-document.getElementById('quick-settings')?.addEventListener('click', () => {
+statusChip?.addEventListener('click', () => {
   window.openSettingsSheet?.();
 });
 
-statusChip?.addEventListener('click', () => {
-  window.openSettingsSheet?.();
+document.querySelectorAll('.adjust-context-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.adjust-context-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.getAttribute('data-adjust');
+    document.querySelectorAll('.control-row[data-control]').forEach((row) => {
+      row.classList.toggle('control-row--active', row.getAttribute('data-control') === target);
+    });
+  });
 });
 
 applySavedSceneToUI();
@@ -1051,9 +1116,13 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 
-setupPaletteToggle(document.getElementById('palette-toggle'), {
+setupPaletteToggle(btnOpenPalette, {
   sheet: document.getElementById('palette-sheet'),
   closeBtn: document.getElementById('btn-close-palette'),
+});
+
+document.getElementById('btn-close-palette')?.addEventListener('click', () => {
+  colorPicker.commitNow?.();
 });
 
 setupSettingsSheet({
@@ -1120,6 +1189,7 @@ setupColorPresetModal({
     colorPresets.unshift({ hex, label: name });
     saveColorPresets();
     renderColorPresets();
+    updatePreviewChrome();
     log(`Saved color preset "${name}".`, 'success');
     haptic('light');
   },
@@ -1158,7 +1228,6 @@ updateConnectPrompt();
 
 log('System ready.', 'info');
 tryAutoReconnect();
-updateConnectQuickAction(quickSettingsBtn, quickSettingsLabel, connectionState);
 
 window.addEventListener('pagehide', persistSceneNow);
 window.addEventListener('beforeunload', persistSceneNow);

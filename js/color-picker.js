@@ -120,6 +120,10 @@ function pushRecent(hex) {
 /**
  * Custom HSL color picker: 2D SL area, hue strip, sliders, hex input, recent colors.
  */
+export function loadRecentColors() {
+  return loadRecent();
+}
+
 export function createColorPicker({ root, initialHex = '#ff0000', onColorChange, onColorCommit }) {
   let hsl = hexToHsl(initialHex);
   let currentHex = hslToHex(hsl.h, hsl.s, hsl.l);
@@ -366,6 +370,9 @@ export function createColorPicker({ root, initialHex = '#ff0000', onColorChange,
 
   return {
     getHex: () => currentHex,
+    commitNow() {
+      flushCommit();
+    },
     setHex(hex, { commit = false } = {}) {
       const n = normalizeHex(hex);
       if (!n) return;
