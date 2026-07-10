@@ -12,8 +12,8 @@ if ! git config user.email | grep -q 'ItsRRM97@users.noreply.github.com'; then
   exit 1
 fi
 
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "error: floro-ble-controller has uncommitted changes; commit first" >&2
+if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
+  echo "error: floro-ble-controller has uncommitted tracked changes; commit first" >&2
   exit 1
 fi
 
