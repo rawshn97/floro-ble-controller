@@ -114,13 +114,24 @@
 
     <div id="solid-controls" class="remote-panel hidden" data-view-panel="solid" role="tabpanel" aria-labelledby="mode-seg-solid" hidden inert>
       <div class="solid-layout">
-        <div class="control-card brightness-card" aria-label="Brightness" data-level="8" style="--brightness-level: 8">
-          <div class="brightness-slider-wrap">
-            <span class="material-symbols-outlined brightness-slider-icon" aria-hidden="true">brightness_6</span>
-            <span class="brightness-slider-value" id="val-brightness">8</span>
-            <div class="brightness-slider-rotator">
-              <input type="range" id="slider-brightness" class="ios-slider mint-slider brightness-slider" min="1" max="8" value="8" aria-label="Brightness level">
+        <div class="control-card brightness-card brightness-card--horizontal" aria-label="Brightness" data-level="8" style="--brightness-level: 8">
+          <div class="brightness-card__header">
+            <div class="brightness-card__title-group">
+              <span class="material-symbols-outlined brightness-slider-icon" aria-hidden="true">brightness_6</span>
+              <span class="control-label">Brightness</span>
             </div>
+            <span class="brightness-slider-value" id="val-brightness">8</span>
+          </div>
+          <div class="brightness-card__track-row">
+            <button class="step-btn icon-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">
+              <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+            </button>
+            <div class="brightness-slider-track-wrap">
+              <input type="range" id="slider-brightness" class="ios-slider mint-slider brightness-slider horizontal-slider" min="1" max="8" value="8" aria-label="Brightness level">
+            </div>
+            <button class="step-btn icon-step" type="button" data-step-brightness="1" aria-label="Increase brightness">
+              <span class="material-symbols-outlined" aria-hidden="true">add</span>
+            </button>
           </div>
         </div>
 
@@ -234,11 +245,14 @@
       <span id="anim-mode-hero-meta" class="visually-hidden" aria-hidden="true">Mode 32 of 200</span>
     </div>
 
+    </section>
+
+  <footer class="bottom-action-dock" aria-label="Global power control">
     <button id="power-btn" class="btn power-cta is-unavailable" type="button" aria-label="Power" aria-pressed="false">
       <span class="material-symbols-outlined power-icon" aria-hidden="true">power_settings_new</span>
       <span class="power-cta-label">Power On</span>
     </button>
-  </section>
+  </footer>
 
 </div>
 

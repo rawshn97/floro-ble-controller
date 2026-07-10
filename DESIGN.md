@@ -294,9 +294,10 @@ If the user had been on mode 47 before power off, restore sends **47**, not 32. 
 
 **Connect without power toggle:** same restore path when `isPoweredOn` is true on connect (`onConnected` → `restoreSceneToSign()`).
 
-### Static panel
+### Static panel & Layout Architecture
 
-Brightness card only. All color UI is in the **global color strip** + **Color sheet**.
+1. **Horizontal Tactile Brightness Card (`.brightness-card--horizontal`)**: Full-width M3 card at the top of the `#solid-controls` layout (`flex-direction: column`). Features a horizontal slider (`1` to `8`), large step (`−` and `+`) buttons (`48×48dp` touch targets), and tabular numerical readout (`1` to `8`). Replaces legacy vertical side-by-side `-90deg` rotated slider layout for superior touch-drag ergonomics on mobile browsers.
+2. **Pinned Bottom Action Dock (`.bottom-action-dock`)**: The `#power-btn` (`.power-cta`) is permanently extracted outside of scrolling `.remote-dock` panels into a dedicated fixed/sticky bottom footer inside `.app-shell` (`z-index: 60`, accounting for `safe-area-inset-bottom`). Whether browsing Static colors or scrolling through 200 animation modes, the Power CTA remains 100% thumb-reachable without scrolling.
 
 #### Color sheet (`#palette-sheet`)
 
