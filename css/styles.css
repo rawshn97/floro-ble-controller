@@ -144,7 +144,15 @@ body.sheet-open { overflow: hidden; }
   padding-bottom: calc(88px + var(--safe-bottom));
 }
 
-/* ── Material Symbols ── */
+/* ── Material Symbols (self-hosted for offline PWA) ── */
+
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/MaterialSymbolsOutlined.woff2') format('woff2');
+}
 
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
@@ -154,10 +162,16 @@ body.sheet-open { overflow: hidden; }
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
   white-space: nowrap;
   direction: ltr;
   font-feature-settings: 'liga';
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   -webkit-font-smoothing: antialiased;
   color: var(--md-on-surface-variant);
   flex-shrink: 0;
@@ -639,8 +653,10 @@ body.sheet-open { overflow: hidden; }
 
 .control-row__actions {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
+  min-width: 84px;
+  justify-content: flex-end;
 }
 
 .control-row__chevron {
@@ -669,6 +685,8 @@ body.sheet-open { overflow: hidden; }
 .step-btn .material-symbols-outlined,
 .icon-step .material-symbols-outlined {
   font-size: 20px;
+  width: 20px;
+  height: 20px;
   color: inherit;
 }
 
@@ -956,11 +974,14 @@ body.sheet-open { overflow: hidden; }
 }
 
 .disabled-control .btn-step,
+.disabled-control .step-btn,
+.disabled-control .icon-step,
 .disabled-control .ios-slider,
 .disabled-control .swatch-btn,
 .disabled-control .swatch-btn-preset,
 .disabled-control .btn,
 .disabled-control .anim-mode-picker-btn,
+.disabled-control .control-row--button,
 .disabled-control .preset-tile,
 .disabled-control .fav-chip,
 .disabled-control .brightness-stepper-btn {
