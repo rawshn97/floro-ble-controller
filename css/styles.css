@@ -389,6 +389,12 @@ body.sheet-open { overflow: hidden; }
   background: var(--md-surface-container);
   border-radius: var(--radius-lg);
   padding: var(--space-card);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.color-strip-card:active {
+  background: var(--md-surface-container-high);
 }
 
 .color-hero-row {
@@ -976,6 +982,8 @@ body.sheet-open { overflow: hidden; }
 .disabled-control .btn-step,
 .disabled-control .step-btn,
 .disabled-control .icon-step,
+.disabled-control .adjust-context-btn,
+.disabled-control .mode-rail-btn,
 .disabled-control .ios-slider,
 .disabled-control .swatch-btn,
 .disabled-control .swatch-btn-preset,
