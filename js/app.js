@@ -63,7 +63,6 @@ const deviceNameEl = document.getElementById('device-name');
 const connectionStatus = document.getElementById('connection-status');
 const statusChip = document.getElementById('status-chip');
 const statusChipText = document.getElementById('status-chip-text');
-const statusChipText = document.getElementById('status-chip-text');
 
 const remoteDock = document.getElementById('remote-dock');
 const solidControls = document.getElementById('solid-controls');
@@ -1119,6 +1118,10 @@ window.addEventListener('resize', () => {
 setupPaletteToggle(btnOpenPalette, {
   sheet: document.getElementById('palette-sheet'),
   closeBtn: document.getElementById('btn-close-palette'),
+});
+
+document.getElementById('color-strip')?.addEventListener('click', () => {
+  btnOpenPalette?.click();
 });
 
 document.getElementById('btn-close-palette')?.addEventListener('click', () => {
