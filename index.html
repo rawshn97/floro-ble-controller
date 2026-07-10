@@ -113,24 +113,42 @@
   <section id="remote-dock" class="remote-dock" aria-label="Sign controls">
 
     <div id="solid-controls" class="remote-panel hidden" data-view-panel="solid" role="tabpanel" aria-labelledby="mode-seg-solid" hidden inert>
-      <div class="control-card">
-        <div class="control-list">
-          <div class="control-row brightness-card" aria-label="Brightness" data-level="8" style="--brightness-level: 8">
-            <span class="material-symbols-outlined" aria-hidden="true">brightness_6</span>
-            <span class="control-row__label">Brightness</span>
-            <span class="control-row__value" id="val-brightness">8</span>
-            <div class="control-row__actions">
-              <button class="step-btn icon-step" type="button" data-step-brightness="-1" aria-label="Decrease brightness">
-                <span class="material-symbols-outlined" aria-hidden="true">remove</span>
-              </button>
-              <button class="step-btn icon-step" type="button" data-step-brightness="1" aria-label="Increase brightness">
-                <span class="material-symbols-outlined" aria-hidden="true">add</span>
-              </button>
+      <div class="solid-layout">
+        <div class="control-card brightness-card" aria-label="Brightness" data-level="8" style="--brightness-level: 8">
+          <div class="brightness-slider-wrap">
+            <span class="material-symbols-outlined brightness-slider-icon" aria-hidden="true">brightness_6</span>
+            <span class="brightness-slider-value" id="val-brightness">8</span>
+            <div class="brightness-slider-rotator">
+              <input type="range" id="slider-brightness" class="ios-slider mint-slider brightness-slider" min="1" max="8" value="8" aria-label="Brightness level">
             </div>
-            <input type="range" id="slider-brightness" class="visually-hidden" min="1" max="8" value="8" aria-label="Brightness level" tabindex="-1">
+          </div>
+        </div>
+
+        <div id="color-panel" class="control-card color-card">
+          <div class="control-card__header">
+            <span class="material-symbols-outlined control-card__icon" aria-hidden="true">palette</span>
+            <span class="control-label">Neon color</span>
+          </div>
+          <div id="neon-grid-static" class="color-swatches color-swatches-remote" aria-label="Neon colors"></div>
+          <div class="color-swatches-footer">
+            <button id="palette-toggle" class="swatch-btn swatch-btn-custom" type="button" aria-expanded="false" aria-controls="palette-sheet" aria-label="Open color picker" title="Custom color">
+              <span class="swatch-custom-ring" aria-hidden="true"></span>
+            </button>
+            <button id="btn-save-color-preset" class="btn btn-primary btn-save-preset" type="button">
+              <span class="material-symbols-outlined" aria-hidden="true">label</span>
+              Save preset
+            </button>
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="color-preset-section" class="solid-presets-dock control-card hidden" aria-label="Saved color presets">
+      <div class="control-card__header solid-presets-header">
+        <span class="material-symbols-outlined control-card__icon" aria-hidden="true">bookmark</span>
+        <span class="control-label">Saved colors</span>
+      </div>
+      <div id="color-presets-row" class="color-swatches preset-row--solid"></div>
     </div>
 
     <div id="anim-controls" class="remote-panel" data-view-panel="animation" role="tabpanel" aria-labelledby="mode-seg-animation">
@@ -341,17 +359,6 @@
     <div class="sheet-section">
       <h3 class="sheet-section-title">Neon colors</h3>
       <div id="neon-grid" class="color-swatches color-swatches-sheet" aria-label="Neon colors"></div>
-    </div>
-
-    <div class="sheet-section">
-      <div class="sheet-section-header">
-        <h3 class="sheet-section-title">Your colors</h3>
-        <button id="btn-save-color-preset" class="btn btn-text btn-save-preset" type="button">
-          <span class="material-symbols-outlined" aria-hidden="true">label</span>
-          Save preset
-        </button>
-      </div>
-      <div id="color-presets-row" class="color-swatches preset-row-sheet" aria-label="Saved color presets"></div>
     </div>
 
     <div class="sheet-section">

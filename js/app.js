@@ -75,6 +75,8 @@ const colorHeroName = document.getElementById('color-hero-name');
 const colorHeroType = document.getElementById('color-hero-type');
 const colorRecentsStrip = document.getElementById('color-recents-strip');
 const neonGrid = document.getElementById('neon-grid');
+const neonGridStatic = document.getElementById('neon-grid-static');
+const paletteToggle = document.getElementById('palette-toggle');
 const btnOpenPalette = document.getElementById('btn-open-palette');
 
 const modeSegSolid = document.getElementById('mode-seg-solid');
@@ -86,7 +88,7 @@ const sliderBrightness = document.getElementById('slider-brightness');
 const sliderBrightnessAnim = document.getElementById('slider-brightness-anim');
 const valBrightness = document.getElementById('val-brightness');
 const valBrightnessAnim = document.getElementById('val-brightness-anim');
-const brightnessCard = document.querySelector('.brightness-card');
+const brightnessCard = document.querySelector('#solid-controls .brightness-card');
 const sliderSpeed = document.getElementById('slider-speed');
 const valSpeed = document.getElementById('val-speed');
 const customColorPickerRoot = document.getElementById('custom-color-picker');
@@ -97,6 +99,7 @@ const modeList = document.getElementById('mode-list');
 const modeListSheet = document.getElementById('mode-list-sheet');
 const favoritesGrid = document.getElementById('favorites-grid');
 const colorPresetsRow = document.getElementById('color-presets-row');
+const colorPresetSection = document.getElementById('color-preset-section');
 const animModeHeroNum = document.getElementById('anim-mode-hero-num');
 const animModeHeroName = document.getElementById('anim-mode-hero-name');
 const animModeHeroMeta = document.getElementById('anim-mode-hero-meta');
@@ -205,7 +208,7 @@ function pickColor(hex, { commit = true } = {}) {
 function renderNeonGrid() {
   if (!neonGrid) return;
   neonGrid.innerHTML = '';
-  NEON_COLORS.forEach(({ hex, name, r, g, b }) => {
+  NEON_COLORS.forEach(({ hex, name }) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `swatch-btn swatch-squircle swatch--neon${normalizeHex(hex) === normalizeHex(activeColor) ? ' selected' : ''}`;
@@ -216,6 +219,24 @@ function renderNeonGrid() {
       pickColor(hex);
     });
     neonGrid.appendChild(btn);
+  });
+}
+
+function renderStaticNeonGrid() {
+  if (!neonGridStatic) return;
+  neonGridStatic.innerHTML = '';
+  NEON_COLORS.forEach(({ hex, name, r, g, b }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `swatch-btn${normalizeHex(hex) === normalizeHex(activeColor) ? ' selected' : ''}`;
+    btn.style.background = hex;
+    btn.title = name;
+    btn.setAttribute('aria-label', name);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pickColor(hex);
+    });
+    neonGridStatic.appendChild(btn);
   });
 }
 
@@ -242,7 +263,10 @@ function renderColorStrip() {
     label.textContent = truncateColorLabel(resolveColorLabel(hex, colorPresets));
     col.appendChild(sw);
     col.appendChild(label);
-    col.addEventListener('click', () => pickColor(hex));
+    col.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pickColor(hex);
+    });
     colorRecentsStrip.appendChild(col);
   });
 
@@ -259,14 +283,19 @@ function renderColorStrip() {
   moreLabel.textContent = 'More';
   moreCol.appendChild(moreSw);
   moreCol.appendChild(moreLabel);
-  moreCol.addEventListener('click', () => btnOpenPalette?.click());
+  moreCol.addEventListener('click', () => openColorPickerSheet());
   colorRecentsStrip.appendChild(moreCol);
+}
+
+function openColorPickerSheet() {
+  paletteToggle?.click() || btnOpenPalette?.click();
 }
 
 function updatePreviewChrome() {
   updateColorHero();
   renderColorStrip();
   renderNeonGrid();
+  renderStaticNeonGrid();
   highlightColorPresets();
 }
 
@@ -282,6 +311,13 @@ function syncRemotePanels() {
     animControls.toggleAttribute('hidden', isSolid);
     animControls.toggleAttribute('inert', isSolid);
   }
+  updateColorPresetSectionVisibility();
+}
+
+function updateColorPresetSectionVisibility() {
+  if (!colorPresetSection) return;
+  colorPresetSection.classList.toggle('hidden', displayView !== 'solid');
+  colorPresetSection.toggleAttribute('hidden', displayView !== 'solid');
 }
 
 let colorLiveTimeout = null;
@@ -1115,13 +1151,19 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 
+setupPaletteToggle(paletteToggle, {
+  sheet: document.getElementById('palette-sheet'),
+  closeBtn: document.getElementById('btn-close-palette'),
+});
+
 setupPaletteToggle(btnOpenPalette, {
   sheet: document.getElementById('palette-sheet'),
   closeBtn: document.getElementById('btn-close-palette'),
 });
 
-document.getElementById('color-strip')?.addEventListener('click', () => {
-  btnOpenPalette?.click();
+document.querySelector('.color-hero-icon')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openColorPickerSheet();
 });
 
 document.getElementById('btn-close-palette')?.addEventListener('click', () => {

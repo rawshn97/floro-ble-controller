@@ -389,7 +389,6 @@ body.sheet-open { overflow: hidden; }
   background: var(--md-surface-container);
   border-radius: var(--radius-lg);
   padding: var(--space-card);
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -416,7 +415,11 @@ body.sheet-open { overflow: hidden; }
   color: var(--label-secondary);
 }
 
-.color-hero-icon { font-size: 20px; }
+.color-hero-icon {
+  font-size: 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
 
 .recents-strip {
   display: flex;
@@ -767,7 +770,9 @@ body.sheet-open { overflow: hidden; }
 /* ── Remote dock (legacy overrides) ── */
 
 .remote-dock:has(#solid-controls:not(.hidden)) {
-  gap: 0;
+  gap: 8px;
+  padding-bottom: calc(4px + var(--safe-bottom));
+  overflow: hidden;
 }
 
 .remote-dock:has(#solid-controls:not(.hidden)) #solid-controls {
@@ -779,14 +784,9 @@ body.sheet-open { overflow: hidden; }
   min-height: 0;
 }
 
-.remote-dock:has(#solid-controls:not(.hidden)) {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
 .remote-dock:has(#solid-controls:not(.hidden)) .power-cta {
-  margin-top: 8px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .remote-dock:has(#anim-controls:not(.hidden)) #anim-controls {
@@ -849,7 +849,75 @@ body.sheet-open { overflow: hidden; }
   overflow: hidden;
 }
 
-/* Brightness stepper column (Static tab) */
+/* Brightness slider column (Static tab) */
+
+.brightness-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 4px 2px;
+}
+
+.brightness-slider-icon {
+  font-size: 22px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.brightness-slider-value {
+  font-size: clamp(18px, 5vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--label-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.brightness-card[data-powered-off="true"] .brightness-slider-value {
+  font-size: clamp(13px, 4vw, 16px);
+  letter-spacing: 0.04em;
+}
+
+.brightness-card[data-powered-off="true"] .brightness-slider-icon {
+  opacity: 0.45;
+}
+
+.brightness-slider-rotator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 44px;
+  min-height: 88px;
+  max-height: 132px;
+}
+
+.brightness-slider {
+  width: 100px;
+  height: 28px;
+  margin: 0;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+.brightness-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) calc(var(--brightness-level, 8) * 12.5% - 6.25%),
+    rgba(219, 230, 228, 0.12) calc(var(--brightness-level, 8) * 12.5% - 6.25%),
+    rgba(219, 230, 228, 0.12) 100%
+  );
+}
+
+/* Legacy stepper (unused on Static; kept for reference) */
 
 .brightness-stepper {
   display: flex;
@@ -1066,10 +1134,20 @@ body.sheet-open { overflow: hidden; }
   min-height: 44px;
   height: 100%;
   padding: 8px 10px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   border-radius: var(--radius-control);
   align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-save-preset .material-symbols-outlined {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 /* ── Presets ── */
@@ -2273,7 +2351,7 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
   .remote-dock:has(#solid-controls:not(.hidden)) .power-cta {
-    margin-top: 6px;
+    margin-top: auto;
     min-height: 48px;
   }
 }
