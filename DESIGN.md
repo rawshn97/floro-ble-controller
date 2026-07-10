@@ -736,10 +736,9 @@ Do **not** introduce these — they break the premium-remote feel:
 
 | URL | Role |
 |-----|------|
-| `https://rawshn.com/sign-controller/` | Public production URL (canonical for users) |
-| `https://blecontroller.vercel.app/` | Direct Vercel deployment (optional mirror) |
+| `https://rawshn.com/sign-controller/` | Public production URL (canonical) |
 
-**Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com`. Asset paths stay relative (`./`) so the same files work at both URLs. Optional: point the `ble_controller` Vercel project at the portfolio repo with Root Directory `public/sign-controller` so both domains deploy from the same folder.
+**Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com` (embedded static assets, not an external rewrite like `/coach`). Deploy via `bash scripts/deploy.sh` or bump the submodule in `rawshn-portfolio` and run `vercel deploy --prod` there.
 
 ### PWA notes
 - **Asset paths:** `manifest.webmanifest` uses absolute `/sign-controller/` paths (matches Health Hub `/coach/` pattern for standalone install). Page assets use `./` with `<base href>` for subdirectory resolution.
@@ -821,7 +820,7 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 | 2026-06-23 | Collapsible custom palette | Keeps solid view scannable; power users expand HSL picker |
 | 2026-06-23 | Auto-reconnect on load | Remote should "just work" when sign is in range |
 | 2026-06-23 | Activity log in settings only | Debug visibility without polluting main remote surface |
-| 2026-06-23 | Deploy at `/sign-controller/` via portfolio rewrite | Keeps rawshn.com namespace clean; separate Vercel project for static PWA |
+| 2026-06-23 | Deploy at `/sign-controller/` via portfolio submodule | Keeps rawshn.com namespace clean; single Vercel project (portfolio) |
 | 2026-06-29 | Android install banner fallback + 7-day dismiss TTL | `beforeinstallprompt` is unreliable on some Android builds; fallback banner + timed dismiss prevents permanent hide after accidental tap |
 | 2026-06-29 | Fixed install overlay outside shell | Shipped `#install-banner` at z-70; do not move into `.app-shell` flex (UX review 2026-06-29) |
 | 2026-06-29 | Standalone PWA paths (absolute manifest + scoped SW) | `start_url`/`scope`/`id` = `/sign-controller/` like Health Hub `/coach/`; SW uses `__FLORO_PWA_BASE` |

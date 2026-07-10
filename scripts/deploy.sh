@@ -35,9 +35,6 @@ fi
 FLORO_SHA="$(git rev-parse HEAD)"
 FLORO_SHORT="$(git rev-parse --short HEAD)"
 
-echo "Deploying ble_controller (Vercel production)..."
-vercel deploy --prod
-
 if [[ ! -d "$PORTFOLIO/.git" ]]; then
   echo "error: portfolio repo not found at $PORTFOLIO" >&2
   exit 1
@@ -73,5 +70,4 @@ echo "Deploying rawshn-portfolio (rawshn.com/sign-controller)..."
 vercel deploy --prod
 
 echo "Done."
-echo "  blecontroller: https://blecontroller.vercel.app"
-echo "  canonical:     https://rawshn.com/sign-controller/"
+echo "  canonical: https://rawshn.com/sign-controller/"

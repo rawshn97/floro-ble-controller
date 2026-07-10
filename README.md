@@ -39,24 +39,23 @@ Other serve options (`npx serve`, etc.) work the same way as long as the origin 
 
 **Production URL:** [https://rawshn.com/sign-controller/](https://rawshn.com/sign-controller/)
 
-### Canonical deploy (recommended)
+This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/sign-controller/`. Production is served only through the portfolio Vercel project (same pattern as embedded static assets, unlike `/coach` which rewrites to an external app).
 
-This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/sign-controller/`.
+### Deploy workflow
 
-1. Push changes to `main` on this repo
-2. In the portfolio repo, bump the submodule pointer for `public/sign-controller/`
-3. Redeploy the portfolio (Vercel)
+1. Commit and push changes to `main` on this repo
+2. Run the deploy script (bumps the portfolio submodule and deploys production):
 
-The portfolio build serves these static files at `/sign-controller/` with the correct PWA scope and Bluetooth permissions header.
+```bash
+bash scripts/deploy.sh
+```
 
-### Alternative deploys
+Or manually:
 
-| Method | When to use |
-|--------|-------------|
-| `vercel --prod` from this repo root | Standalone mirror (e.g. `blecontroller.vercel.app`) |
-| GitHub Pages | Fork/standalone hosting; enable Pages from default branch root over HTTPS |
+1. In `rawshn-portfolio`, update the `public/sign-controller/` submodule pointer, commit, and push `main`
+2. From `rawshn-portfolio`: `vercel deploy --prod`
 
-`vercel.json` sets `Permissions-Policy: bluetooth=(self)`. No build step is required.
+The portfolio build serves these static files at `/sign-controller/` with the correct PWA scope and Bluetooth permissions header (`vercel.json` in the portfolio repo). No build step is required in this repo.
 
 ## BLE protocol
 
