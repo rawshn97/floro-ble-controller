@@ -285,30 +285,68 @@ export function setupModePickerSheet({
   });
 }
 
+function bindKeyboardAwareModal(modal) {
+  if (!modal) return { open: () => {}, close: () => {} };
+
+  const updateLift = () => {
+    const vv = window.visualViewport;
+    if (!vv) {
+      modal.style.removeProperty('--vv-lift');
+      return;
+    }
+    const obscured = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    modal.style.setProperty('--vv-lift', `${obscured}px`);
+  };
+
+  return {
+    open() {
+      modal.classList.add('keyboard-aware');
+      updateLift();
+      window.visualViewport?.addEventListener('resize', updateLift);
+      window.visualViewport?.addEventListener('scroll', updateLift);
+    },
+    close() {
+      modal.classList.remove('keyboard-aware');
+      modal.style.removeProperty('--vv-lift');
+      window.visualViewport?.removeEventListener('resize', updateLift);
+      window.visualViewport?.removeEventListener('scroll', updateLift);
+    },
+  };
+}
+
 export function setupColorPresetModal({ modal, input, btnConfirm, btnCancel, onConfirm }) {
   if (!modal) return;
+
+  const keyboard = bindKeyboardAwareModal(modal);
+
+  function closeModal() {
+    keyboard.close();
+    modal.classList.add('hidden');
+  }
 
   window.openColorPresetModal = (defaultName = '') => {
     input.value = defaultName;
     modal.classList.remove('hidden');
-    input.focus();
-    input.select();
+    keyboard.open();
+    requestAnimationFrame(() => {
+      input.focus();
+      input.select();
+      setTimeout(() => {
+        input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 300);
+    });
   };
 
   btnConfirm?.addEventListener('click', () => {
     const name = input.value.trim();
     if (!name) return;
     onConfirm?.(name);
-    modal.classList.add('hidden');
+    closeModal();
   });
 
-  btnCancel?.addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
+  btnCancel?.addEventListener('click', closeModal);
 
-  modal.querySelector('[data-close-color-preset]')?.addEventListener('click', () => {
-    modal.classList.add('hidden');
-  });
+  modal.querySelector('[data-close-color-preset]')?.addEventListener('click', closeModal);
 
   input?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') btnConfirm?.click();
