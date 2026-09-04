@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Contracts for the installable PWA. Fail CI if the Health Hub-aligned
- * install path regresses (fake Install button, JS-injected manifest, etc.).
+ * Contracts for the installable PWA. Fail CI if the native install path,
+ * honest fallback, manifest, or startup performance regresses.
  */
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -118,12 +118,14 @@ if (existsSync(join(root, 'manifest.json'))) {
 }
 
 const pwaSrc = readFileSync(join(root, 'js/pwa-install.js'), 'utf8');
-if (pwaSrc.includes("btnInstall?.addEventListener('click'") &&
-    /btnInstall\?\.addEventListener\('click'[\s\S]{0,180}openHelpSheet/.test(pwaSrc)) {
+const nativeInstallHandler = pwaSrc.match(
+  /btnInstall\?\.addEventListener\('click',[\s\S]*?\n  \}\);/
+)?.[0] || '';
+if (!nativeInstallHandler.includes('triggerNativeInstall') ||
+    nativeInstallHandler.includes('openHelpSheet')) {
   fail('Install button click must call prompt() only; do not open the help sheet');
 }
-if (!pwaSrc.includes('classList.toggle(\'hidden\', !hasNativePrompt)') &&
-    !pwaSrc.includes('classList.toggle("hidden", !hasNativePrompt)')) {
+if (!pwaSrc.includes("btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa)")) {
   fail('Install button visibility must follow hasNativePrompt');
 }
 
