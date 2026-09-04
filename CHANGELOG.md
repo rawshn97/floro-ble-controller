@@ -11,6 +11,7 @@ All notable changes to FloRo Sign Controller are documented here. Version number
 - Serve cached navigations immediately so installed launches do not wait on a poor network connection.
 - Show Android install guidance without the old 2.5-second layout shift that delayed Largest Contentful Paint.
 - Render the default disconnected state in the initial shell and align first-run Dynamic mode with the specified mode 32, avoiding startup layout and text shifts.
+- Stop programmatic color restoration from firing a user-change callback that forced first-run and restored Dynamic scenes into Static mode 1.
 
 ### Performance
 - Replace the 3.7 MB Material Symbols font with a 6 KB subset containing only the 16 icons used by FloRo.
