@@ -48,7 +48,7 @@ No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/sign
 navigator.serviceWorker.register('./sw.js');
 ```
 
-Register immediately—the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js`. Bump `CACHE_NAME` whenever cached assets change.
+Register immediately—the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js` with `cache: "reload"` requests; otherwise a new cache version can be populated with old files from the browser’s HTTP cache. Bump `CACHE_NAME` whenever cached assets change.
 
 Production (portfolio `vercel.json`): `/sign-controller/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /sign-controller/`.
 

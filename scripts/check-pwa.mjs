@@ -108,6 +108,9 @@ if (!sw.includes("addEventListener('fetch'") && !sw.includes('addEventListener("
 if (!sw.includes("event.request.mode === 'navigate'") || !sw.includes("caches.match('./index.html')")) {
   fail('service worker must serve cached navigation immediately for fast installed-app launch');
 }
+if (!sw.includes("new Request(url, { cache: 'reload' })")) {
+  fail('precache must bypass the HTTP cache so a version bump cannot reinstall stale assets');
+}
 
 const symbolsFont = join(root, 'fonts/MaterialSymbolsOutlined.woff2');
 if (!existsSync(symbolsFont)) {

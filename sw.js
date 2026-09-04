@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v61';
+const CACHE_NAME = 'floro-controller-v62';
 const ASSETS = [
   './',
   './index.html',
@@ -28,7 +28,9 @@ function isNetworkFirstRequest(request) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
+      .then((cache) =>
+        cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' })))
+      )
       .then(() => self.skipWaiting())
   );
 });
