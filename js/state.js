@@ -6,7 +6,7 @@ const SCENE_DEFAULTS = {
   brightness: 8,
   speed: 50,
   color: '#ff0000',
-  activeMode: 1,
+  activeMode: 32,
   lastAnimationMode: 32,
 };
 

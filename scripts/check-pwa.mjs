@@ -53,6 +53,9 @@ if (html.includes("window.addEventListener('load'") && html.includes('serviceWor
 if (html.includes('fonts.googleapis.com') || html.includes('fonts.gstatic.com')) {
   fail('startup must not depend on third-party web fonts');
 }
+if (/id="connect-prompt"\s+class="[^"]*\bhidden\b/.test(html)) {
+  fail('default disconnected banner must render in the initial shell to avoid layout shift');
+}
 
 let manifest;
 try {
@@ -118,6 +121,10 @@ if (existsSync(join(root, 'manifest.json'))) {
 }
 
 const pwaSrc = readFileSync(join(root, 'js/pwa-install.js'), 'utf8');
+const stateSrc = readFileSync(join(root, 'js/state.js'), 'utf8');
+if (!/activeMode:\s*32/.test(stateSrc) || !/lastAnimationMode:\s*32/.test(stateSrc)) {
+  fail('first-run Dynamic state must start on specified mode 32');
+}
 const nativeInstallHandler = pwaSrc.match(
   /btnInstall\?\.addEventListener\('click',[\s\S]*?\n  \}\);/
 )?.[0] || '';
