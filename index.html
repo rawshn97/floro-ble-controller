@@ -9,36 +9,19 @@
       window.__floroDeferredInstall = e;
     });
   </script>
-  <script>
-    (function () {
-      var p = location.pathname;
-      if (p !== '/' && !p.endsWith('/')) p += '/';
-      if (p !== '/') {
-        var b = document.createElement('base');
-        b.href = p;
-        document.head.appendChild(b);
-      }
-      window.__FLORO_PWA_BASE = p.indexOf('/sign-controller') === 0 ? '/sign-controller/' : './';
-      var manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      manifestLink.id = 'pwa-manifest';
-      manifestLink.href = window.__FLORO_PWA_BASE + 'manifest.webmanifest';
-      document.head.appendChild(manifestLink);
-    })();
-  </script>
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
   <script>
-    (function () {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register(window.__FLORO_PWA_BASE + 'sw.js', { scope: window.__FLORO_PWA_BASE }).then(
-          function (reg) { console.log('ServiceWorker registered:', reg.scope); },
-          function (err) { console.warn('ServiceWorker registration failed:', err); }
-        );
-      }
-    })();
+    window.addEventListener('load', function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('./sw.js').then(
+        function (reg) { console.log('ServiceWorker registered:', reg.scope); },
+        function (err) { console.warn('ServiceWorker registration failed:', err); }
+      );
+    });
   </script>
-  <meta name="theme-color" content="#101414">
+  <meta name="theme-color" content="#020D0A">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -264,7 +247,7 @@
     <img src="./logo.png" alt="" class="install-banner-icon" width="48" height="48">
     <div class="install-banner-content">
       <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
-      <p id="install-banner-subtitle" class="install-banner-subtitle">Add FloRo Controller to your home screen for one-tap access.</p>
+      <p id="install-banner-subtitle" class="install-banner-subtitle">Install FloRo so it opens full screen, not as a browser tab.</p>
       <div class="install-banner-actions">
         <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button">Install</button>
         <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action install-banner-action-dismiss" type="button">Not now</button>
@@ -315,7 +298,7 @@
 
     <section class="settings-section settings-about">
       <p class="about-line">FloRo Sign Controller</p>
-      <p class="about-version" id="app-version">v2.1.0</p>
+      <p class="about-version" id="app-version">v2.2.0</p>
     </section>
 
     <button id="btn-close-settings" class="btn btn-secondary btn-full" type="button">Done</button>

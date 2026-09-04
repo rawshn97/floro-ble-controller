@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v56';
+const CACHE_NAME = 'floro-controller-v57';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './js/color-picker.js',
   './js/colors.js',
   './js/ui.js',
+  './js/pwa-install.js',
   './js/state.js',
   './js/mode-names.js',
   './js/protocol.js',

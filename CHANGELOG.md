@@ -2,6 +2,17 @@
 
 All notable changes to FloRo Sign Controller are documented here. Version numbers match `APP_VERSION` in `js/ui.js`. Bump `CACHE_NAME` in `sw.js` when static assets change so installed PWAs pick up updates.
 
+## [2.2.0] - 2026-09-05
+
+### Fixed
+- PWA **Install** now opens Chrome/Edge's native install dialog when the browser offers one. It no longer shows a fake "use the ⋮ menu" sheet that Chrome will not display after `preventDefault`.
+- Manifest `launch_handler.client_mode` is an array; `id` is the canonical `https://rawshn.com/sign-controller/`; `start_url` / `scope` / icons are relative `./` paths.
+- Removed the runtime `<base>` tag and JS-injected manifest link (both broke installability).
+
+### Added
+- `js/pwa-install.js` (Health Hub-style prompt). Specs under `SPEC.md` / `specs/`.
+- `scripts/check-pwa.mjs` CI contract for the install path.
+
 ## [2.1.0] - 2026-06-29
 
 ### Added

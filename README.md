@@ -4,9 +4,9 @@ A progressive web app for controlling FloRo neon signs over **Web Bluetooth**. C
 
 ## Requirements
 
-- **HTTPS** — Web Bluetooth only works on secure origins (`https://` or `localhost`)
-- **Browser** — Chrome or Edge (desktop or Android). Safari and Firefox do not support Web Bluetooth
-- **Bluetooth** — Enabled on your device, sign powered on and in range
+- **HTTPS**: Web Bluetooth only works on secure origins (`https://` or `localhost`)
+- **Browser**: Chrome or Edge (desktop or Android). Safari and Firefox do not support Web Bluetooth
+- **Bluetooth**: Enabled on your device, sign powered on and in range
 
 ## Quick start
 
@@ -78,52 +78,55 @@ On connect and whenever you change color or animation, the app sends brightness,
 ## Project structure
 
 ```
-├── index.html          # App shell (early beforeinstallprompt capture, base href for subpaths)
+├── index.html          # App shell (static manifest link, early beforeinstallprompt capture)
 ├── css/styles.css      # Styles
 ├── js/
 │   ├── app.js          # UI wiring, mode logic, auto-reconnect
 │   ├── ble.js          # BLE connection, command queue, reconnect
+│   ├── pwa-install.js  # Native PWA install (prompt() only when Chromium offers it)
 │   ├── color-picker.js # Custom HSL color picker widget
 │   ├── protocol.js     # Hex/RGB helpers and wire-format constants
 │   ├── errors.js       # User-facing BLE error messages
-│   └── ui.js           # View transitions, sheets, PWA install, wake lock, haptics
+│   └── ui.js           # View transitions, sheets, wake lock, haptics
 ├── icons/              # PWA icons (192, 512, apple-touch)
 ├── sw.js               # Service worker (offline caching)
 ├── manifest.webmanifest # PWA manifest
+├── SPEC.md             # Spec index
 ├── CHANGELOG.md        # Release notes (version + SW cache bumps)
 ├── scripts/
-│   └── generate-icons.mjs
+│   ├── generate-icons.mjs
+│   └── check-pwa.mjs
 ├── DESIGN.md           # Design system and IA reference
 └── vercel.json         # Deploy config (Bluetooth permissions policy)
 ```
 
 ## Features
 
-- **Reliable writes** — Command queue with coalescing and automatic retry (up to 3 attempts)
-- **Reconnect** — One-tap reconnect to the last paired sign (Chrome `getDevices()` API)
-- **Wake lock** — Keeps the screen on while connected
-- **Favorites** — Save animation modes to localStorage with custom names
-- **Scene restore** — Saves tab, brightness, speed, color, and mode to localStorage. On connect and power-on, the UI opens Animation with the last saved animation pre-selected so the remote matches what the sign displays.
-- **Offline PWA** — Installable app with cached assets via service worker
-- **Smart install prompts** — Platform-aware banner (iOS steps, Android menu fallback when `beforeinstallprompt` is delayed), 7-day dismiss TTL, Settings > Install App anytime
+- **Reliable writes**: Command queue with coalescing and automatic retry (up to 3 attempts)
+- **Reconnect**: One-tap reconnect to the last paired sign (Chrome `getDevices()` API)
+- **Wake lock**: Keeps the screen on while connected
+- **Favorites**: Save animation modes to localStorage with custom names
+- **Scene restore**: Saves tab, brightness, speed, color, and mode to localStorage. On connect and power-on, the UI opens Animation with the last saved animation pre-selected so the remote matches what the sign displays.
+- **Offline PWA**: Installable app with cached assets via service worker
+- **Install**: Native Chrome/Edge dialog when `beforeinstallprompt` fires. The in-page **Install** button only appears then. iOS: Share → Add to Home Screen.
 
 ## PWA install behavior
 
-The install prompt is a floating bottom card (`#install-banner.install-prompt`), not a dock inside the remote control shell. It sits above the safe area with logo, title, platform-specific instructions, an always-tappable **Install** button, and a **Not now** dismiss button.
+See [`specs/pwa.md`](specs/pwa.md). Short version: **Install** calls the browser's native `prompt()`. It never pretends that Chrome's ⋮ menu will install the app.
 
-| Platform | Banner | Install button in banner |
-|----------|--------|--------------------------|
-| **Android (Chrome/Edge)** | Floating card after ~2.5s fallback (or when `beforeinstallprompt` fires) | Always visible; native install dialog when available, otherwise opens step-by-step modal (Chrome menu → Install app) |
-| **iOS (Safari)** | Floating card on first visit | Always visible; opens Add to Home Screen steps modal |
-| **Desktop** | Hidden until `beforeinstallprompt` or Settings > Install App | Native **Install** when available; otherwise modal with steps |
+| Platform | Banner | Install button |
+|----------|--------|----------------|
+| **Android (Chrome/Edge)** | After `beforeinstallprompt`, or a 2.5s fallback with honest copy | Only when the native prompt exists |
+| **iOS (Safari)** | On first visit (Share → Add to Home Screen copy) | Hidden (Apple has no auto-install) |
+| **Desktop** | Hidden until `beforeinstallprompt` | Native **Install** when Chrome/Edge offers it |
 
-Dismiss **Not now** stores a timestamp in `localStorage` (`floro_install_dismissed_v4`) and hides the banner for **7 days**. Settings > **Install App** always works (native prompt or step-by-step modal). After install (standalone mode), the banner hides automatically.
+Dismiss **Not now** stores `floro_install_dismissed_v5` for **7 days**. Settings > **Install App** still works (native prompt, or a help sheet). After install (standalone), the banner hides.
 
 ## Assets
 
 Add `logo.png` (512×512) and/or `floro.png` to the project root for the header. PWA install icons live in `icons/` (regenerate with `node scripts/generate-icons.mjs` after updating `logo.png`). The app falls back gracefully if images are missing.
 
-**Add to Home Screen** on Android (Chrome/Edge) for standalone PWA access. iOS: Safari Share, then Add to Home Screen. If you dismiss the banner, it stays away for 7 days; use Settings > Install App anytime.
+On Chrome/Edge, use the in-page **Install** button when it appears (native dialog). iOS: Safari Share, then Add to Home Screen. If you dismiss the banner, it stays away for 7 days; use Settings > Install App anytime.
 
 ## License
 

@@ -742,13 +742,15 @@ Do **not** introduce these — they break the premium-remote feel:
 **Subdirectory routing:** This repo is a git submodule at `rawshn-portfolio/public/sign-controller/`. The portfolio build serves those static files at `/sign-controller/` on `rawshn.com` (embedded static assets, not an external rewrite like `/coach`). Deploy via `bash scripts/deploy.sh` or bump the submodule in `rawshn-portfolio` and run `vercel deploy --prod` there.
 
 ### PWA notes
-- **Asset paths:** `manifest.webmanifest` uses absolute `/sign-controller/` paths (matches Health Hub `/coach/` pattern for standalone install). Page assets use `./` with `<base href>` for subdirectory resolution.
-- **Display:** `standalone` with `display_override: ["standalone", "minimal-ui"]`
+Canonical contract: [`specs/pwa.md`](specs/pwa.md). Health Hub is the reference for the install button (native `prompt()` only).
+- **Asset paths:** Relative `./` in the page, SW, and manifest. No `<base>` tag. Works at localhost `/` and production `/sign-controller/`.
+- **Display:** `standalone` with `display_override: ["standalone"]`
+- **Identity:** `id` = `https://rawshn.com/sign-controller/`
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `${__FLORO_PWA_BASE}sw.js` with matching scope; cache `floro-controller-v31`
-- **Install prompt:** Fixed bottom overlay (`#install-banner`, z-index 70); mobile Install always visible until standalone; Android 2.5s fallback; compact card on short viewports
-- **Required header:** `Permissions-Policy: bluetooth=(self)` in `vercel.json`
+- **Service worker:** `./sw.js` on `load`; bump `CACHE_NAME` on asset changes
+- **Install prompt:** `#install-banner`; **Install** visible only when `beforeinstallprompt` fired
+- **Required header:** `Permissions-Policy: bluetooth=(self)` plus `Cache-Control: no-cache` on `sw.js` (portfolio `vercel.json`)
 
 ## File Map
 
@@ -756,14 +758,15 @@ Do **not** introduce these — they break the premium-remote feel:
 |------|----------------------|
 | `index.html` | IA structure, ARIA roles, component markup |
 | `css/styles.css` | All visual tokens, mint remote layout, gauge, motion |
-| `js/ui.js` | Arc gauge, view transitions, sheets, theme color, install dock |
+| `js/ui.js` | View transitions, sheets, theme color |
+| `js/pwa-install.js` | Native install prompt (Health Hub contract) |
 | `UI_OVERHAUL_PLAN.md` | Phased implementation plan for mint remote build |
 | `js/state.js` | Scene persistence (localStorage) |
 | `js/app.js` | Mode logic, auto-reconnect, remote dock, color presets |
 | `js/mode-names.js` | Curated friendly names for modes 1–200 |
 | `js/color-picker.js` | Custom HSL palette widget |
 | `js/errors.js` | User-facing BLE error messages for activity log |
-| `manifest.webmanifest` | PWA identity (`/sign-controller/` absolute scope for portfolio install) |
+| `manifest.webmanifest` | PWA identity (`./` scope, canonical `id`) |
 | `icons/` | Install / home-screen icons (from Neon Attack `logo.png`) |
 | `sw.js` | Offline cache |
 | `logo.png` | Neon Attack official mark (header + icon source) |
@@ -807,8 +810,8 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 ### Unchanged JS contracts
 
 - All 65 IDs in `scripts/check-ids.sh`.
-- `syncSceneGauge()`, `updateConnectQuickAction()`, `updateNeonThemeColor()`, `truncatePresetLabel()` behavior preserved.
-- Service worker cache bumped (`floro-controller-v48`) on static asset change.
+- `updateConnectQuickAction()`, `updateNeonThemeColor()`, `truncatePresetLabel()` behavior preserved.
+- Service worker cache bumped on static asset change (`floro-controller-v57` as of 2026-09-05).
 
 ## Decisions Log
 
@@ -850,3 +853,4 @@ Locked layout decisions for the from-scratch HTML/CSS rebuild. Tokens and north 
 | 2026-07-09 | Custom color: commit on pause + sheet close flush | Live BLE while dragging; Static tab when leaving animation; Done only closes |
 | 2026-07-09 | Material Symbols + 48dp control rows | Cut whitespace; icons replace verbose labels; compact density |
 | 2026-07-09 | Color swatch types: neon / saved / custom | Dashed ring + tune badge for unsaved custom; labels under recents; `resolveColorLabel` |
+| 2026-09-05 | PWA install matches Health Hub | Native `prompt()` only; relative manifest; no `<base>`; see `specs/pwa.md` |

@@ -22,9 +22,12 @@ jobs:
           test -f manifest.webmanifest
           test -f sw.js
           test -f js/errors.js
+          test -f js/pwa-install.js
           grep -q 'manifest.webmanifest' index.html
-          grep -q 'floro-controller-v51' sw.js
           ! test -f manifest.json
+
+      - name: Check PWA install contracts
+        run: node scripts/check-pwa.mjs
 
       - name: Regenerate PWA icons
         run: node scripts/generate-icons.mjs

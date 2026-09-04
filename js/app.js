@@ -21,6 +21,7 @@ import {
   loadSceneState,
   scheduleSceneSave,
 } from './state.js';
+import { setupPwaInstall } from './pwa-install.js';
 import {
   APP_VERSION,
   createLogger,
@@ -33,7 +34,6 @@ import {
   setupFavoriteModal,
   setupModePickerSheet,
   setupPaletteToggle,
-  setupPwaInstall,
   setupSettingsSheet,
   updateConnectionChip,
   updateNeonThemeColor,
