@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v57';
+const CACHE_NAME = 'floro-controller-v58';
 const ASSETS = [
   './',
   './index.html',
@@ -22,16 +22,15 @@ const ASSETS = [
 ];
 
 function isNetworkFirstRequest(request) {
-  if (request.mode === 'navigate') return true;
   const path = new URL(request.url).pathname;
   return path.endsWith('/manifest.webmanifest') || path.endsWith('/sw.js');
 }
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      Promise.allSettled(ASSETS.map((url) => cache.add(url))).then(() => self.skipWaiting())
-    )
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -46,6 +45,22 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  if (event.request.mode === 'navigate') {
+    const networkResponse = fetch(event.request).then((response) => {
+      if (!response.ok) return response;
+      const copy = response.clone();
+      return caches.open(CACHE_NAME)
+        .then((cache) => cache.put('./index.html', copy))
+        .then(() => response);
+    });
+
+    event.waitUntil(networkResponse.then(() => undefined).catch(() => undefined));
+    event.respondWith(
+      caches.match('./index.html').then((cached) => cached || networkResponse)
+    );
+    return;
+  }
+
   if (isNetworkFirstRequest(event.request)) {
     event.respondWith(
       fetch(event.request)
@@ -57,9 +72,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
           return caches.match(event.request);
         })
     );

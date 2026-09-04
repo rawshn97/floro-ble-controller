@@ -58,8 +58,8 @@
   --radius-pill: 999px;
   --radius-control: 12px;
 
-  --font-display: 'Roboto Flex', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --font-display: 'Roboto', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
   --header-height: 56px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);

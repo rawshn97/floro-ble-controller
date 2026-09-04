@@ -1,6 +1,6 @@
 import { formatModeLabel, getModeName, MODE_COUNT } from './mode-names.js';
 
-export const APP_VERSION = '2.2.0';
+export const APP_VERSION = '2.2.1';
 
 export function createLogger(consoleBody) {
   return function log(message, type = 'info') {

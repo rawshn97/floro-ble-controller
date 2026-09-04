@@ -2,6 +2,18 @@
 
 All notable changes to FloRo Sign Controller are documented here. Version numbers match `APP_VERSION` in `js/ui.js`. Bump `CACHE_NAME` in `sw.js` when static assets change so installed PWAs pick up updates.
 
+## [2.2.1] - 2026-09-05
+
+### Fixed
+- Register the service worker immediately instead of waiting for every font and image to load, and bypass stale CDN caches during worker updates.
+- Add an honest manual-install path when Chrome withholds `beforeinstallprompt`, plus installed-app detection and app-drawer instructions for Android.
+- Use the searchable Android app name **FloRo Sign** while preserving the same production manifest identity.
+- Serve cached navigations immediately so installed launches do not wait on a poor network connection.
+
+### Performance
+- Replace the 3.7 MB Material Symbols font with a 6 KB subset containing only the 16 icons used by FloRo.
+- Remove render-blocking third-party Google Font requests; Android continues to use its native Roboto font.
+
 ## [2.2.0] - 2026-09-05
 
 ### Fixed
