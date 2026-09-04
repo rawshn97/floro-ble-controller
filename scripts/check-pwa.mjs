@@ -42,7 +42,7 @@ if (!html.includes('id="btn-install"') || !html.includes('install-banner-action-
   fail('Install button must start hidden until a native prompt exists');
 }
 if (!html.includes('id="btn-install-help"')) {
-  fail('Android needs an honest manual-install fallback when Chrome withholds prompt()');
+  fail('install help is required for iOS and already-installed app guidance');
 }
 if (!html.includes("updateViaCache: 'none'")) {
   fail('service worker registration must bypass stale HTTP caches');
@@ -137,6 +137,16 @@ if (!nativeInstallHandler.includes('triggerNativeInstall') ||
 }
 if (!pwaSrc.includes("btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa)")) {
   fail('Install button visibility must follow hasNativePrompt');
+}
+if (!pwaSrc.includes("hasNativePrompt || (!installedPwa && !isIOS())")) {
+  fail('Android must not show a manual install action without the native prompt');
+}
+if (!pwaSrc.includes('syncSettingsInstall')) {
+  fail('Settings install action must be hidden until native install or valid platform help exists');
+}
+if (pwaSrc.includes('Install and create shortcut') ||
+    pwaSrc.includes('Tap the three-dot Chrome menu')) {
+  fail('Android install guidance must never route users into Chrome shortcut creation');
 }
 
 if (!process.exitCode) {

@@ -1,6 +1,6 @@
 /** Native PWA install with honest manual and already-installed fallbacks. */
 
-export const DISMISS_KEY = 'floro_install_dismissed_v6';
+export const DISMISS_KEY = 'floro_install_dismissed_v7';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function isStandalone() {
@@ -63,7 +63,7 @@ function installHelpText(hasNativePrompt, installedPwa) {
     return 'Open this page in Safari, tap Share, then Add to Home Screen.';
   }
   if (isAndroid() && !hasNativePrompt) {
-    return 'Chrome has not offered one-tap install yet. You can still install from the Chrome menu.';
+    return 'Waiting for Chrome’s app installer. Do not create a shortcut—it opens as a browser tab.';
   }
   return 'Install FloRo so it opens full screen, not as a browser tab.';
 }
@@ -112,13 +112,22 @@ export function setupPwaInstall({
       btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa);
     }
     if (btnInstallHelp) {
-      btnInstallHelp.textContent = installedPwa ? 'Find app' : 'Install help';
+      btnInstallHelp.textContent = installedPwa ? 'Find app' : 'How to install';
       btnInstallHelp.classList.toggle(
         'hidden',
-        hasNativePrompt || (!installedPwa && !isAndroid() && !isIOS())
+        hasNativePrompt || (!installedPwa && !isIOS())
       );
     }
     btnDismiss?.classList.remove('hidden');
+    syncSettingsInstall();
+  }
+
+  function syncSettingsInstall() {
+    const section = settingsBtn?.closest('.settings-section');
+    if (!section) return;
+    const canInstallOrHelp =
+      !isStandalone() && (Boolean(deferredPrompt) || installedPwa || isIOS());
+    section.classList.toggle('hidden', !canInstallOrHelp);
   }
 
   function renderModalSteps(items) {
@@ -160,14 +169,14 @@ export function setupPwaInstall({
       return;
     }
 
-    modalTitle.textContent = 'Install FloRo Sign';
+    modalTitle.textContent = 'App install not ready';
     modalDesc.textContent =
-      'Chrome can delay or temporarily suppress its one-tap prompt. Manual installation is always available:';
+      'Chrome has not made native app installation available yet. A shortcut is only a bookmark and will keep the browser bar.';
     renderModalSteps([
       'Open this page directly in Chrome or Edge, not an in-app browser',
-      'Tap the three-dot Chrome menu',
-      'Tap Add to Home screen (or Install and create shortcut), then choose Install app',
-      'After installation, swipe up and search your app drawer for FloRo Sign',
+      'Keep the page open briefly and interact with it so Chrome can finish checking the app',
+      'Reload the page and use FloRo’s Install button when it appears',
+      'Do not choose Create shortcut from Chrome’s menu',
     ]);
   }
 
@@ -217,6 +226,7 @@ export function setupPwaInstall({
   } else {
     hideBanner();
   }
+  syncSettingsInstall();
 
   window.addEventListener('appinstalled', () => {
     installedPwa = true;
@@ -224,6 +234,7 @@ export function setupPwaInstall({
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
     showBanner();
+    syncSettingsInstall();
   });
 
   btnInstall?.addEventListener('click', async () => {
@@ -255,10 +266,6 @@ export function setupPwaInstall({
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeHelpSheet();
   });
-
-  if (settingsBtn && isStandalone()) {
-    settingsBtn.closest('.settings-section')?.classList.add('hidden');
-  }
 
   detectInstalledPwa().then((installed) => {
     if (!installed || isStandalone()) return;

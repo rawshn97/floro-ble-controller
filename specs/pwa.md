@@ -61,15 +61,15 @@ Module: `js/pwa-install.js`. Early capture in `index.html` (before other scripts
 | Situation | Banner | Install button | Click |
 |-----------|--------|----------------|-------|
 | `beforeinstallprompt` fired | Show | Show | `event.prompt()` only |
-| Android, no native event | Show immediately (honest copy) | **Install help** | Chrome menu instructions |
+| Android, no native event | Show immediately (honest copy) | Hidden | Wait for native eligibility; never create a shortcut |
 | Android, PWA already installed | Show find-app copy | **Find app** | App-drawer instructions |
 | iOS, not standalone | Show (Share → A2HS copy) | **Install help** | Share → Add to Home Screen instructions |
 | Desktop, no event | Hidden | Hidden | Settings help sheet only |
 | Already standalone | Hidden | Hidden | Settings install row hidden |
 
-Dismiss **Not now** writes `localStorage` `floro_install_dismissed_v6` with a 7-day TTL. Settings → **Install App** ignores dismiss: native `prompt()` if held, otherwise the help sheet. A self-reference in `related_applications` lets supporting Chrome versions distinguish “prompt unavailable” from “already installed.” Android launchers may install into the app drawer without pinning a Home screen icon, so the installed help names both **FloRo Sign** and the old **FloRo** short name.
+Dismiss **Not now** writes `localStorage` `floro_install_dismissed_v7` with a 7-day TTL. On Android and desktop, Settings → **Install App** is visible only while a native prompt is held or an existing installation was detected. It never directs users into Chrome’s **Create shortcut** flow, which creates a browser bookmark instead of a standalone app. A self-reference in `related_applications` lets supporting Chrome versions distinguish “prompt unavailable” from “already installed.” Android launchers may install into the app drawer without pinning a Home screen icon, so the installed help names both **FloRo Sign** and the old **FloRo** short name.
 
-`preventDefault` on `beforeinstallprompt` is required to call `prompt()` later. The in-page **Install** button must call that event directly. If Chrome does not emit the event (for example, after a recent dismissal), the separately labeled **Install help** action may explain the manual menu route; it must never pretend to invoke native installation.
+`preventDefault` on `beforeinstallprompt` is required to call `prompt()` later. The in-page **Install** button must call that event directly. If Chrome does not emit the event, FloRo must not offer an Android install action. **Create shortcut** is not an installation and must never be presented as a fallback.
 
 ## Verification
 
@@ -83,5 +83,6 @@ Manual: Chrome or Edge on Android, https://rawshn.com/sign-controller/, tap **In
 
 | Date | Change |
 |------|--------|
+| 2026-09-05 | Removed Android shortcut flow; only native `beforeinstallprompt` can expose Install |
 | 2026-09-05 | Register SW immediately, detect existing installs, add honest manual fallback, and make cached launches fast |
 | 2026-09-05 | Reimplemented to match Health Hub: native prompt only, static manifest, relative scope |

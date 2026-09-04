@@ -2,6 +2,13 @@
 
 All notable changes to FloRo Sign Controller are documented here. Version numbers match `APP_VERSION` in `js/ui.js`. Bump `CACHE_NAME` in `sw.js` when static assets change so installed PWAs pick up updates.
 
+## [2.2.2] - 2026-09-05
+
+### Fixed
+- Match Health Hub's native installation contract: Android and desktop show **Install** only while Chromium supplies `beforeinstallprompt`, and clicking it calls `prompt()` directly.
+- Remove the Android menu-help route that could lead users to **Create shortcut**, which is a Chrome bookmark and not a standalone PWA.
+- Hide Settings > Install App when no native Chromium prompt exists; iOS and already-installed app guidance remain available.
+
 ## [2.2.1] - 2026-09-05
 
 ### Fixed
