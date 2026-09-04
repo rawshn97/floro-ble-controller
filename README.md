@@ -116,7 +116,7 @@ See [`specs/pwa.md`](specs/pwa.md). Short version: **Install** calls the browser
 
 | Platform | Banner | Install button |
 |----------|--------|----------------|
-| **Android (Chrome/Edge)** | After `beforeinstallprompt`, or a 2.5s fallback with honest copy | Native **Install**, or clearly labeled **Install help** |
+| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate honest guidance | Native **Install**, or clearly labeled **Install help** |
 | **iOS (Safari)** | On first visit (Share → Add to Home Screen copy) | Hidden (Apple has no auto-install) |
 | **Desktop** | Hidden until `beforeinstallprompt` | Native **Install** when Chrome/Edge offers it |
 

@@ -9,10 +9,12 @@ All notable changes to FloRo Sign Controller are documented here. Version number
 - Add an honest manual-install path when Chrome withholds `beforeinstallprompt`, plus installed-app detection and app-drawer instructions for Android.
 - Use the searchable Android app name **FloRo Sign** while preserving the same production manifest identity.
 - Serve cached navigations immediately so installed launches do not wait on a poor network connection.
+- Show Android install guidance without the old 2.5-second layout shift that delayed Largest Contentful Paint.
 
 ### Performance
 - Replace the 3.7 MB Material Symbols font with a 6 KB subset containing only the 16 icons used by FloRo.
 - Remove render-blocking third-party Google Font requests; Android continues to use its native Roboto font.
+- Reuse the 192 px app icon in the install banner instead of downloading and precaching a duplicate 53 KB logo.
 
 ## [2.2.0] - 2026-09-05
 

@@ -2,7 +2,6 @@
 
 export const DISMISS_KEY = 'floro_install_dismissed_v6';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const ANDROID_FALLBACK_DELAY_MS = 2500;
 
 export function isStandalone() {
   return (
@@ -87,20 +86,17 @@ export function setupPwaInstall({
 }) {
   let deferredPrompt = window.__floroDeferredInstall || null;
   let installedPwa = isStandalone();
-  let androidFallbackTimer = null;
 
   function showBanner() {
     if (!bannerEl || shouldSuppressBanner()) return;
     bannerEl.classList.remove('hidden');
     bannerEl.setAttribute('aria-hidden', 'false');
-    document.querySelector('.app-shell')?.classList.add('install-banner-visible');
     syncBanner();
   }
 
   function hideBanner() {
     bannerEl?.classList.add('hidden');
     bannerEl?.setAttribute('aria-hidden', 'true');
-    document.querySelector('.app-shell')?.classList.remove('install-banner-visible');
   }
 
   function syncBanner() {
@@ -123,13 +119,6 @@ export function setupPwaInstall({
       );
     }
     btnDismiss?.classList.remove('hidden');
-  }
-
-  function scheduleAndroidFallback() {
-    if (shouldSuppressBanner() || !isAndroid() || deferredPrompt) return;
-    androidFallbackTimer = window.setTimeout(() => {
-      if (!deferredPrompt && !shouldSuppressBanner()) showBanner();
-    }, ANDROID_FALLBACK_DELAY_MS);
   }
 
   function renderModalSteps(items) {
@@ -214,10 +203,6 @@ export function setupPwaInstall({
     deferredPrompt = event;
     installedPwa = false;
     window.__floroDeferredInstall = event;
-    if (androidFallbackTimer) {
-      window.clearTimeout(androidFallbackTimer);
-      androidFallbackTimer = null;
-    }
     showBanner();
   }
 
@@ -227,11 +212,10 @@ export function setupPwaInstall({
     hideBanner();
   } else if (deferredPrompt) {
     showBanner();
-  } else if (isIOS()) {
+  } else if (isIOS() || isAndroid()) {
     showBanner();
   } else {
     hideBanner();
-    scheduleAndroidFallback();
   }
 
   window.addEventListener('appinstalled', () => {
@@ -281,10 +265,6 @@ export function setupPwaInstall({
     installedPwa = true;
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
-    if (androidFallbackTimer) {
-      window.clearTimeout(androidFallbackTimer);
-      androidFallbackTimer = null;
-    }
     showBanner();
   });
 }

@@ -61,7 +61,7 @@ Module: `js/pwa-install.js`. Early capture in `index.html` (before other scripts
 | Situation | Banner | Install button | Click |
 |-----------|--------|----------------|-------|
 | `beforeinstallprompt` fired | Show | Show | `event.prompt()` only |
-| Android, no event after 2.5s | Show (honest copy) | **Install help** | Chrome menu instructions |
+| Android, no native event | Show immediately (honest copy) | **Install help** | Chrome menu instructions |
 | Android, PWA already installed | Show find-app copy | **Find app** | App-drawer instructions |
 | iOS, not standalone | Show (Share → A2HS copy) | **Install help** | Share → Add to Home Screen instructions |
 | Desktop, no event | Hidden | Hidden | Settings help sheet only |

@@ -140,10 +140,6 @@ body.sheet-open { overflow: hidden; }
   background: var(--bg-deep);
 }
 
-.app-shell.install-banner-visible {
-  padding-bottom: calc(88px + var(--safe-bottom));
-}
-
 /* ── Material Symbols (self-hosted for offline PWA) ── */
 
 @font-face {

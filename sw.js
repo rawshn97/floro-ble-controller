@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v58';
+const CACHE_NAME = 'floro-controller-v59';
 const ASSETS = [
   './',
   './index.html',
@@ -18,7 +18,6 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
-  './logo.png',
 ];
 
 function isNetworkFirstRequest(request) {
