@@ -7,7 +7,9 @@ All notable changes to FloRo Sign Controller are documented here. Version number
 ### Fixed
 - Match Health Hub's native installation contract: Android and desktop show **Install** only while Chromium supplies `beforeinstallprompt`, and clicking it calls `prompt()` directly.
 - Remove the Android menu-help route that could lead users to **Create shortcut**, which is a Chrome bookmark and not a standalone PWA.
-- Hide Settings > Install App when no native Chromium prompt exists; iOS and already-installed app guidance remain available.
+- Hide Settings > Install App when no native Chromium prompt exists; iOS guidance remains available.
+- Remove the separate install-help control, self-referential `related_applications`, and installed-app detection for strict Health Hub parity.
+- Restore the canonical production manifest ID used by Health Hub's identity pattern.
 
 ## [2.2.1] - 2026-09-05
 
