@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Contracts for the installable PWA. Fail CI if the Health Hub-aligned
- * install path regresses (fake Install button, JS-injected manifest, etc.).
+ * Contracts for the installable PWA. Fail CI if the native install path,
+ * honest fallback, manifest, or startup performance regresses.
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -41,6 +41,21 @@ if (!html.includes('beforeinstallprompt')) {
 if (!html.includes('id="btn-install"') || !html.includes('install-banner-action-primary hidden')) {
   fail('Install button must start hidden until a native prompt exists');
 }
+if (!html.includes('id="btn-install-help"')) {
+  fail('Android needs an honest manual-install fallback when Chrome withholds prompt()');
+}
+if (!html.includes("updateViaCache: 'none'")) {
+  fail('service worker registration must bypass stale HTTP caches');
+}
+if (html.includes("window.addEventListener('load'") && html.includes('serviceWorker.register')) {
+  fail('service worker registration must not wait for slow page assets to finish loading');
+}
+if (html.includes('fonts.googleapis.com') || html.includes('fonts.gstatic.com')) {
+  fail('startup must not depend on third-party web fonts');
+}
+if (/id="connect-prompt"\s+class="[^"]*\bhidden\b/.test(html)) {
+  fail('default disconnected banner must render in the initial shell to avoid layout shift');
+}
 
 let manifest;
 try {
@@ -53,8 +68,8 @@ if (manifest) {
   if (manifest.start_url !== './' || manifest.scope !== './') {
     fail('manifest start_url and scope must be "./" (portable across localhost and /sign-controller/)');
   }
-  if (manifest.id !== 'https://rawshn.com/sign-controller/') {
-    fail('manifest id must be the canonical https://rawshn.com/sign-controller/');
+  if (manifest.id !== './') {
+    fail('manifest id must be "./" so it resolves consistently on production and localhost');
   }
   if (manifest.display !== 'standalone') {
     fail('manifest display must be standalone');
@@ -74,6 +89,11 @@ if (manifest) {
   if (!icons.some((i) => i.sizes === '192x192') || !icons.some((i) => i.sizes === '512x512')) {
     fail('manifest needs 192x192 and 512x512 icons');
   }
+  if (!manifest.related_applications?.some(
+    (app) => app.platform === 'webapp' && app.url === './manifest.webmanifest'
+  )) {
+    fail('manifest must self-reference so Android can detect an existing installation');
+  }
 }
 
 if (!/const CACHE_NAME = 'floro-controller-v\d+'/.test(sw)) {
@@ -85,18 +105,37 @@ if (!sw.includes('./js/pwa-install.js')) {
 if (!sw.includes("addEventListener('fetch'") && !sw.includes('addEventListener("fetch"')) {
   fail('sw.js must have a fetch handler (Chrome installability)');
 }
+if (!sw.includes("event.request.mode === 'navigate'") || !sw.includes("caches.match('./index.html')")) {
+  fail('service worker must serve cached navigation immediately for fast installed-app launch');
+}
+if (!sw.includes("new Request(url, { cache: 'reload' })")) {
+  fail('precache must bypass the HTTP cache so a version bump cannot reinstall stale assets');
+}
+
+const symbolsFont = join(root, 'fonts/MaterialSymbolsOutlined.woff2');
+if (!existsSync(symbolsFont)) {
+  fail('missing self-hosted Material Symbols font');
+} else if (statSync(symbolsFont).size > 50_000) {
+  fail('Material Symbols font must stay subset below 50 KB');
+}
 
 if (existsSync(join(root, 'manifest.json'))) {
   fail('do not ship manifest.json; use manifest.webmanifest');
 }
 
 const pwaSrc = readFileSync(join(root, 'js/pwa-install.js'), 'utf8');
-if (pwaSrc.includes("btnInstall?.addEventListener('click'") &&
-    /btnInstall\?\.addEventListener\('click'[\s\S]{0,180}openHelpSheet/.test(pwaSrc)) {
+const stateSrc = readFileSync(join(root, 'js/state.js'), 'utf8');
+if (!/activeMode:\s*32/.test(stateSrc) || !/lastAnimationMode:\s*32/.test(stateSrc)) {
+  fail('first-run Dynamic state must start on specified mode 32');
+}
+const nativeInstallHandler = pwaSrc.match(
+  /btnInstall\?\.addEventListener\('click',[\s\S]*?\n  \}\);/
+)?.[0] || '';
+if (!nativeInstallHandler.includes('triggerNativeInstall') ||
+    nativeInstallHandler.includes('openHelpSheet')) {
   fail('Install button click must call prompt() only; do not open the help sheet');
 }
-if (!pwaSrc.includes('classList.toggle(\'hidden\', !hasNativePrompt)') &&
-    !pwaSrc.includes('classList.toggle("hidden", !hasNativePrompt)')) {
+if (!pwaSrc.includes("btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa)")) {
   fail('Install button visibility must follow hasNativePrompt');
 }
 

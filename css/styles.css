@@ -58,8 +58,8 @@
   --radius-pill: 999px;
   --radius-control: 12px;
 
-  --font-display: 'Roboto Flex', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --font-display: 'Roboto', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
   --header-height: 56px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -138,10 +138,6 @@ body.sheet-open { overflow: hidden; }
   overflow: hidden;
   position: relative;
   background: var(--bg-deep);
-}
-
-.app-shell.install-banner-visible {
-  padding-bottom: calc(88px + var(--safe-bottom));
 }
 
 /* ── Material Symbols (self-hosted for offline PWA) ── */

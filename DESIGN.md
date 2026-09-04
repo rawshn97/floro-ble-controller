@@ -745,11 +745,11 @@ Do **not** introduce these — they break the premium-remote feel:
 Canonical contract: [`specs/pwa.md`](specs/pwa.md). Health Hub is the reference for the install button (native `prompt()` only).
 - **Asset paths:** Relative `./` in the page, SW, and manifest. No `<base>` tag. Works at localhost `/` and production `/sign-controller/`.
 - **Display:** `standalone` with `display_override: ["standalone"]`
-- **Identity:** `id` = `https://rawshn.com/sign-controller/`
+- **Identity:** `id` = `./` (resolves to `https://rawshn.com/sign-controller/` in production)
 - **Meta:** `mobile-web-app-capable` + `apple-mobile-web-app-capable`; `apple-mobile-web-app-title` = FloRo
 - **Icons:** Neon Attack `logo.png`; regenerate via `node scripts/generate-icons.mjs`
-- **Service worker:** `./sw.js` on `load`; bump `CACHE_NAME` on asset changes
-- **Install prompt:** `#install-banner`; **Install** visible only when `beforeinstallprompt` fired
+- **Service worker:** register `./sw.js` immediately with `updateViaCache: "none"`; bump `CACHE_NAME` on asset changes
+- **Install prompt:** `#install-banner`; native **Install** only when `beforeinstallprompt` fired, otherwise a clearly labeled help action
 - **Required header:** `Permissions-Policy: bluetooth=(self)` plus `Cache-Control: no-cache` on `sw.js` (portfolio `vercel.json`)
 
 ## File Map

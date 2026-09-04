@@ -13,22 +13,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
   <script>
-    window.addEventListener('load', function () {
-      if (!('serviceWorker' in navigator)) return;
-      navigator.serviceWorker.register('./sw.js').then(
-        function (reg) { console.log('ServiceWorker registered:', reg.scope); },
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(
+        function (reg) {
+          console.log('ServiceWorker registered:', reg.scope);
+          reg.update().catch(function () {});
+        },
         function (err) { console.warn('ServiceWorker registration failed:', err); }
       );
-    });
+    }
   </script>
   <meta name="theme-color" content="#020D0A">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FloRo">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="apple-mobile-web-app-title" content="FloRo Sign">
   <link rel="preload" href="./fonts/MaterialSymbolsOutlined.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
@@ -55,7 +54,7 @@
   <main class="app-main">
     <div id="compat-banner" class="compat-banner hidden"></div>
 
-    <div id="connect-prompt" class="connect-banner hidden" role="region" aria-label="Connect to sign">
+    <div id="connect-prompt" class="connect-banner" role="region" aria-label="Connect to sign">
       <div class="connect-banner__text">
         <span class="material-symbols-outlined connect-banner__icon" aria-hidden="true">bluetooth_searching</span>
         <span><strong>Not connected</strong> Pair your sign</span>
@@ -244,12 +243,13 @@
 
 <div id="install-banner" class="install-prompt hidden" role="region" aria-label="Install FloRo app" aria-hidden="true">
   <div class="install-banner-card">
-    <img src="./logo.png" alt="" class="install-banner-icon" width="48" height="48">
+    <img src="./icons/icon-192.png" alt="" class="install-banner-icon" width="48" height="48">
     <div class="install-banner-content">
       <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
       <p id="install-banner-subtitle" class="install-banner-subtitle">Install FloRo so it opens full screen, not as a browser tab.</p>
       <div class="install-banner-actions">
         <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button">Install</button>
+        <button id="btn-install-help" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button">Install help</button>
         <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action install-banner-action-dismiss" type="button">Not now</button>
       </div>
     </div>
@@ -298,7 +298,7 @@
 
     <section class="settings-section settings-about">
       <p class="about-line">FloRo Sign Controller</p>
-      <p class="about-version" id="app-version">v2.2.0</p>
+      <p class="about-version" id="app-version">v2.2.1</p>
     </section>
 
     <button id="btn-close-settings" class="btn btn-secondary btn-full" type="button">Done</button>

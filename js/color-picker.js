@@ -379,8 +379,8 @@ export function createColorPicker({ root, initialHex = '#ff0000', onColorChange,
       suppressEvents = true;
       setHsl(hexToHsl(n), { commit: false });
       suppressEvents = false;
-      onColorChange?.(currentHex);
       if (commit) {
+        onColorChange?.(currentHex);
         pushRecent(currentHex);
         recent = loadRecent();
         renderRecent();

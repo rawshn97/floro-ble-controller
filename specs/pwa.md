@@ -28,14 +28,15 @@ No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/sign
 
 | Field | Value |
 |-------|--------|
-| `name` / `short_name` | FloRo Sign Controller / FloRo |
+| `name` / `short_name` | FloRo Sign Controller / FloRo Sign |
 | `start_url` / `scope` | `./` |
-| `id` | `https://rawshn.com/sign-controller/` (canonical, matches Health Hub style) |
+| `id` | `./` (resolves to the canonical scope in production and localhost in development) |
 | `display` | `standalone` |
 | `display_override` | `["standalone"]` |
 | `launch_handler.client_mode` | `["navigate-existing", "auto"]` (array, not a string) |
 | `icons` | `./icons/icon-192.png` (`any`), `./icons/icon-512.png` (`any` + `maskable`) |
 | `theme_color` / `background_color` | `#020D0A` |
+| `related_applications` | Self-reference used to detect an existing Android installation |
 
 `prefer_related_applications` stays `false` so Chrome does not skip the install UI looking for a Play Store app.
 
@@ -47,11 +48,11 @@ No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/sign
 navigator.serviceWorker.register('./sw.js');
 ```
 
-Register on `window` `load` so the first paint is not blocked. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js`. Bump `CACHE_NAME` whenever cached assets change.
+Register immediately—the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js` with `cache: "reload"` requests; otherwise a new cache version can be populated with old files from the browser’s HTTP cache. Bump `CACHE_NAME` whenever cached assets change.
 
 Production (portfolio `vercel.json`): `/sign-controller/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /sign-controller/`.
 
-Navigate and manifest/sw requests are network-first so an installed app picks up updates.
+Navigations return the cached app shell immediately and refresh it in the background. Manifest requests are network-first. Worker updates bypass the HTTP cache.
 
 ## Install UI
 
@@ -60,14 +61,15 @@ Module: `js/pwa-install.js`. Early capture in `index.html` (before other scripts
 | Situation | Banner | Install button | Click |
 |-----------|--------|----------------|-------|
 | `beforeinstallprompt` fired | Show | Show | `event.prompt()` only |
-| Android, no event after 2.5s | Show (honest copy) | Hidden | n/a |
-| iOS, not standalone | Show (Share → A2HS copy) | Hidden | n/a |
+| Android, no native event | Show immediately (honest copy) | **Install help** | Chrome menu instructions |
+| Android, PWA already installed | Show find-app copy | **Find app** | App-drawer instructions |
+| iOS, not standalone | Show (Share → A2HS copy) | **Install help** | Share → Add to Home Screen instructions |
 | Desktop, no event | Hidden | Hidden | Settings help sheet only |
 | Already standalone | Hidden | Hidden | Settings install row hidden |
 
-Dismiss **Not now** writes `localStorage` `floro_install_dismissed_v5` with a 7-day TTL. Settings → **Install App** ignores dismiss: native `prompt()` if held, otherwise the help sheet (iOS A2HS or Chromium menu copy). The help sheet is never the primary action for a visible **Install** button.
+Dismiss **Not now** writes `localStorage` `floro_install_dismissed_v6` with a 7-day TTL. Settings → **Install App** ignores dismiss: native `prompt()` if held, otherwise the help sheet. A self-reference in `related_applications` lets supporting Chrome versions distinguish “prompt unavailable” from “already installed.” Android launchers may install into the app drawer without pinning a Home screen icon, so the installed help names both **FloRo Sign** and the old **FloRo** short name.
 
-`preventDefault` on `beforeinstallprompt` is required to call `prompt()` later. It also suppresses Chrome’s default ⋮ **Install app** item. Therefore the in-page **Install** button must be the path that calls `prompt()`. Never tell the user to use ⋮ after we have consumed the event.
+`preventDefault` on `beforeinstallprompt` is required to call `prompt()` later. The in-page **Install** button must call that event directly. If Chrome does not emit the event (for example, after a recent dismissal), the separately labeled **Install help** action may explain the manual menu route; it must never pretend to invoke native installation.
 
 ## Verification
 
@@ -81,4 +83,5 @@ Manual: Chrome or Edge on Android, https://rawshn.com/sign-controller/, tap **In
 
 | Date | Change |
 |------|--------|
+| 2026-09-05 | Register SW immediately, detect existing installs, add honest manual fallback, and make cached launches fast |
 | 2026-09-05 | Reimplemented to match Health Hub: native prompt only, static manifest, relative scope |

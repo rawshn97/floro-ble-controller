@@ -1,16 +1,22 @@
 {
   "name": "FloRo Sign Controller",
-  "short_name": "FloRo",
+  "short_name": "FloRo Sign",
   "description": "Control your FloRo neon sign over Bluetooth",
   "start_url": "./",
   "scope": "./",
-  "id": "https://rawshn.com/sign-controller/",
+  "id": "./",
   "display": "standalone",
   "display_override": ["standalone"],
   "orientation": "portrait",
   "background_color": "#020D0A",
   "theme_color": "#020D0A",
   "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "./manifest.webmanifest"
+    }
+  ],
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
