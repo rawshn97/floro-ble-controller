@@ -24,13 +24,13 @@ This app does **not** need a different stack (Next, Flutter, native) to install.
 <link rel="manifest" href="./manifest.webmanifest">
 ```
 
-No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/sign-controller/` in production).
+No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/floro-remote/` in production).
 
 | Field | Value |
 |-------|--------|
-| `name` / `short_name` | FloRo Sign Controller / FloRo Sign |
+| `name` / `short_name` | FloRo Remote / FloRo Remote |
 | `start_url` / `scope` | `./` |
-| `id` | `https://rawshn.com/sign-controller/` (canonical production identity) |
+| `id` | `https://rawshn.com/floro-remote/` (canonical production identity) |
 | `display` | `standalone` |
 | `display_override` | `["standalone"]` |
 | `launch_handler.client_mode` | `["navigate-existing", "auto"]` (array, not a string) |
@@ -46,9 +46,9 @@ No `<base>` tag. Relative URLs resolve against the page URL (`/` locally, `/sign
 navigator.serviceWorker.register('./sw.js');
 ```
 
-Register immediately—the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js` with `cache: "reload"` requests; otherwise a new cache version can be populated with old files from the browser’s HTTP cache. Bump `CACHE_NAME` whenever cached assets change.
+Register immediately: the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js` with `cache: "reload"` requests; otherwise a new cache version can be populated with old files from the browser’s HTTP cache. Bump `CACHE_NAME` whenever cached assets change.
 
-Production (portfolio `vercel.json`): `/sign-controller/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /sign-controller/`. HTML responses should also send `Link: </sign-controller/manifest.webmanifest>; rel=manifest` so Chrome can discover the manifest when a content blocker strips the `<link>` tag.
+Production (portfolio `vercel.json`): `/floro-remote/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /floro-remote/`. HTML responses should also send `Link: </floro-remote/manifest.webmanifest>; rel=manifest` so Chrome can discover the manifest when a content blocker strips the `<link>` tag.
 
 Navigations are network-first with a cached `index.html` offline fallback. Manifest and worker script requests are network-first. Worker updates bypass the HTTP cache.
 
@@ -74,7 +74,7 @@ Dismiss **Not now** writes `localStorage` `floro_install_dismissed_v7` with a 7-
 node scripts/check-pwa.mjs
 ```
 
-Manual: Chrome or Edge on Android, https://rawshn.com/sign-controller/, tap **Install** when it appears, confirm the native dialog, app opens without browser chrome.
+Manual: Chrome or Edge on Android, https://rawshn.com/floro-remote/, tap **Install** when it appears, confirm the native dialog, app opens without browser chrome.
 
 ## Document history
 

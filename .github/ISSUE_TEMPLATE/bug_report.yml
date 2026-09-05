@@ -1,5 +1,5 @@
 name: Bug report
-description: Something broken in the FloRo Sign Controller PWA
+description: Something broken in the FloRo Remote PWA
 title: "[bug]: "
 labels: ["bug"]
 body:
@@ -27,7 +27,7 @@ body:
     id: url
     attributes:
       label: URL where the bug happened
-      placeholder: https://rawshn.com/sign-controller/ or http://localhost:8080
+      placeholder: https://rawshn.com/floro-remote/ or http://localhost:8080
     validations:
       required: true
 

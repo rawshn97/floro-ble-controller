@@ -50,9 +50,9 @@ function installHelpText(hasNativePrompt) {
     return 'Open this page in Safari, tap Share, then Add to Home Screen.';
   }
   if (isAndroid() && !hasNativePrompt) {
-    return 'Waiting for Chrome’s app installer. Do not create a shortcut—it opens as a browser tab.';
+    return 'Waiting for Chrome’s app installer. Do not create a shortcut: it opens as a browser tab.';
   }
-  return 'Install FloRo so it opens full screen, not as a browser tab.';
+  return 'Install FloRo Remote so it opens full screen, not as a browser tab.';
 }
 
 export function setupPwaInstall({
@@ -87,7 +87,7 @@ export function setupPwaInstall({
   function syncBanner() {
     const hasNativePrompt = Boolean(deferredPrompt);
     if (bannerTitle) {
-      bannerTitle.textContent = 'Install FloRo Sign';
+      bannerTitle.textContent = 'Install FloRo Remote';
     }
     if (bannerSubtitle) {
       bannerSubtitle.textContent = installHelpText(hasNativePrompt);
@@ -158,7 +158,7 @@ export function setupPwaInstall({
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         trackClarityEvent('sc_install_accepted');
-        log?.('User installed FloRo Sign.', 'success');
+        log?.('User installed FloRo Remote.', 'success');
       }
     } catch (err) {
       log?.(`Install prompt failed: ${err?.message || err}`, 'error');
@@ -194,7 +194,7 @@ export function setupPwaInstall({
 
   window.addEventListener('appinstalled', () => {
     trackClarityEvent('sc_install_appinstalled');
-    log?.('FloRo Sign installed.', 'success');
+    log?.('FloRo Remote installed.', 'success');
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
     hideBanner();

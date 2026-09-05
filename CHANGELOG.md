@@ -1,6 +1,14 @@
 # Changelog
 
-All notable changes to FloRo Sign Controller are documented here. Version numbers match `APP_VERSION` in `js/ui.js`. Bump `CACHE_NAME` in `sw.js` when static assets change so installed PWAs pick up updates.
+All notable changes to FloRo Remote are documented here. Version numbers match `APP_VERSION` in `js/ui.js`. Bump `CACHE_NAME` in `sw.js` when static assets change so installed PWAs pick up updates.
+
+## [v68] - 2026-09-05
+
+### Changed
+- Rebrand to FloRo Remote (`/floro-remote/`)
+- Refactored `app.js` into focused ES modules (`app-context`, `connection`, `color-ui`, `mode-ui`, `scene-sync`)
+- Added `docs/ble-protocol.schema.json` and `scripts/check-protocol.mjs`
+- Removed dead code (gauge stubs, legacy CSS, unused helpers)
 
 ## [2.2.2] - 2026-09-05
 

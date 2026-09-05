@@ -75,9 +75,9 @@ try {
 
 if (manifest) {
   if (manifest.start_url !== './' || manifest.scope !== './') {
-    fail('manifest start_url and scope must be "./" (portable across localhost and /sign-controller/)');
+    fail('manifest start_url and scope must be "./" (portable across localhost and /floro-remote/)');
   }
-  if (manifest.id !== 'https://rawshn.com/sign-controller/') {
+  if (manifest.id !== 'https://rawshn.com/floro-remote/') {
     fail('manifest id must be the canonical production identity');
   }
   if (manifest.display !== 'standalone') {
@@ -103,8 +103,8 @@ if (manifest) {
   }
 }
 
-if (!/const CACHE_NAME = 'floro-controller-v\d+'/.test(sw)) {
-  fail('sw.js must define CACHE_NAME = floro-controller-vN');
+if (!/const CACHE_NAME = 'floro-(?:remote|controller)-v\d+'/.test(sw)) {
+  fail('sw.js must define CACHE_NAME = floro-remote-vN');
 }
 if (!sw.includes('./js/pwa-install.js')) {
   fail('sw.js must precache ./js/pwa-install.js');

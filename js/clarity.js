@@ -1,4 +1,4 @@
-/** Microsoft Clarity for FloRo Sign Controller (rawshn.com/sign-controller/). */
+/** Microsoft Clarity for FloRo Remote (rawshn.com/floro-remote/). */
 
 export const CLARITY_PROJECT_ID = 'yakgofwgk3';
 
@@ -13,7 +13,7 @@ export function initClarity() {
 
   trackClarityEvent('sc_app_open');
   if (typeof window.clarity === 'function') {
-    window.clarity('set', 'app', 'sign-controller');
+    window.clarity('set', 'app', 'floro-remote');
   }
 
   document.addEventListener(

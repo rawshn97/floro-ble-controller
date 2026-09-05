@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PORTFOLIO="${PORTFOLIO_ROOT:-$HOME/Projects/rawshn-portfolio}"
-SUBMODULE_PATH="public/sign-controller"
+TARGET_DIR="$PORTFOLIO/public/floro-remote"
 
 cd "$ROOT"
 
@@ -40,34 +40,38 @@ if [[ ! -d "$PORTFOLIO/.git" ]]; then
   exit 1
 fi
 
-echo "Bumping $SUBMODULE_PATH in rawshn-portfolio to $FLORO_SHORT..."
-cd "$PORTFOLIO"
-git submodule update --init "$SUBMODULE_PATH"
-git -C "$SUBMODULE_PATH" fetch origin main
-git -C "$SUBMODULE_PATH" checkout main
-git -C "$SUBMODULE_PATH" pull --ff-only origin main
+echo "Syncing FloRo Remote into rawshn-portfolio ($FLORO_SHORT)..."
+mkdir -p "$TARGET_DIR"
+rsync -av --delete \
+  --exclude='.git' \
+  --exclude='.vercel' \
+  --exclude='.gstack' \
+  --exclude='node_modules' \
+  "$ROOT/" "$TARGET_DIR/"
 
-SUB_SHA="$(git -C "$SUBMODULE_PATH" rev-parse HEAD)"
-if [[ "$SUB_SHA" != "$FLORO_SHA" ]]; then
-  echo "error: submodule at $SUB_SHA, expected $FLORO_SHA" >&2
-  exit 1
+echo "$FLORO_SHA" > "$TARGET_DIR/.source-pin"
+
+if [[ -d "$PORTFOLIO/public/sign-controller" ]]; then
+  rm -rf "$PORTFOLIO/public/sign-controller"
 fi
 
-if git diff --quiet "$SUBMODULE_PATH"; then
-  echo "Portfolio submodule already at $FLORO_SHORT; skipping portfolio commit."
-else
-  git add "$SUBMODULE_PATH"
-  git commit -m "$(cat <<EOF
-chore(sign-controller): bump floro-ble-controller to ${FLORO_SHORT}
+cd "$PORTFOLIO"
+git add public/floro-remote public/sign-controller vercel.json scripts/vercel-install.sh src/config/hustle.ts src/pages/hustle/ docs/ 2>/dev/null || true
 
-Sync rawshn.com/sign-controller with latest FloRo BLE controller release.
+if git diff --cached --quiet; then
+  echo "Portfolio already up to date; skipping portfolio commit."
+else
+  git commit -m "$(cat <<EOF
+chore(floro-remote): sync FloRo Remote to ${FLORO_SHORT}
+
+Cut over from /sign-controller/ to /floro-remote/ with redirect and sync latest release.
 EOF
 )"
   git push origin main
 fi
 
-echo "Deploying rawshn-portfolio (rawshn.com/sign-controller)..."
+echo "Deploying rawshn-portfolio (rawshn.com/floro-remote)..."
 vercel deploy --prod
 
 echo "Done."
-echo "  canonical: https://rawshn.com/sign-controller/"
+echo "  canonical: https://rawshn.com/floro-remote/"

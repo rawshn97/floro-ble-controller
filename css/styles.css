@@ -1,4 +1,4 @@
-/* FloRo Controller — Material 3 Minimal (2026-07-09) */
+/* FloRo Controller: Material 3 Minimal (2026-07-09) */
 
 :root {
   --md-primary: #4DB6AC;
@@ -528,45 +528,6 @@ body.sheet-open { overflow: hidden; }
 }
 
 .view-panel[hidden] { display: none !important; }
-
-/* Legacy connect-prompt alias */
-.connect-prompt { display: none; }
-
-/* ── Connect prompt (legacy hidden) ── */
-  flex-shrink: 0;
-  width: 100%;
-  padding: 0 16px 8px;
-  border: 1px solid rgba(65, 233, 189, 0.35);
-  border-radius: var(--radius-card);
-  margin: 0 16px 8px;
-  width: calc(100% - 32px);
-  padding: 12px 14px;
-  background: var(--bg-panel);
-  box-shadow: 0 0 12px var(--system-green-muted);
-}
-
-.connect-prompt.hidden { display: none; }
-
-.connect-prompt-text {
-  margin: 0 0 10px;
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--label-secondary);
-  text-align: center;
-}
-
-.connect-prompt-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.connect-prompt .btn-connect {
-  min-height: 48px;
-  background: var(--system-green);
-  color: var(--accent-on);
-  box-shadow: 0 2px 16px var(--system-green-muted);
-}
 
 /* ── Remote dock ── */
 
@@ -2330,36 +2291,6 @@ input[type="range"]::-webkit-slider-thumb {
     max-height: min(20dvh, 148px);
   }
 
-  .connect-prompt {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
-    padding: 8px 12px;
-  }
-
-  .connect-prompt-text {
-    margin: 0;
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 12px;
-    line-height: 1.35;
-    text-align: left;
-  }
-
-  .connect-prompt-actions {
-    flex: 0 0 auto;
-    min-width: 0;
-  }
-
-  .connect-prompt .btn-connect {
-    min-height: 40px;
-    padding: 0 14px;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
   .hero-zone {
     max-height: min(24dvh, 168px);
     grid-template-columns: 44px 1fr;
@@ -2408,11 +2339,6 @@ input[type="range"]::-webkit-slider-thumb {
   .hero-zone { max-height: min(22dvh, 140px); }
 
   .mode-rail-btn { min-height: 56px; }
-
-  .connect-prompt-text {
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
 
   .app-main { padding-bottom: 2px; }
 

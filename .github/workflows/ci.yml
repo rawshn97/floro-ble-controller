@@ -23,11 +23,18 @@ jobs:
           test -f sw.js
           test -f js/errors.js
           test -f js/pwa-install.js
+          test -f docs/ble-protocol.schema.json
           grep -q 'manifest.webmanifest' index.html
           ! test -f manifest.json
 
+      - name: Check DOM ID preservation
+        run: bash scripts/check-ids.sh
+
       - name: Check PWA install contracts
         run: node scripts/check-pwa.mjs
+
+      - name: Check BLE protocol contract
+        run: node scripts/check-protocol.mjs
 
       - name: Verify PWA icon generation
         run: node scripts/generate-icons.mjs

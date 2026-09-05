@@ -1,4 +1,6 @@
-# FloRo Sign Controller
+Agents: see AGENTS.md
+
+# FloRo Remote
 
 A progressive web app for controlling FloRo neon signs over **Web Bluetooth**. Connect from Chrome or Edge on desktop/Android, adjust brightness and speed, pick colors, and switch between 200 built-in animation modes.
 
@@ -37,9 +39,9 @@ Other serve options (`npx serve`, etc.) work the same way as long as the origin 
 
 ## Deploy
 
-**Production URL:** [https://rawshn.com/sign-controller/](https://rawshn.com/sign-controller/)
+**Production URL:** [https://rawshn.com/floro-remote/](https://rawshn.com/floro-remote/)
 
-This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/sign-controller/`. Production is served only through the portfolio Vercel project (same pattern as embedded static assets, unlike `/coach` which rewrites to an external app).
+This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/floro-remote/`. Production is served only through the portfolio Vercel project (same pattern as embedded static assets, unlike `/coach` which rewrites to an external app).
 
 ### Deploy workflow
 
@@ -52,10 +54,10 @@ bash scripts/deploy.sh
 
 Or manually:
 
-1. In `rawshn-portfolio`, update the `public/sign-controller/` submodule pointer, commit, and push `main`
+1. In `rawshn-portfolio`, update the `public/floro-remote/` submodule pointer, commit, and push `main`
 2. From `rawshn-portfolio`: `vercel deploy --prod`
 
-The portfolio build serves these static files at `/sign-controller/` with the correct PWA scope and Bluetooth permissions header (`vercel.json` in the portfolio repo). No build step is required in this repo.
+The portfolio build serves these static files at `/floro-remote/` with the correct PWA scope and Bluetooth permissions header (`vercel.json` in the portfolio repo). No build step is required in this repo.
 
 ## BLE protocol
 
@@ -75,13 +77,20 @@ On connect and whenever you change color or animation, the app sends brightness,
 **Service UUID:** `6e400001-b5a3-f393-e0a9-e50e24dcca9e`  
 **Write characteristic:** `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
 
+Machine-readable schema: [`docs/ble-protocol.schema.json`](docs/ble-protocol.schema.json). Notes: [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+
 ## Project structure
 
 ```
 ├── index.html          # App shell (static manifest link, early beforeinstallprompt capture)
 ├── css/styles.css      # Styles
 ├── js/
-│   ├── app.js          # UI wiring, mode logic, auto-reconnect
+│   ├── app.js          # Boot and UI wiring
+│   ├── app-context.js  # Shared app context
+│   ├── connection.js   # Connect / reconnect / disconnect
+│   ├── color-ui.js     # Color picker, recents, presets
+│   ├── mode-ui.js      # Animation modes and favorites
+│   ├── scene-sync.js   # Scene restore to the sign
 │   ├── ble.js          # BLE connection, command queue, reconnect
 │   ├── pwa-install.js  # Native PWA install (prompt() only when Chromium offers it)
 │   ├── color-picker.js # Custom HSL color picker widget
@@ -92,10 +101,17 @@ On connect and whenever you change color or animation, the app sends brightness,
 ├── sw.js               # Service worker (offline caching)
 ├── manifest.webmanifest # PWA manifest
 ├── SPEC.md             # Spec index
+├── specs/              # Per-feature specs (overview, BLE, PWA, analytics)
+├── docs/
+│   ├── PROTOCOL.md
+│   └── ble-protocol.schema.json
 ├── CHANGELOG.md        # Release notes (version + SW cache bumps)
 ├── scripts/
 │   ├── generate-icons.mjs
-│   └── check-pwa.mjs
+│   ├── check-pwa.mjs
+│   ├── check-protocol.mjs
+│   ├── check-ids.sh
+│   └── deploy.sh
 ├── DESIGN.md           # Design system and IA reference
 └── vercel.json         # Deploy config (Bluetooth permissions policy)
 ```
@@ -116,11 +132,11 @@ See [`specs/pwa.md`](specs/pwa.md). Short version: **Install** calls the browser
 
 | Platform | Banner | Install button |
 |----------|--------|----------------|
-| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate status guidance | Native **Install** only—never a browser shortcut |
+| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate status guidance | Native **Install** only, never a browser shortcut |
 | **iOS (Safari)** | On first visit (Share → Add to Home Screen copy) | Hidden (Apple has no auto-install) |
 | **Desktop** | Hidden until `beforeinstallprompt` | Native **Install** when Chrome/Edge offers it |
 
-Dismiss **Not now** stores `floro_install_dismissed_v7` for **7 days**. On Android, **Install** appears only when Chrome offers the native standalone-app prompt; FloRo never routes users through **Create shortcut**. An installed app appears in the app drawer as **FloRo Sign**; the launcher may not automatically pin it to the Home screen.
+Dismiss **Not now** stores `floro_install_dismissed_v7` for **7 days**. On Android, **Install** appears only when Chrome offers the native standalone-app prompt; FloRo never routes users through **Create shortcut**. An installed app appears in the app drawer as **FloRo Remote**; the launcher may not automatically pin it to the Home screen.
 
 ## Assets
 

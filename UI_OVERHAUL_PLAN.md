@@ -625,19 +625,19 @@ Reuse without reinventing:
 
 ## Devex Review Focus Areas
 
-1. **Feature Parity Matrix** — every row has a verified DOM hook after restructure; no feature dropped or merged without mapping.
-2. **ID preservation** — full list above; hidden a11y nodes (`#anim-dropdown`, `#mode-list`, `#mode-search`) stay in DOM.
-3. **Inline handlers** — eight `selectSwatch` onclick attrs and `stepMode` / `addCurrentToFavorites` globals unchanged.
+1. **Feature Parity Matrix** :  every row has a verified DOM hook after restructure; no feature dropped or merged without mapping.
+2. **ID preservation** :  full list above; hidden a11y nodes (`#anim-dropdown`, `#mode-list`, `#mode-search`) stay in DOM.
+3. **Inline handlers** :  eight `selectSwatch` onclick attrs and `stepMode` / `addCurrentToFavorites` globals unchanged.
 4. **Single power control** - one `#power-btn`; mint `.power-cta` at dock bottom; `.power-strip__mirror` in sticky toolbar is decorative (`aria-hidden`), not a second button.
-5. **Preview chrome IDs** — `#solid-preview-swatch`, `#anim-preview-name` must remain for `updatePreviewChrome()`.
-6. **Power-on restore** — do not change `alignUIForPowerOnRestore()` Animation tab behavior.
-7. **Gauge edge cases** — powered off shows OFF; solid arc = brightness/8; anim arc = speed/100.
-8. **CSS file health** — fix pre-existing syntax error ~L1077-1087 (orphan properties without selector).
-9. **Short viewport** — replace old hide-`.remote-view-stage` rule with compact gauge, not hidden controls.
-10. **localStorage keys** — no renames: `floro_scene_state`, `floro_favorites`, `floro_color_presets`, `floro_recent_colors`, `floro_last_device`, `floro_install_dismissed_v4`.
-11. **No npm build** — static files only; font CDN acceptable.
-12. **PWA** — `__FLORO_PWA_BASE`, SW scope, manifest paths unchanged except colors.
-13. **Performance** — SVG arc updates on slider input (max 8 brightness steps).
+5. **Preview chrome IDs** :  `#solid-preview-swatch`, `#anim-preview-name` must remain for `updatePreviewChrome()`.
+6. **Power-on restore** :  do not change `alignUIForPowerOnRestore()` Animation tab behavior.
+7. **Gauge edge cases** :  powered off shows OFF; solid arc = brightness/8; anim arc = speed/100.
+8. **CSS file health** :  fix pre-existing syntax error ~L1077-1087 (orphan properties without selector).
+9. **Short viewport** :  replace old hide-`.remote-view-stage` rule with compact gauge, not hidden controls.
+10. **localStorage keys** :  no renames: `floro_scene_state`, `floro_favorites`, `floro_color_presets`, `floro_recent_colors`, `floro_last_device`, `floro_install_dismissed_v4`.
+11. **No npm build** :  static files only; font CDN acceptable.
+12. **PWA** :  `__FLORO_PWA_BASE`, SW scope, manifest paths unchanged except colors.
+13. **Performance** :  SVG arc updates on slider input (max 8 brightness steps).
 
 ## DX Review (2026-06-29 `/plan-devex-review`)
 
@@ -705,7 +705,7 @@ STAGE           | DEVELOPER DOES              | FRICTION POINTS      | STATUS
 
 ```
 +====================================================================+
-|              DX PLAN REVIEW — SCORECARD                             |
+|              DX PLAN REVIEW :  SCORECARD                             |
 +====================================================================+
 | Dimension            | Score  | Prior  | Trend  |
 |----------------------|--------|--------|--------|
@@ -736,8 +736,8 @@ STAGE           | DEVELOPER DOES              | FRICTION POINTS      | STATUS
 
 ### DX Implementation Tasks (devex-sourced)
 
-- [x] **T11 (P2)** — Add `scripts/check-ids.sh` one-liner from ID checklist (T8)
-- [ ] **T12 (P3)** — README link to `UI_OVERHAUL_PLAN.md` Feature Parity Matrix for contributors
+- [x] **T11 (P2)** :  Add `scripts/check-ids.sh` one-liner from ID checklist (T8)
+- [ ] **T12 (P3)** :  README link to `UI_OVERHAUL_PLAN.md` Feature Parity Matrix for contributors
 
 ## Eng Review (2026-06-29 `/plan-eng-review`)
 
@@ -1019,6 +1019,6 @@ Synthesized from design review findings. Run with Claude Code or Codex; checkbox
 | Design Review | `/plan-design-review` | UI/UX gaps | 1 | clean | score: 7/10 → 9/10, 8 decisions resolved |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 1 | clean | score: 7/10 → 8/10, TTHW: est → 2 min |
 
-**VERDICT:** Design + Eng + DX CLEARED — ready to implement Mint Remote UI.
+**VERDICT:** Design + Eng + DX CLEARED :  ready to implement Mint Remote UI.
 
 NO UNRESOLVED DECISIONS

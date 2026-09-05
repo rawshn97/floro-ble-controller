@@ -1,4 +1,4 @@
-# BLE and protocol
+# FloRo Remote: BLE and protocol
 
 **Parent index:** [`../SPEC.md`](../SPEC.md)  
 **Code:** `js/ble.js`, `js/protocol.js`, `js/errors.js`
@@ -16,7 +16,7 @@
 | Device filter | Name prefix `FloRo` |
 | Writes | GATT write-with-response when the characteristic supports it |
 
-Production host must send `Permissions-Policy: bluetooth=(self)` (portfolio `vercel.json` for `/sign-controller`).
+Production host must send `Permissions-Policy: bluetooth=(self)` (portfolio `vercel.json` for `/floro-remote`).
 
 ## Commands the PWA sends
 

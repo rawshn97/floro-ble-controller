@@ -1,10 +1,10 @@
 {
-  "name": "FloRo Sign Controller",
-  "short_name": "FloRo Sign",
+  "name": "FloRo Remote",
+  "short_name": "FloRo Remote",
   "description": "Control your FloRo neon sign over Bluetooth",
   "start_url": "./",
   "scope": "./",
-  "id": "https://rawshn.com/sign-controller/",
+  "id": "https://rawshn.com/floro-remote/",
   "display": "standalone",
   "display_override": ["standalone"],
   "orientation": "portrait",

@@ -1,5 +1,11 @@
 import { describeBleError } from './errors.js';
-import { colorCommand, uiSpeedToBle, wrapWireCommand } from './protocol.js';
+import {
+  colorCommand,
+  kvCommand,
+  modeCommand,
+  uiSpeedToBle,
+  wrapWireCommand,
+} from './protocol.js';
 
 const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const NUS_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -62,7 +68,7 @@ export class FloroBleController {
     if (!device?.id) return;
     localStorage.setItem(
       STORAGE_KEY_LAST_DEVICE,
-      JSON.stringify({ id: device.id, name: device.name || 'FloRo Sign' })
+      JSON.stringify({ id: device.id, name: device.name || 'FloRo Remote' })
     );
   }
 
@@ -178,7 +184,7 @@ export class FloroBleController {
     this.onLog('Sign connected and ready for control.', 'success');
 
     this.saveLastDevice(device);
-    this.onConnectionChange(true, device.name || 'FloRo Sign');
+    this.onConnectionChange(true, device.name || 'FloRo Remote');
   }
 
   async connectNew() {
@@ -212,7 +218,7 @@ export class FloroBleController {
     const device = devices.find((d) => d.id === last.id);
 
     if (!device) {
-      throw new Error('Previously paired sign not available — scan again');
+      throw new Error('Previously paired sign not available: scan again');
     }
 
     await this._attachGatt(device);
@@ -250,12 +256,12 @@ export class FloroBleController {
   }
 
   sendBrightness(val) {
-    return this.sendAscii(`B=${val}`, `Brightness set to ${val}`);
+    return this.sendAscii(kvCommand('B', val), `Brightness set to ${val}`);
   }
 
   sendSpeed(val) {
     const wire = uiSpeedToBle(val);
-    return this.sendAscii(`S=${wire}`, `Speed set to ${val}%`);
+    return this.sendAscii(kvCommand('S', wire), `Speed set to ${val}%`);
   }
 
   sendColor(r, g, b, label) {
@@ -263,17 +269,17 @@ export class FloroBleController {
   }
 
   sendMode(mode) {
-    return this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
+    return this.sendAscii(modeCommand(mode), `Flow mode ${mode}`);
   }
 
   /** Push sign state. Mode is sent last after a short delay unless includeMode is false. */
   async sendScene({ brightness, speed, r, g, b, mode, includeMode = true }) {
     const generation = ++this.sceneGeneration;
 
-    await this.sendAscii(`B=${brightness}`, `Brightness ${brightness}`);
+    await this.sendAscii(kvCommand('B', brightness), `Brightness ${brightness}`);
     if (generation !== this.sceneGeneration) return;
 
-    await this.sendAscii(`S=${uiSpeedToBle(speed)}`, `Speed ${speed}%`);
+    await this.sendAscii(kvCommand('S', uiSpeedToBle(speed)), `Speed ${speed}%`);
     if (generation !== this.sceneGeneration) return;
 
     await this.sendAscii(colorCommand(r, g, b).trimEnd(), 'Color');
@@ -282,7 +288,7 @@ export class FloroBleController {
     await new Promise((r) => setTimeout(r, MODE_DELAY_MS));
     if (generation !== this.sceneGeneration || !includeMode) return;
 
-    await this.sendAscii(`M${mode}`, `Flow mode ${mode}`);
+    await this.sendAscii(modeCommand(mode), `Flow mode ${mode}`);
   }
 }
 

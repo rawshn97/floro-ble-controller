@@ -17,15 +17,6 @@ export function createLogger(consoleBody) {
   };
 }
 
-function accentOnColor(hexColor) {
-  const hex = hexColor.replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? '#020D0A' : '#FFFFFF';
-}
-
 export function updateNeonThemeColor(hexColor, panels) {
   /* M3: color feedback on squircles only, not a global UI retint. */
   void panels;
@@ -79,31 +70,6 @@ export function updateConnectionChip(chipEl, textEl, state, name = '', lastDevic
   }
 
   textEl.textContent = 'Tap to connect';
-}
-
-export function updateConnectQuickAction(btnEl, labelEl, state, name = '') {
-  if (!btnEl) return;
-
-  btnEl.classList.remove('is-connected', 'is-connecting', 'is-offline');
-
-  if (state === 'connecting') {
-    btnEl.classList.add('is-connecting');
-    if (labelEl) labelEl.textContent = 'Connecting…';
-    btnEl.setAttribute('aria-label', 'Connecting to sign');
-    return;
-  }
-
-  if (state === 'connected') {
-    btnEl.classList.add('is-connected');
-    const shortName = name && name.length > 10 ? `${name.slice(0, 8)}…` : name;
-    if (labelEl) labelEl.textContent = shortName || 'Connected';
-    btnEl.setAttribute('aria-label', name ? `Connected to ${name}. Open settings` : 'Connected. Open settings');
-    return;
-  }
-
-  btnEl.classList.add('is-offline');
-  if (labelEl) labelEl.textContent = 'Connect';
-  btnEl.setAttribute('aria-label', 'Connection and settings');
 }
 
 let viewTransitionLock = false;

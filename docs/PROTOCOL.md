@@ -1,8 +1,8 @@
-# FloRo Sign BLE Protocol
+# FloRo Remote BLE Protocol
 
 Reverse-engineered from **Neon Attack** (`com.oytechnology.Neon_Attack` v5.0.3, build 31) via Blutter decompilation of `libapp.so`, cross-checked with the FloRo PWA.
 
-Full byte tables: [`reverse-engineering/output/protocol-findings.txt`](../reverse-engineering/output/protocol-findings.txt)
+Machine-readable schema: [`ble-protocol.schema.json`](ble-protocol.schema.json). Full byte tables: [`reverse-engineering/output/protocol-findings.txt`](../reverse-engineering/output/protocol-findings.txt)
 
 ## Transport
 

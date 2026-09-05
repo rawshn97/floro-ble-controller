@@ -1,4 +1,4 @@
-# Overview
+# FloRo Remote: overview
 
 **Parent index:** [`../SPEC.md`](../SPEC.md)
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-FloRo Sign Controller is a **static progressive web app** that talks to a FloRo neon sign over **Web Bluetooth**. It is a phone-first remote: pick a color or animation, set brightness and speed, save favorites, and reconnect to the last paired device.
+FloRo Remote is a **static progressive web app** that talks to a FloRo neon sign over **Web Bluetooth**. It is a phone-first remote: pick a color or animation, set brightness and speed, save favorites, and reconnect to the last paired device.
 
 It is **not** a native Android/iOS rewrite, and it does not need one to be installable. Chrome and Edge can install any site that meets [web app installability](https://web.dev/learn/pwa/installation) (HTTPS, a valid manifest, a controlling service worker). Health Hub proves the same origin pattern works on rawshn.com.
 
@@ -24,7 +24,7 @@ It is **not** a native Android/iOS rewrite, and it does not need one to be insta
 | PWA | `manifest.webmanifest` + `sw.js` + `js/pwa-install.js` |
 | Analytics | Microsoft Clarity (`js/clarity.js`, project `yakgofwgk3`) |
 | Icons | `logo.png` → `node scripts/generate-icons.mjs` |
-| Production | `rawshn-portfolio` Vercel project, files at `public/sign-controller/` |
+| Production | `rawshn-portfolio` Vercel project, files at `public/floro-remote/` |
 | Local | `python3 -m http.server 8080` |
 
 **Node:** only for icon generation and `scripts/check-pwa.mjs`. Runtime in the browser has zero npm dependencies.
@@ -44,7 +44,12 @@ bash scripts/deploy.sh               # push main, bump portfolio submodule, verc
 ```
 index.html                 App shell, static manifest link, install banner
 css/styles.css             All visual tokens
-js/app.js                  UI wiring, modes, favorites, scene restore
+js/app.js                  Boot and UI wiring
+js/app-context.js          Shared app context
+js/connection.js           Connect / reconnect / disconnect
+js/color-ui.js             Color picker, recents, presets
+js/mode-ui.js              Animation modes and favorites
+js/scene-sync.js           Scene restore to the sign
 js/ble.js                  Connection, GATT writes, reconnect
 js/protocol.js             Wire-format helpers (B=/S=/C=/M)
 js/pwa-install.js          beforeinstallprompt + banner + settings
@@ -54,22 +59,25 @@ js/colors.js               Neon swatches
 js/mode-names.js           Names for modes 1–200
 js/state.js                localStorage scene
 js/errors.js               User-facing BLE errors
-manifest.webmanifest       PWA identity (scope /sign-controller/)
+js/clarity.js              Microsoft Clarity events
+manifest.webmanifest       PWA identity (scope /floro-remote/)
 sw.js                      Offline cache + fetch handler
 icons/                     192 / 512 / apple-touch
 docs/PROTOCOL.md           Neon Attack UART notes
+docs/ble-protocol.schema.json  BLE Nordic UART JSON schema
+specs/                     Shipped per-feature specs
 reverse-engineering/       Local APK analysis (not shipped to users)
 ```
 
 ## Boundaries
 
-- **Always:** keep asset URLs relative (`./`) so localhost and `/sign-controller/` both work. Bump `CACHE_NAME` in `sw.js` when static assets change. Run `node scripts/check-pwa.mjs` after PWA edits.
+- **Always:** keep asset URLs relative (`./`) so localhost and `/floro-remote/` both work. Bump `CACHE_NAME` in `sw.js` when static assets change. Run `node scripts/check-pwa.mjs` after PWA edits.
 - **Ask first:** adding npm runtime dependencies, changing the canonical URL, exposing Flash/Beat/sensitivity in the UI.
 - **Never:** merge stale `index.html` from June 2026 branches; deploy this repo as a standalone Vercel project; use `npx vercel`; commit APK/zip binaries.
 
 ## Success criteria (product)
 
-- On Chrome/Edge Android or desktop, visiting https://rawshn.com/sign-controller/ can be installed as a standalone app (no browser chrome).
+- On Chrome/Edge Android or desktop, visiting https://rawshn.com/floro-remote/ can be installed as a standalone app (no browser chrome).
 - Tapping **Install** (when the browser has offered a native prompt) opens that prompt. It does not open a fake “use the ⋮ menu” sheet.
 - Web Bluetooth connect still works after install (Permissions-Policy bluetooth=`self` on the portfolio host).
 - iOS Safari cannot auto-install; the banner explains Share → Add to Home Screen.

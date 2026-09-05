@@ -15,7 +15,7 @@ export function uiSpeedToBle(uiSpeed) {
 
 /**
  * Animation mode (Neon Attack demo111): interpolate "M" + mode + "\\n".
- * No equals sign or semicolon — e.g. M32\\n not M=32;
+ * No equals sign or semicolon: e.g. M32\\n not M=32;
  */
 export function modeCommand(mode) {
   return `M${mode}\n`;
@@ -32,9 +32,10 @@ export function wrapWireCommand(body) {
   return `${trimmed};\n`;
 }
 
-/** Full scene — brightness, speed, color, then mode. */
+/** Full scene: brightness, speed, color, then mode. */
 export function buildSceneCommand({ brightness, speed, r, g, b, mode }) {
-  return `${kvCommand('B', brightness)}${kvCommand('S', speed)}${colorCommand(r, g, b)}${modeCommand(mode)}`;
+  const wireSpeed = uiSpeedToBle(speed);
+  return `${kvCommand('B', brightness)}${kvCommand('S', wireSpeed)}${colorCommand(r, g, b)}${modeCommand(mode)}`;
 }
 
 export function hexToRgb(hex) {

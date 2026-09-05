@@ -4,12 +4,12 @@
 
 ## Project
 
-Use the **same Clarity project as rawshn.com** (`yakgofwgk3`). Sign Controller lives at `/sign-controller/` on the same domain, so a second project would split sessions and double-load tags.
+Use the **same Clarity project as rawshn.com** (`yakgofwgk3`). FloRo Remote lives at `/floro-remote/` on the same domain, so a second project would split sessions and double-load tags.
 
 | Filter in Clarity | Value |
 |---|---|
-| URL path | contains `/sign-controller` |
-| Custom tag | `app` = `sign-controller` |
+| URL path | contains `/floro-remote` |
+| Custom tag | `app` = `floro-remote` |
 | Smart Events | prefix `sc_` |
 
 Create a separate Clarity project only if FloRo moves to its **own domain** (for example `sign.floro.app`).

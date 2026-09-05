@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v66';
+const CACHE_NAME = 'floro-remote-v68';
 const ASSETS = [
   './',
   './index.html',
@@ -6,12 +6,17 @@ const ASSETS = [
   './css/styles.css',
   './fonts/MaterialSymbolsOutlined.woff2',
   './js/app.js',
+  './js/app-context.js',
   './js/ble.js',
   './js/color-picker.js',
+  './js/color-ui.js',
   './js/colors.js',
+  './js/connection.js',
   './js/ui.js',
+  './js/mode-ui.js',
   './js/pwa-install.js',
   './js/clarity.js',
+  './js/scene-sync.js',
   './js/state.js',
   './js/mode-names.js',
   './js/protocol.js',
