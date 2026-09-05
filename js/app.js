@@ -1190,7 +1190,6 @@ setupPwaInstall({
   bannerTitle: document.getElementById('install-banner-title'),
   bannerSubtitle: document.getElementById('install-banner-subtitle'),
   btnInstall: document.getElementById('btn-install'),
-  btnInstallHelp: document.getElementById('btn-install-help'),
   btnDismiss: document.getElementById('btn-dismiss-install'),
   settingsBtn: document.getElementById('btn-settings-install'),
   modal: document.getElementById('install-modal'),

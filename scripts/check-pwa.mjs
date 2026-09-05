@@ -41,8 +41,8 @@ if (!html.includes('beforeinstallprompt')) {
 if (!html.includes('id="btn-install"') || !html.includes('install-banner-action-primary hidden')) {
   fail('Install button must start hidden until a native prompt exists');
 }
-if (!html.includes('id="btn-install-help"')) {
-  fail('Android needs an honest manual-install fallback when Chrome withholds prompt()');
+if (html.includes('id="btn-install-help"')) {
+  fail('do not expose a separate install-help action; match Health Hub native prompt flow');
 }
 if (!html.includes("updateViaCache: 'none'")) {
   fail('service worker registration must bypass stale HTTP caches');
@@ -68,8 +68,8 @@ if (manifest) {
   if (manifest.start_url !== './' || manifest.scope !== './') {
     fail('manifest start_url and scope must be "./" (portable across localhost and /sign-controller/)');
   }
-  if (manifest.id !== './') {
-    fail('manifest id must be "./" so it resolves consistently on production and localhost');
+  if (manifest.id !== 'https://rawshn.com/sign-controller/') {
+    fail('manifest id must be the canonical production identity');
   }
   if (manifest.display !== 'standalone') {
     fail('manifest display must be standalone');
@@ -89,10 +89,8 @@ if (manifest) {
   if (!icons.some((i) => i.sizes === '192x192') || !icons.some((i) => i.sizes === '512x512')) {
     fail('manifest needs 192x192 and 512x512 icons');
   }
-  if (!manifest.related_applications?.some(
-    (app) => app.platform === 'webapp' && app.url === './manifest.webmanifest'
-  )) {
-    fail('manifest must self-reference so Android can detect an existing installation');
+  if (manifest.related_applications) {
+    fail('do not self-reference related applications; it is not part of Health Hub installation');
   }
 }
 
@@ -135,8 +133,18 @@ if (!nativeInstallHandler.includes('triggerNativeInstall') ||
     nativeInstallHandler.includes('openHelpSheet')) {
   fail('Install button click must call prompt() only; do not open the help sheet');
 }
-if (!pwaSrc.includes("btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa)")) {
+if (!pwaSrc.includes("btnInstall.classList.toggle('hidden', !hasNativePrompt)")) {
   fail('Install button visibility must follow hasNativePrompt');
+}
+if (!pwaSrc.includes('syncSettingsInstall')) {
+  fail('Settings install action must be hidden until native install or valid platform help exists');
+}
+if (pwaSrc.includes('getInstalledRelatedApps')) {
+  fail('do not let installed-app detection clear a valid deferred native prompt');
+}
+if (pwaSrc.includes('Install and create shortcut') ||
+    pwaSrc.includes('Tap the three-dot Chrome menu')) {
+  fail('Android install guidance must never route users into Chrome shortcut creation');
 }
 
 if (!process.exitCode) {

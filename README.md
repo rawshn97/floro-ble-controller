@@ -116,11 +116,11 @@ See [`specs/pwa.md`](specs/pwa.md). Short version: **Install** calls the browser
 
 | Platform | Banner | Install button |
 |----------|--------|----------------|
-| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate honest guidance | Native **Install**, or clearly labeled **Install help** |
+| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate status guidance | Native **Install** only—never a browser shortcut |
 | **iOS (Safari)** | On first visit (Share → Add to Home Screen copy) | Hidden (Apple has no auto-install) |
 | **Desktop** | Hidden until `beforeinstallprompt` | Native **Install** when Chrome/Edge offers it |
 
-Dismiss **Not now** stores `floro_install_dismissed_v6` for **7 days**. Settings > **Install App** still works (native prompt, or a help sheet). On Android, an installed app appears in the app drawer as **FloRo Sign**; the launcher may not automatically pin it to the Home screen.
+Dismiss **Not now** stores `floro_install_dismissed_v7` for **7 days**. On Android, **Install** appears only when Chrome offers the native standalone-app prompt; FloRo never routes users through **Create shortcut**. An installed app appears in the app drawer as **FloRo Sign**; the launcher may not automatically pin it to the Home screen.
 
 ## Assets
 

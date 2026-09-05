@@ -1,6 +1,6 @@
 /** Native PWA install with honest manual and already-installed fallbacks. */
 
-export const DISMISS_KEY = 'floro_install_dismissed_v6';
+export const DISMISS_KEY = 'floro_install_dismissed_v7';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function isStandalone() {
@@ -43,27 +43,12 @@ function shouldSuppressBanner() {
   return isStandalone() || isDismissed();
 }
 
-async function detectInstalledPwa() {
-  if (isStandalone()) return true;
-  if (!('getInstalledRelatedApps' in navigator)) return false;
-
-  try {
-    const apps = await navigator.getInstalledRelatedApps();
-    return apps.some((app) => app.platform === 'webapp');
-  } catch {
-    return false;
-  }
-}
-
-function installHelpText(hasNativePrompt, installedPwa) {
-  if (installedPwa) {
-    return 'FloRo Sign is installed. Find it in your Android app drawer; Chrome may not add a Home screen icon.';
-  }
+function installHelpText(hasNativePrompt) {
   if (isIOS() && !hasNativePrompt) {
     return 'Open this page in Safari, tap Share, then Add to Home Screen.';
   }
   if (isAndroid() && !hasNativePrompt) {
-    return 'Chrome has not offered one-tap install yet. You can still install from the Chrome menu.';
+    return 'Waiting for Chrome’s app installer. Do not create a shortcut—it opens as a browser tab.';
   }
   return 'Install FloRo so it opens full screen, not as a browser tab.';
 }
@@ -73,7 +58,6 @@ export function setupPwaInstall({
   bannerTitle,
   bannerSubtitle,
   btnInstall,
-  btnInstallHelp,
   btnDismiss,
   settingsBtn,
   modal,
@@ -85,7 +69,6 @@ export function setupPwaInstall({
   log,
 }) {
   let deferredPrompt = window.__floroDeferredInstall || null;
-  let installedPwa = isStandalone();
 
   function showBanner() {
     if (!bannerEl || shouldSuppressBanner()) return;
@@ -102,23 +85,25 @@ export function setupPwaInstall({
   function syncBanner() {
     const hasNativePrompt = Boolean(deferredPrompt);
     if (bannerTitle) {
-      bannerTitle.textContent = installedPwa ? 'FloRo Sign is installed' : 'Install FloRo Sign';
+      bannerTitle.textContent = 'Install FloRo Sign';
     }
     if (bannerSubtitle) {
-      bannerSubtitle.textContent = installHelpText(hasNativePrompt, installedPwa);
+      bannerSubtitle.textContent = installHelpText(hasNativePrompt);
     }
     if (btnInstall) {
       btnInstall.textContent = 'Install';
-      btnInstall.classList.toggle('hidden', !hasNativePrompt || installedPwa);
-    }
-    if (btnInstallHelp) {
-      btnInstallHelp.textContent = installedPwa ? 'Find app' : 'Install help';
-      btnInstallHelp.classList.toggle(
-        'hidden',
-        hasNativePrompt || (!installedPwa && !isAndroid() && !isIOS())
-      );
+      btnInstall.classList.toggle('hidden', !hasNativePrompt);
     }
     btnDismiss?.classList.remove('hidden');
+    syncSettingsInstall();
+  }
+
+  function syncSettingsInstall() {
+    const section = settingsBtn?.closest('.settings-section');
+    if (!section) return;
+    const canInstallOrHelp =
+      !isStandalone() && (Boolean(deferredPrompt) || isIOS());
+    section.classList.toggle('hidden', !canInstallOrHelp);
   }
 
   function renderModalSteps(items) {
@@ -137,18 +122,6 @@ export function setupPwaInstall({
     modalSteps?.classList.remove('hidden');
     modalAction?.classList.add('hidden');
 
-    if (installedPwa) {
-      modalTitle.textContent = 'Find FloRo Sign';
-      modalDesc.textContent =
-        'Android installs the app in your app drawer, but your launcher may not add it to the Home screen.';
-      renderModalSteps([
-        'Swipe up from your Home screen to open the app drawer',
-        'Search for FloRo Sign (older installs may appear as FloRo)',
-        'Long-press the app icon and drag it to your Home screen',
-      ]);
-      return;
-    }
-
     if (isIOS()) {
       modalTitle.textContent = 'Add to Home Screen';
       modalDesc.textContent = 'iPhone and iPad cannot auto-install. In Safari:';
@@ -160,14 +133,14 @@ export function setupPwaInstall({
       return;
     }
 
-    modalTitle.textContent = 'Install FloRo Sign';
+    modalTitle.textContent = 'App install not ready';
     modalDesc.textContent =
-      'Chrome can delay or temporarily suppress its one-tap prompt. Manual installation is always available:';
+      'Chrome has not made native app installation available yet. A shortcut is only a bookmark and will keep the browser bar.';
     renderModalSteps([
       'Open this page directly in Chrome or Edge, not an in-app browser',
-      'Tap the three-dot Chrome menu',
-      'Tap Add to Home screen (or Install and create shortcut), then choose Install app',
-      'After installation, swipe up and search your app drawer for FloRo Sign',
+      'Keep the page open briefly and interact with it so Chrome can finish checking the app',
+      'Reload the page and use FloRo’s Install button when it appears',
+      'Do not choose Create shortcut from Chrome’s menu',
     ]);
   }
 
@@ -177,13 +150,10 @@ export function setupPwaInstall({
 
   async function triggerNativeInstall() {
     if (!deferredPrompt) return false;
-    let accepted = false;
     try {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        accepted = true;
-        installedPwa = true;
         log?.('User installed FloRo Sign.', 'success');
       }
     } catch (err) {
@@ -193,15 +163,14 @@ export function setupPwaInstall({
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
     closeHelpSheet();
-    if (accepted) showBanner();
-    else hideBanner();
+    hideBanner();
+    syncSettingsInstall();
     return true;
   }
 
   function capturePrompt(event) {
     event.preventDefault();
     deferredPrompt = event;
-    installedPwa = false;
     window.__floroDeferredInstall = event;
     showBanner();
   }
@@ -217,20 +186,19 @@ export function setupPwaInstall({
   } else {
     hideBanner();
   }
+  syncSettingsInstall();
 
   window.addEventListener('appinstalled', () => {
-    installedPwa = true;
     log?.('FloRo Sign installed.', 'success');
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
-    showBanner();
+    hideBanner();
+    syncSettingsInstall();
   });
 
   btnInstall?.addEventListener('click', async () => {
     await triggerNativeInstall();
   });
-
-  btnInstallHelp?.addEventListener('click', openHelpSheet);
 
   btnDismiss?.addEventListener('click', () => {
     try {
@@ -256,15 +224,4 @@ export function setupPwaInstall({
     if (e.target === modal) closeHelpSheet();
   });
 
-  if (settingsBtn && isStandalone()) {
-    settingsBtn.closest('.settings-section')?.classList.add('hidden');
-  }
-
-  detectInstalledPwa().then((installed) => {
-    if (!installed || isStandalone()) return;
-    installedPwa = true;
-    deferredPrompt = null;
-    window.__floroDeferredInstall = null;
-    showBanner();
-  });
 }
