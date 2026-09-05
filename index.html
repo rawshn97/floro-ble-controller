@@ -8,8 +8,18 @@
       e.preventDefault();
       window.__floroDeferredInstall = e;
     });
+    function ensureManifestLink() {
+      if (document.querySelector('link[rel=manifest]')) return;
+      var link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = './manifest.webmanifest';
+      document.head.appendChild(link);
+    }
+    // AdGuard and similar filters strip the static <link> below; reinject after parse.
+    setTimeout(ensureManifestLink, 0);
   </script>
   <link rel="manifest" href="./manifest.webmanifest">
+  <script>ensureManifestLink();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FloRo Sign Controller</title>
   <script>
@@ -28,6 +38,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FloRo Sign">
+  <script>
+    (function (c, l, a, r, i, t, y) {
+      c[a] =
+        c[a] ||
+        function () {
+          (c[a].q = c[a].q || []).push(arguments);
+        };
+      t = l.createElement(r);
+      t.async = 1;
+      t.src = 'https://www.clarity.ms/tag/' + i;
+      y = l.getElementsByTagName(r)[0];
+      y.parentNode.insertBefore(t, y);
+    })(window, document, 'clarity', 'script', 'yakgofwgk3');
+  </script>
   <link rel="preload" href="./fonts/MaterialSymbolsOutlined.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
@@ -60,17 +84,17 @@
         <span><strong>Not connected</strong> Pair your sign</span>
       </div>
       <div class="connect-banner__actions">
-        <button id="btn-connect-main" class="btn btn-connect btn-compact" type="button">Connect</button>
-        <button id="btn-reconnect-main" class="btn btn-secondary btn-compact hidden" type="button">Reconnect</button>
+        <button id="btn-connect-main" class="btn btn-connect btn-compact" type="button" data-clarity-event="sc_connect_tap">Connect</button>
+        <button id="btn-reconnect-main" class="btn btn-secondary btn-compact hidden" type="button" data-clarity-event="sc_reconnect_tap">Reconnect</button>
       </div>
     </div>
 
     <div class="mode-rail seg-control" role="tablist" aria-label="Display mode">
-      <button id="mode-seg-solid" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="solid-controls">
+      <button id="mode-seg-solid" class="mode-rail-btn seg-btn" type="button" role="tab" aria-selected="false" aria-controls="solid-controls" data-clarity-event="sc_tab_static">
         <span class="material-symbols-outlined seg-btn__icon" aria-hidden="true">palette</span>
         <span>Static</span>
       </button>
-      <button id="mode-seg-animation" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="anim-controls">
+      <button id="mode-seg-animation" class="mode-rail-btn seg-btn active" type="button" role="tab" aria-selected="true" aria-controls="anim-controls" data-clarity-event="sc_tab_dynamic">
         <span class="material-symbols-outlined seg-btn__icon" aria-hidden="true">animation</span>
         <span>Dynamic</span>
       </button>
@@ -248,7 +272,7 @@
       <p id="install-banner-title" class="install-banner-title">Install FloRo</p>
       <p id="install-banner-subtitle" class="install-banner-subtitle">Install FloRo so it opens full screen, not as a browser tab.</p>
       <div class="install-banner-actions">
-        <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button">Install</button>
+        <button id="btn-install" class="btn btn-primary install-banner-action install-banner-action-primary hidden" type="button" data-clarity-event="sc_install_tap">Install</button>
         <button id="btn-dismiss-install" class="btn btn-secondary install-banner-action install-banner-action-dismiss" type="button">Not now</button>
       </div>
     </div>
@@ -272,9 +296,9 @@
           <span id="connection-status" class="status-pill">OFFLINE</span>
         </div>
         <div class="settings-actions">
-          <button id="btn-connect" class="btn btn-connect btn-full" type="button">Scan &amp; Connect</button>
-          <button id="btn-reconnect" class="btn btn-secondary btn-full hidden" type="button">Reconnect</button>
-          <button id="btn-disconnect" class="btn btn-destructive btn-full hidden" type="button">Disconnect</button>
+          <button id="btn-connect" class="btn btn-connect btn-full" type="button" data-clarity-event="sc_connect_tap">Scan &amp; Connect</button>
+          <button id="btn-reconnect" class="btn btn-secondary btn-full hidden" type="button" data-clarity-event="sc_reconnect_tap">Reconnect</button>
+          <button id="btn-disconnect" class="btn btn-destructive btn-full hidden" type="button" data-clarity-event="sc_disconnect_tap">Disconnect</button>
         </div>
       </div>
     </section>

@@ -24,6 +24,15 @@ if (html.includes("createElement('base')") || html.includes('createElement("base
 if (!html.includes('rel="manifest"') || !html.includes('./manifest.webmanifest')) {
   fail('index.html needs a static <link rel="manifest" href="./manifest.webmanifest">');
 }
+if (!html.includes('ensureManifestLink') || !html.includes("link.rel = 'manifest'")) {
+  fail('index.html must reinject a manifest link when content blockers strip the static tag');
+}
+if (!html.includes('clarity.ms/tag/') || !html.includes('yakgofwgk3')) {
+  fail('index.html must load Microsoft Clarity project yakgofwgk3 (shared with rawshn.com)');
+}
+if (!sw.includes('./js/clarity.js')) {
+  fail('sw.js must precache ./js/clarity.js');
+}
 
 const appJs = readFileSync(join(root, 'js/app.js'), 'utf8');
 if (!appJs.includes('./pwa-install.js')) {

@@ -1,4 +1,5 @@
 import { FloroBleController, isBleSupported } from './ble.js';
+import { initClarity, trackClarityEvent } from './clarity.js';
 import { createColorPicker, loadRecentColors } from './color-picker.js';
 import {
   NEON_COLORS,
@@ -380,6 +381,7 @@ const ble = new FloroBleController({
   onLog: log,
   onConnectionChange: (connected, name) => {
     if (connected) {
+      trackClarityEvent('sc_ble_connected');
       deviceNameEl.textContent = name;
       connectionStatus.textContent = 'CONNECTED';
       connectionStatus.className = 'status-pill connected';
@@ -396,6 +398,7 @@ const ble = new FloroBleController({
     }
   },
   onDisconnect: () => {
+    trackClarityEvent('sc_ble_disconnected');
     wakeLock.release();
   },
 });
@@ -665,6 +668,7 @@ async function connectDevice() {
     await onConnected();
     haptic('light');
   } catch (error) {
+    trackClarityEvent('sc_ble_connect_failed');
     const { message, level } = describeBleError(error, 'connection');
     log(message, level);
     resetUI();
@@ -689,6 +693,7 @@ async function reconnectDevice() {
     await onConnected();
     haptic('light');
   } catch (error) {
+    trackClarityEvent('sc_ble_connect_failed');
     const { message, level } = describeBleError(error, 'connection');
     log(message, level);
     resetUI();
@@ -1185,6 +1190,8 @@ setupModePickerSheet({
   onModeSelect: (mode) => setMode(mode),
 });
 
+initClarity();
+
 setupPwaInstall({
   bannerEl: document.getElementById('install-banner'),
   bannerTitle: document.getElementById('install-banner-title'),
@@ -1257,6 +1264,7 @@ async function tryAutoReconnect() {
     await ble.reconnectLast();
     await onConnected();
   } catch (error) {
+    trackClarityEvent('sc_ble_connect_failed');
     const { message, level } = describeBleError(error, 'connection');
     log(message, level);
     resetUI();

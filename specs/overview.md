@@ -22,6 +22,7 @@ It is **not** a native Android/iOS rewrite, and it does not need one to be insta
 | App | Static HTML / CSS / ES modules. No bundler. |
 | BLE | Web Bluetooth (`navigator.bluetooth`) |
 | PWA | `manifest.webmanifest` + `sw.js` + `js/pwa-install.js` |
+| Analytics | Microsoft Clarity (`js/clarity.js`, project `yakgofwgk3`) |
 | Icons | `logo.png` → `node scripts/generate-icons.mjs` |
 | Production | `rawshn-portfolio` Vercel project, files at `public/sign-controller/` |
 | Local | `python3 -m http.server 8080` |
@@ -77,4 +78,5 @@ reverse-engineering/       Local APK analysis (not shipped to users)
 
 - BLE wire format: [ble.md](ble.md)
 - Installable PWA: [pwa.md](pwa.md)
+- Clarity analytics: [analytics.md](analytics.md)
 - Visual system: [`../DESIGN.md`](../DESIGN.md)

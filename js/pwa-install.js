@@ -1,5 +1,7 @@
 /** Native PWA install with honest manual and already-installed fallbacks. */
 
+import { trackClarityEvent } from './clarity.js';
+
 export const DISMISS_KEY = 'floro_install_dismissed_v7';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -94,6 +96,7 @@ export function setupPwaInstall({
       btnInstall.textContent = 'Install';
       btnInstall.classList.toggle('hidden', !hasNativePrompt);
     }
+    if (hasNativePrompt) trackClarityEvent('sc_install_prompt_ready');
     btnDismiss?.classList.remove('hidden');
     syncSettingsInstall();
   }
@@ -154,6 +157,7 @@ export function setupPwaInstall({
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
+        trackClarityEvent('sc_install_accepted');
         log?.('User installed FloRo Sign.', 'success');
       }
     } catch (err) {
@@ -189,6 +193,7 @@ export function setupPwaInstall({
   syncSettingsInstall();
 
   window.addEventListener('appinstalled', () => {
+    trackClarityEvent('sc_install_appinstalled');
     log?.('FloRo Sign installed.', 'success');
     deferredPrompt = null;
     window.__floroDeferredInstall = null;
@@ -206,6 +211,7 @@ export function setupPwaInstall({
     } catch {
       /* ignore storage failures */
     }
+    trackClarityEvent('sc_install_dismissed');
     hideBanner();
     log?.('Install prompt dismissed. Use Settings > Install App anytime.', 'info');
   });
