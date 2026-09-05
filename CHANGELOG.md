@@ -4,6 +4,12 @@ All notable changes to FloRo Remote are documented here. Version numbers match `
 
 ## [v68] - 2026-09-05
 
+### Added
+- Open source release under the MIT License (`LICENSE`)
+- Added `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`
+- Camera-ready README badges and documentation polish
+- Generic paths in reverse-engineering tooling and expanded `.gitignore`
+
 ### Changed
 - Rebrand to FloRo Remote (`/floro-remote/`)
 - Refactored `app.js` into focused ES modules (`app-context`, `connection`, `color-ui`, `mode-ui`, `scene-sync`)

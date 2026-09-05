@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Run ON YOUR MAC where the APK zip lives:
-#   ./reverse-engineering/analyze-apk.sh "/Users/rawshn/Desktop/com.oytechnology.Neon_Attack-5.0.3-31.zip"
+#   ./reverse-engineering/analyze-apk.sh "/path/to/com.oytechnology.Neon_Attack-5.0.3-31.zip"
 set -euo pipefail
 
-INPUT="${1:-/Users/rawshn/Desktop/com.oytechnology.Neon_Attack-5.0.3-31.zip}"
+INPUT="${1:-com.oytechnology.Neon_Attack-5.0.3-31.zip}"
 OUT_DIR="$(cd "$(dirname "$0")" && pwd)/output"
 FINDINGS="$OUT_DIR/protocol-findings.txt"
 WORK="$OUT_DIR/work"

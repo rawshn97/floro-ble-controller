@@ -3,9 +3,21 @@
 *.metadata.json
 .gstack/
 
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
 # APK binaries: keep text findings only
 reverse-engineering/output/work/
 *.apk
 *.zip
 !reverse-engineering/output/protocol-findings.txt
-

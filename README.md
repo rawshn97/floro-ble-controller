@@ -2,17 +2,29 @@ Agents: see AGENTS.md
 
 # FloRo Remote
 
-A progressive web app for controlling FloRo neon signs over **Web Bluetooth**. Connect from Chrome or Edge on desktop/Android, adjust brightness and speed, pick colors, and switch between 200 built-in animation modes.
+[![CI](https://github.com/ItsRRM97/floro-ble-controller/actions/workflows/ci.yml/badge.svg)](https://github.com/ItsRRM97/floro-ble-controller/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
+[![Web Bluetooth](https://img.shields.io/badge/Web%20Bluetooth-GATT%20NUS-blue.svg)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)
+[![PWA](https://img.shields.io/badge/PWA-Installable-brightgreen.svg)](https://rawshn.com/floro-remote/)
+[![Live App](https://img.shields.io/badge/Live-rawshn.com%2Ffloro--remote-orange.svg)](https://rawshn.com/floro-remote/)
+
+A progressive web app for controlling FloRo neon signs over **Web Bluetooth**. Connect from Chrome or Edge on desktop or Android, adjust brightness and speed, pick colors, save presets, and switch between 200 built-in animation modes.
+
+Zero build steps. Zero runtime npm dependencies. Pure modern web standards.
+
+**Live application:** [https://rawshn.com/floro-remote/](https://rawshn.com/floro-remote/)
 
 ## Requirements
 
-- **HTTPS**: Web Bluetooth only works on secure origins (`https://` or `localhost`)
+- **HTTPS**: Web Bluetooth requires a secure origin (`https://` or `localhost`)
 - **Browser**: Chrome or Edge (desktop or Android). Safari and Firefox do not support Web Bluetooth
-- **Bluetooth**: Enabled on your device, sign powered on and in range
+- **Bluetooth**: Enabled on your device, with the FloRo sign powered on and in range
 
 ## Quick start
 
 ### Local development (golden path)
+
+Clone the repository and serve it with any local static HTTP server:
 
 ```bash
 git clone https://github.com/ItsRRM97/floro-ble-controller.git
@@ -20,130 +32,120 @@ cd floro-ble-controller
 python3 -m http.server 8080
 ```
 
-Open [http://localhost:8080](http://localhost:8080), tap **Scan & Connect** on the main screen (or in Settings), and select your FloRo device in the browser picker.
+Open [http://localhost:8080](http://localhost:8080) in Chrome or Edge, click **Scan & Connect**, and pair with your sign.
 
 No build step or npm install required.
 
-### Mobile testing (optional)
+### Mobile testing
 
-Web Bluetooth on a phone needs HTTPS (localhost works on desktop only). To test on Android:
+Web Bluetooth on mobile requires HTTPS (localhost works on desktop only). To test on Android:
 
 ```bash
 python3 -m http.server 8080 &
 npx local-ssl-proxy --source 8443 --target 8080
 ```
 
-Open `https://<your-lan-ip>:8443` in Chrome or Edge on the phone.
+Open `https://<your-lan-ip>:8443` in Chrome or Edge on your phone.
 
-Other serve options (`npx serve`, etc.) work the same way as long as the origin is secure.
+## Features
+
+- **Tactile remote interface**: Mobile-first design inspired by dedicated hardware remotes, with haptic feedback and dark theme ergonomics.
+- **Reliable BLE write queue**: Sequential write queue with command coalescing, generation tracking, and automatic retry up to 3 attempts.
+- **One-tap reconnect**: Seamlessly re-pair with the last used sign using Chromium `navigator.bluetooth.getDevices()`.
+- **Screen wake lock**: Automatically keeps the screen awake while connected to the sign.
+- **Favorites & presets**: Save custom named animation favorites and color presets locally in the browser.
+- **Scene restore**: Preserves tab, brightness, speed, color, and mode in localStorage. On connect or power-on, the UI synchronizes state with the sign.
+- **True native PWA install**: Only prompts for installation when Chromium emits `beforeinstallprompt`, opening as a standalone fullscreen app without browser chrome.
+
+## BLE Protocol
+
+Commands are sent as ASCII strings over the Nordic UART Service (NUS):
+
+| Command | Wire Example | Description |
+|---------|--------------|-------------|
+| Brightness | `B=8;\n` | Level 0 (off) through 8 |
+| Speed | `S=50;\n` | Sign animation speed (higher = slower). The UI maps 0-100% speed to `S={100 - ui%}` |
+| Color | `C=255,0,128;\n` | RGB values (green/blue channels swapped for physical sign LED wiring) |
+| Mode | `M32\n` | Animation mode 1 to 200. No `=` or `;` |
+
+Reverse-engineered from the Neon Attack companion app (`com.oytechnology.Neon_Attack` v5.0.3).
+
+- **Service UUID:** `6e400001-b5a3-f393-e0a9-e50e24dcca9e`
+- **TX Characteristic:** `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
+- **RX Characteristic:** `6e400003-b5a3-f393-e0a9-e50e24dcca9e`
+
+Machine-readable JSON schema: [`docs/ble-protocol.schema.json`](docs/ble-protocol.schema.json). Detailed notes: [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+
+## Project structure
+
+```
+├── index.html                  # App shell and native install capture
+├── css/styles.css              # Responsive styles and design tokens
+├── js/
+│   ├── app.js                  # Main entrypoint and UI orchestration
+│   ├── app-context.js          # Shared DOM elements and reactive state
+│   ├── connection.js           # Bluetooth lifecycle and auto-reconnect
+│   ├── color-ui.js             # Color hero, swatches, and preset cards
+│   ├── mode-ui.js              # 200 animation modes and favorites
+│   ├── scene-sync.js           # Brightness, speed, and scene restore
+│   ├── ble.js                  # GATT connection and retry write queue
+│   ├── protocol.js             # Wire-format encoders and color helpers
+│   ├── pwa-install.js          # Native PWA install prompt handler
+│   ├── color-picker.js         # Custom HSL color picker widget
+│   ├── mode-names.js           # Mode name catalog and fuzzy search
+│   ├── errors.js               # Human-readable Bluetooth error messages
+│   └── ui.js                   # Sheets, modals, wake lock, haptics
+├── icons/                      # PWA icons (192, 512, apple-touch)
+├── sw.js                       # Service worker with offline asset cache
+├── manifest.webmanifest        # PWA identity and launch handler
+├── SPEC.md                     # Specification index
+├── specs/                      # Feature specifications
+├── docs/                       # Protocol docs and JSON schema
+├── scripts/                    # Test gates, asset generation, deploy
+├── LICENSE                     # MIT License
+├── CONTRIBUTING.md             # Contribution guidelines
+├── SECURITY.md                 # Security policy
+└── CODE_OF_CONDUCT.md          # Community code of conduct
+```
+
+## Testing & Quality Gates
+
+Run all automated checks locally:
+
+```bash
+# Validate PWA manifest and service worker contracts
+node scripts/check-pwa.mjs
+
+# Validate BLE protocol encoder against JSON schema
+node scripts/check-protocol.mjs
+
+# Verify DOM ID preservation
+bash scripts/check-ids.sh
+
+# Verify icon dimensions
+node scripts/generate-icons.mjs
+```
 
 ## Deploy
 
-**Production URL:** [https://rawshn.com/floro-remote/](https://rawshn.com/floro-remote/)
+Production is hosted at `https://rawshn.com/floro-remote/` via `rawshn-portfolio`.
 
-This repo is a git submodule inside [rawshn-portfolio](https://github.com/ItsRRM97/rawshn-portfolio) at `public/floro-remote/`. Production is served only through the portfolio Vercel project (same pattern as embedded static assets, unlike `/coach` which rewrites to an external app).
-
-### Deploy workflow
-
-1. Commit and push changes to `main` on this repo
-2. Run the deploy script (bumps the portfolio submodule and deploys production):
+Run the automated deploy script from the repository root:
 
 ```bash
 bash scripts/deploy.sh
 ```
 
-Or manually:
+The script pushes `floro-ble-controller` to GitHub, synchronizes the snapshot to `rawshn-portfolio/public/floro-remote/`, and deploys via Vercel.
 
-1. In `rawshn-portfolio`, update the `public/floro-remote/` submodule pointer, commit, and push `main`
-2. From `rawshn-portfolio`: `vercel deploy --prod`
+## Contributing
 
-The portfolio build serves these static files at `/floro-remote/` with the correct PWA scope and Bluetooth permissions header (`vercel.json` in the portfolio repo). No build step is required in this repo.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for local development instructions and coding standards.
 
-## BLE protocol
+## Security
 
-Commands are sent as ASCII strings over the Nordic UART Service (NUS):
-
-| Command | Example | Description |
-|---------|---------|-------------|
-| Brightness | `B=8;\n` | Level 0 (off) through 8 |
-| Speed | `S=50;\n` | Animation speed on the sign (higher = slower). The UI shows 0-100% where 100% is fastest; the app sends `S={100 - ui%}` |
-| Color | `C=255,0,128;\n` | RGB values (green/blue channels swapped for physical LED wiring) |
-| Mode | `M32\n` | Flow/animation mode 1–200. **No** `=` or `;` (Neon Attack `demo111` sends `M` + number + newline) |
-
-Reverse-engineered from **Neon Attack** (`com.oytechnology.Neon_Attack` v5.0.3). The animation picker builds `M{mode}\n` (not `M={mode};`). Dashboard presets also use `SEN={n};\r\n`, `P0;\n` / `P1;\n`, and `M16\r\n` for special effects.
-
-On connect and whenever you change color or animation, the app sends brightness, speed, and color, waits 250ms, then sends the mode command last. Writes use GATT **write with response** when supported.
-
-**Service UUID:** `6e400001-b5a3-f393-e0a9-e50e24dcca9e`  
-**Write characteristic:** `6e400002-b5a3-f393-e0a9-e50e24dcca9e`
-
-Machine-readable schema: [`docs/ble-protocol.schema.json`](docs/ble-protocol.schema.json). Notes: [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
-
-## Project structure
-
-```
-├── index.html          # App shell (static manifest link, early beforeinstallprompt capture)
-├── css/styles.css      # Styles
-├── js/
-│   ├── app.js          # Boot and UI wiring
-│   ├── app-context.js  # Shared app context
-│   ├── connection.js   # Connect / reconnect / disconnect
-│   ├── color-ui.js     # Color picker, recents, presets
-│   ├── mode-ui.js      # Animation modes and favorites
-│   ├── scene-sync.js   # Scene restore to the sign
-│   ├── ble.js          # BLE connection, command queue, reconnect
-│   ├── pwa-install.js  # Native PWA install (prompt() only when Chromium offers it)
-│   ├── color-picker.js # Custom HSL color picker widget
-│   ├── protocol.js     # Hex/RGB helpers and wire-format constants
-│   ├── errors.js       # User-facing BLE error messages
-│   └── ui.js           # View transitions, sheets, wake lock, haptics
-├── icons/              # PWA icons (192, 512, apple-touch)
-├── sw.js               # Service worker (offline caching)
-├── manifest.webmanifest # PWA manifest
-├── SPEC.md             # Spec index
-├── specs/              # Per-feature specs (overview, BLE, PWA, analytics)
-├── docs/
-│   ├── PROTOCOL.md
-│   └── ble-protocol.schema.json
-├── CHANGELOG.md        # Release notes (version + SW cache bumps)
-├── scripts/
-│   ├── generate-icons.mjs
-│   ├── check-pwa.mjs
-│   ├── check-protocol.mjs
-│   ├── check-ids.sh
-│   └── deploy.sh
-├── DESIGN.md           # Design system and IA reference
-└── vercel.json         # Deploy config (Bluetooth permissions policy)
-```
-
-## Features
-
-- **Reliable writes**: Command queue with coalescing and automatic retry (up to 3 attempts)
-- **Reconnect**: One-tap reconnect to the last paired sign (Chrome `getDevices()` API)
-- **Wake lock**: Keeps the screen on while connected
-- **Favorites**: Save animation modes to localStorage with custom names
-- **Scene restore**: Saves tab, brightness, speed, color, and mode to localStorage. On connect and power-on, the UI opens Animation with the last saved animation pre-selected so the remote matches what the sign displays.
-- **Offline PWA**: Installable app with cached assets via service worker
-- **Install**: Native Chrome/Edge dialog when `beforeinstallprompt` fires. The in-page **Install** button only appears then. iOS: Share → Add to Home Screen.
-
-## PWA install behavior
-
-See [`specs/pwa.md`](specs/pwa.md). Short version: **Install** calls the browser's native `prompt()`. It never pretends that Chrome's ⋮ menu will install the app.
-
-| Platform | Banner | Install button |
-|----------|--------|----------------|
-| **Android (Chrome/Edge)** | Native prompt when available; otherwise immediate status guidance | Native **Install** only, never a browser shortcut |
-| **iOS (Safari)** | On first visit (Share → Add to Home Screen copy) | Hidden (Apple has no auto-install) |
-| **Desktop** | Hidden until `beforeinstallprompt` | Native **Install** when Chrome/Edge offers it |
-
-Dismiss **Not now** stores `floro_install_dismissed_v7` for **7 days**. On Android, **Install** appears only when Chrome offers the native standalone-app prompt; FloRo never routes users through **Create shortcut**. An installed app appears in the app drawer as **FloRo Remote**; the launcher may not automatically pin it to the Home screen.
-
-## Assets
-
-Add `logo.png` (512×512) and/or `floro.png` to the project root for the header. PWA install icons live in `icons/` (regenerate with `node scripts/generate-icons.mjs` after updating `logo.png`). The app falls back gracefully if images are missing.
-
-On Chrome/Edge, use the in-page **Install** button when it appears (native dialog). iOS: Safari Share, then Add to Home Screen. If you dismiss the banner, it stays away for 7 days; use Settings > Install App anytime.
+For vulnerability reports, please consult [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT
+[MIT](LICENSE) (c) 2026 Roshan Mishra

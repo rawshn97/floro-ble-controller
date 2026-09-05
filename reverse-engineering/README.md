@@ -9,7 +9,7 @@ cd /path/to/floro-ble-controller
 chmod +x reverse-engineering/analyze-apk.sh
 
 ./reverse-engineering/analyze-apk.sh \
-  "/Users/rawshn/Desktop/com.oytechnology.Neon_Attack-5.0.3-31.zip"
+  "/path/to/com.oytechnology.Neon_Attack-5.0.3-31.zip"
 ```
 
 Optional (deeper decompile):
