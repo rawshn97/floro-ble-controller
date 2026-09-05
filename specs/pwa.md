@@ -48,9 +48,9 @@ navigator.serviceWorker.register('./sw.js');
 
 Register immediately—the API is asynchronous and waiting for `window.load` can delay installability behind slow images or fonts. Use `updateViaCache: "none"` so a stale CDN header cannot pin an old worker. `skipWaiting` + `clientsClaim` remain. Precache the app shell including `js/pwa-install.js` with `cache: "reload"` requests; otherwise a new cache version can be populated with old files from the browser’s HTTP cache. Bump `CACHE_NAME` whenever cached assets change.
 
-Production (portfolio `vercel.json`): `/sign-controller/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /sign-controller/`.
+Production (portfolio `vercel.json`): `/sign-controller/sw.js` must be `Cache-Control: no-cache` so clients are not stuck on a 4-hour cached worker. Optional `Service-Worker-Allowed: /sign-controller/`. HTML responses should also send `Link: </sign-controller/manifest.webmanifest>; rel=manifest` so Chrome can discover the manifest when a content blocker strips the `<link>` tag.
 
-Navigations return the cached app shell immediately and refresh it in the background. Manifest requests are network-first. Worker updates bypass the HTTP cache.
+Navigations are network-first with a cached `index.html` offline fallback. Manifest and worker script requests are network-first. Worker updates bypass the HTTP cache.
 
 ## Install UI
 

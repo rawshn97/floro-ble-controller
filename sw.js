@@ -1,4 +1,4 @@
-const CACHE_NAME = 'floro-controller-v64';
+const CACHE_NAME = 'floro-controller-v65';
 const ASSETS = [
   './',
   './index.html',
@@ -47,17 +47,15 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   if (event.request.mode === 'navigate') {
-    const networkResponse = fetch(event.request).then((response) => {
-      if (!response.ok) return response;
-      const copy = response.clone();
-      return caches.open(CACHE_NAME)
-        .then((cache) => cache.put('./index.html', copy))
-        .then(() => response);
-    });
-
-    event.waitUntil(networkResponse.then(() => undefined).catch(() => undefined));
     event.respondWith(
-      caches.match('./index.html').then((cached) => cached || networkResponse)
+      fetch(event.request)
+        .then((response) => {
+          if (!response.ok) return response;
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }

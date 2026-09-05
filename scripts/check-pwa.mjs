@@ -103,8 +103,11 @@ if (!sw.includes('./js/pwa-install.js')) {
 if (!sw.includes("addEventListener('fetch'") && !sw.includes('addEventListener("fetch"')) {
   fail('sw.js must have a fetch handler (Chrome installability)');
 }
-if (!sw.includes("event.request.mode === 'navigate'") || !sw.includes("caches.match('./index.html')")) {
-  fail('service worker must serve cached navigation immediately for fast installed-app launch');
+if (!sw.includes("event.request.mode === 'navigate'") || !sw.includes('fetch(event.request)')) {
+  fail('service worker must use network-first navigation so HTML fixes reach clients');
+}
+if (!sw.includes("caches.match('./index.html')")) {
+  fail('service worker must keep a cached index.html fallback for offline use');
 }
 if (!sw.includes("new Request(url, { cache: 'reload' })")) {
   fail('precache must bypass the HTTP cache so a version bump cannot reinstall stale assets');
